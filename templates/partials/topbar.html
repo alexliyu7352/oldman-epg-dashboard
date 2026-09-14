@@ -1,0 +1,30 @@
+{% from "oldman/dashboard/partials/topbar.html" import dashboard_topbar with context %}
+{% from "oldman/auth/partials/account_controls.html" import user_account_controls with context %}
+
+{% if dashboard_notifications is defined %}
+  {% set topbar_notifications = dashboard_notifications %}
+{% else %}
+  {% set topbar_notifications = topbar_dashboard_notifications() %}
+{% endif %}
+
+{% macro dashboard_language_switcher() %}
+  {% include "partials/language_switcher.html" %}
+{% endmacro %}
+
+{% macro dashboard_account_controls() %}
+  {{ user_account_controls(
+    display_name=request.ctx.session.display_name or _("Administrator"),
+    session_path="/user-session",
+    logout_path="/logout",
+    subtitle=_("Dashboard"),
+    avatar_url=bundle_asset_url(app_main_bundle, "theme/assets/images/users/avatar-1.jpg")
+  ) }}
+{% endmacro %}
+
+{{ dashboard_topbar(
+  activity_notifications=topbar_notifications,
+  activity_href="/notifications",
+  user_notification_urls=dashboard_user_notification_urls,
+  language_switcher=dashboard_language_switcher,
+  account_controls=dashboard_account_controls
+) }}

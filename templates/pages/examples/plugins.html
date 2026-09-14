@@ -1,0 +1,99 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+{% set supported_plugins = [
+  ("Turbo", _("Navigates between server-rendered pages without replacing the Dashboard shell."), _("Runtime and Page lifecycle"), "/examples/navigation/lifecycle", _("Page lifecycle")),
+  ("Stimulus", _("Starts the controller runtime used by application-owned browser behavior."), _("Runtime lifecycle"), "/examples/navigation/lifecycle", _("Page lifecycle")),
+  ("Axios", _("Runs shared HTTP requests, cancellation, CSRF, and structured error handling."), _("Request lifecycle"), "/examples/navigation/actions", _("Navigation actions")),
+  ("TanStack Table", _("Powers sortable, filterable, paginated JSON data tables."), _("Table component lifecycle"), "/examples/tables/json", _("JSON data table")),
+  ("ApexCharts", _("Renders database-backed and realtime charts."), _("Chart component lifecycle"), "/examples/charts/trends", _("Trend charts")),
+  ("Choices", _("Enhances local and remote select fields."), _("Form component lifecycle"), "/examples/forms/selects", _("Select fields")),
+  ("Cleave", _("Formats structured text while users type."), _("Form component lifecycle"), "/examples/forms/masks", _("Input masks")),
+  ("Flatpickr", _("Enhances date and time inputs."), _("Form component lifecycle"), "/examples/forms/date-time", _("Date and time fields")),
+  ("noUiSlider + wNumb", _("Provides accessible range controls and value formatting."), _("Form component lifecycle"), "/examples/forms/sliders", _("Sliders")),
+  ("Pickr", _("Provides an enhanced color picker while preserving the native color input value."), _("Form component lifecycle"), "/examples/forms/color-picker", _("Color picker")),
+  ("Quill", _("Enhances a textarea with rich-text editing while the server remains responsible for sanitizing submitted HTML."), _("Form component lifecycle"), "/examples/forms/rich-text", _("Rich text editor")),
+  ("SimpleBar", _("Adds a consistent scrollbar to bounded content regions."), _("Scroll Area lifecycle"), "/examples/ui/lists", _("Lists")),
+  ("Swiper", _("Provides responsive horizontal browsing with pointer, touch, keyboard, and pagination controls."), _("Carousel component lifecycle"), "/examples/ui/carousel", _("Horizontal browsing")),
+  ("Toastify", _("Shows stackable, non-blocking messages that disappear automatically."), _("Feedback lifecycle"), "/examples/messages/feedback", _("Lightweight toast")),
+  ("SweetAlert2", _("Provides modal alerts, confirmations, prompts, and loading feedback."), _("Feedback lifecycle"), "/examples/messages/feedback", _("Modal feedback")),
+  ("Waves", _("Adds delegated press feedback to supported controls."), _("Dashboard shell lifecycle"), "/examples/ui/buttons", _("Buttons")),
+  ("SortableJS", _("Supports keyboard and pointer movement between persisted workflow lanes."), _("Sortable component lifecycle"), "/examples/sortable/workflow", _("Review workflow")),
+  ("ri / mdi / bx", _("Provides the generated icon catalog used by the Dashboard."), _("Build-time generated CSS"), "/examples/ui/icons", _("Icon catalog"))
+] %}
+{% set planned_plugins = [
+  ("FullCalendar", _("Scheduling and operations calendars need a separate data-source and lifecycle design.")),
+  (_("Maps"), _("The framework boundary between lifecycle wrapping and map data is not frozen yet.")),
+  (_("Advanced upload"), _("Upload queues, progress, and independent asynchronous uploads remain unimplemented."))
+] %}
+
+<div class="space-y-5" data-example-plugin-index>
+  <section class="om-card">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Supported plugins") }}</h2>
+        <p class="text-sm text-default-500">{{ _("Each dependency is owned by one framework capability and links to a working example. This page does not initialize them all at once.") }}</p>
+      </div>
+      <span class="om-badge om-badge-success">{{ supported_plugins|length }} {{ _("supported") }}</span>
+    </div>
+    <div class="om-table-scroll">
+      <table class="om-table min-w-[58rem]">
+        <thead>
+          <tr>
+            <th>{{ _("Plugin") }}</th>
+            <th>{{ _("Actual effect") }}</th>
+            <th>{{ _("Lifecycle owner") }}</th>
+            <th>{{ _("Working example") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for plugin, effect, lifecycle, href, example in supported_plugins %}
+          <tr data-plugin-status="supported" data-plugin-name="{{ plugin }}">
+            <td><strong class="text-default-800">{{ plugin }}</strong><span class="om-badge om-badge-success ml-2">{{ _("Supported") }}</span></td>
+            <td class="max-w-md text-sm text-default-600">{{ effect }}</td>
+            <td class="text-sm text-default-600">{{ lifecycle }}</td>
+            <td><a class="font-medium text-primary-600 hover:text-primary-700" href="{{ href }}" data-plugin-example>{{ example }} <i class="ri-arrow-right-line" aria-hidden="true"></i></a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Waves press feedback") }}</h2><span class="om-badge om-badge-info">{{ _("Live") }}</span></div>
+      <div class="om-card-body">
+        <p class="mb-4 text-sm leading-6 text-default-600">{{ _("Waves is initialized once by the Dashboard shell and uses event delegation, so controls loaded by Turbo work without page-specific setup.") }}</p>
+        <button type="button" class="om-button om-button-primary waves-effect waves-light" data-example-plugin-waves><i class="ri-cursor-line" aria-hidden="true"></i>{{ _("Press to see the effect") }}</button>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("SimpleBar scroll area") }}</h2><span class="om-badge om-badge-info">{{ _("Live") }}</span></div>
+      <div class="om-card-body">
+        <div class="max-h-44 space-y-2 pr-2" data-om-component="scroll-area" data-simplebar-auto-hide="false" data-example-plugin-simplebar>
+          {% for item in range(1, 8) %}
+          <div class="flex items-center justify-between rounded border border-default-200 px-3 py-2 text-sm"><span>{{ _("Queued activity") }} {{ item }}</span><span class="text-default-500">{{ item * 12 }} ms</span></div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title mb-1">{{ _("Known capability gaps") }}</h2><p class="text-sm text-default-500">{{ _("These are real Dashboard needs, but they are not implemented or advertised as supported yet.") }}</p></div>
+      <span class="om-badge om-badge-warning">{{ planned_plugins|length }} {{ _("planned") }}</span>
+    </div>
+    <div class="om-card-body grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {% for plugin, reason in planned_plugins %}
+      <article class="rounded border border-default-200 p-4" data-plugin-status="planned" data-plugin-name="{{ plugin }}">
+        <div class="mb-2 flex items-center justify-between gap-3"><h3 class="font-semibold text-default-800">{{ plugin }}</h3><span class="om-badge om-badge-warning">{{ _("Not implemented") }}</span></div>
+        <p class="text-sm leading-6 text-default-500">{{ reason }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

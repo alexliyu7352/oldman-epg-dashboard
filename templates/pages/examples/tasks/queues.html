@@ -1,0 +1,37 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/tasks/_controls.html" import task_form, prerequisites, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<section class="om-card mb-5">
+  <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("One worker pool, two queues") }}</h2></div>
+  <div class="om-card-body">
+    <p class="text-default-600">{{ _("The example config starts two execution processes, each with three task slots shared by reports and exports. The total is six slots, not six for each queue.") }}</p>
+    <pre class="mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>taskiq:
+  consume_queues: [reports, exports]
+  workers: 2
+  max_async_tasks: 3</code></pre>
+  </div>
+</section>
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Refresh process-local cache") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("A normal call refreshes one worker. A broadcast refreshes every online worker subscribed to reports. Inspect task_worker logs for distinct PIDs; there is no aggregate result or offline replay.") }}</p>
+      <div class="flex flex-wrap gap-3">
+        {{ task_form("local", _("Refresh one worker"), field="") }}
+        {{ task_form("broadcast", _("Broadcast refresh"), field="") }}
+      </div>
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Avoid duplicate database effects") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Choose a task record and submit twice. The first conditional UPDATE returns changed=true; further executions return false. This really marks the selected Demo record completed.") }}</p>
+      {{ task_form("complete", _("Complete selected record"), field="record_id") }}
+    </div>
+  </section>
+</div>
+{{ result_panel() }}
+<p class="mt-4 text-sm text-default-500">{{ _("A worker crash or lost confirmation can cause another execution. The database condition protects this record transition only; external HTTP or file side effects need their own business contract.") }}</p>
+{% endblock %}

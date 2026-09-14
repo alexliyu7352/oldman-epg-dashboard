@@ -1,0 +1,50 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Persistent realtime delivery") }}</h2></div>
+      <div class="om-card-body">
+        <p class="mb-4 text-default-500">{{ _("The database commit happens first. Online tabs receive a toast and refresh the shared topbar; offline users find the row later in the notification center.") }}</p>
+        <form method="post" action="/examples/notifications/send" data-om-action="submit">
+          {% csrf_token %}
+          <input type="hidden" name="mode" value="persistent">
+          <input type="hidden" name="presentation" value="toast">
+          <input type="hidden" name="level" value="success">
+          <input type="hidden" name="content_mode" value="text">
+          <input type="hidden" name="title" value="Persistent realtime example">
+          <input type="hidden" name="body" value="This row remains available after the browser disconnects.">
+          <input type="hidden" name="href" value="/user-notifications">
+          <input type="hidden" name="icon" value="ri-notification-3-line">
+          <button type="submit" class="om-button om-button-primary" data-example-persistent-notification>{{ _("Persist and deliver") }}</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Temporary realtime delivery") }}</h2></div>
+      <div class="om-card-body">
+        <p class="mb-4 text-default-500">{{ _("This modal is sent only through the existing page-owned user EventSource. It is discarded when the user is offline and never changes the unread count.") }}</p>
+        <form method="post" action="/examples/notifications/send" data-om-action="submit">
+          {% csrf_token %}
+          <input type="hidden" name="mode" value="temporary">
+          <input type="hidden" name="presentation" value="modal">
+          <input type="hidden" name="level" value="warning">
+          <input type="hidden" name="content_mode" value="text">
+          <input type="hidden" name="title" value="Temporary realtime example">
+          <input type="hidden" name="body" value="No database row is created for this delivery.">
+          <input type="hidden" name="href" value="">
+          <input type="hidden" name="icon" value="bx-error-circle">
+          <button type="submit" class="om-button om-button-secondary" data-example-temporary-notification>{{ _("Push online-only modal") }}</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card mt-5">
+    <div class="om-card-body">
+      <h2 class="om-card-title mb-2">{{ _("One shared user connection") }}</h2>
+      <p class="mb-0 text-default-500">{{ _("Notifications reuse the Dashboard shell EventSource declared in the page head. This page does not open another SSE connection.") }}</p>
+    </div>
+  </section>
+{% endblock %}

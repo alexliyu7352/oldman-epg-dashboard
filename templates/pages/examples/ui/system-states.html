@@ -1,0 +1,46 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid gap-5 lg:grid-cols-2" data-example-ui-reference="system-states">
+  <section class="om-card">
+    <div class="om-card-body py-10 text-center" data-example-ui-empty>
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-default-100 text-2xl text-default-500"><i class="ri-inbox-2-line" aria-hidden="true"></i></span>
+      <h2 class="mt-4 text-lg font-semibold">{{ _("No records yet") }}</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm text-default-500">{{ _("Create the first record to begin collecting live service data.") }}</p>
+      <button type="button" class="om-button om-button-primary mt-5"><i class="ri-add-line" aria-hidden="true"></i>{{ _("Create record") }}</button>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-body py-10 text-center" data-example-ui-error>
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-red-50 text-2xl text-red-600"><i class="ri-error-warning-line" aria-hidden="true"></i></span>
+      <h2 class="mt-4 text-lg font-semibold">{{ _("Unable to load data") }}</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm text-default-500">{{ _("The server did not respond. Check the connection and try again.") }}</p>
+      <button type="button" class="om-button om-button-light mt-5"><i class="ri-refresh-line" aria-hidden="true"></i>{{ _("Try again") }}</button>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-body py-10 text-center">
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-amber-50 text-2xl text-amber-600"><i class="ri-lock-2-line" aria-hidden="true"></i></span>
+      <h2 class="mt-4 text-lg font-semibold">{{ _("Permission required") }}</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm text-default-500">{{ _("Your account can view this workspace but cannot change its configuration.") }}</p>
+      <button type="button" class="om-button om-button-primary mt-5" disabled>{{ _("Save changes") }}</button>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-body py-10 text-center">
+      <span class="mx-auto grid size-14 place-items-center rounded-full bg-sky-50 text-2xl text-sky-600"><i class="ri-wifi-off-line" aria-hidden="true"></i></span>
+      <h2 class="mt-4 text-lg font-semibold">{{ _("Working offline") }}</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm text-default-500">{{ _("Live updates are paused. Existing information remains visible while the browser reconnects.") }}</p>
+      <div class="mt-5 flex items-center justify-center gap-2 text-sm text-default-600"><span class="om-spinner om-spinner-sm text-primary" aria-hidden="true"></span>{{ _("Reconnecting…") }}</div>
+    </div>
+  </section>
+
+  <section class="om-card lg:col-span-2">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("State copy under pressure") }}</h2></div>
+    <div class="om-card-body"><p class="break-words text-sm leading-6 text-default-600">{{ _("A clear state says what happened, what remains safe, and what the user can do next—even when the translated explanation is substantially longer than the original English label.") }}</p></div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("User") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("New User") if user is none else _("Edit User") }}</h1>
+          <div class="page-title-right">
+            <a href="/users" class="om-button om-button-soft-secondary om-button-sm">
+              <i class="ri-arrow-left-line align-bottom mr-1"></i>{{ _("Users") }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-body">
+        <div id="users-form-feedback" data-om-component="feedback"></div>
+        {{ form.render(
+          action="/users/new" if user is none else "/users/%s/edit"|format(user.id),
+          cancel_url="/users",
+          form_mode="json",
+          validate=True,
+          feedback_target="#users-form-feedback"
+        ) }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

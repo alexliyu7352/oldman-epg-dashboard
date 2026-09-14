@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ example_page_title }} · {{ example_section.title }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content" data-examples-shell data-example-category="{{ example_category }}" data-example-page="{{ example_page }}">
+  <div class="om-page-section">
+    <div class="om-page-header">
+      <div>
+        <p class="mb-1 text-sm font-medium uppercase tracking-wide text-primary-600">{{ example_section.title }}</p>
+        <h1 class="om-page-title">{{ example_page_title }}</h1>
+      </div>
+    </div>
+
+    {% block example_content %}
+      <div class="om-card">
+        <div class="om-card-body">
+          {% if example_page == "advanced" %}
+            <h2 class="om-card-title mb-2">{{ _("Capability gap") }}</h2>
+            <p class="mb-0 text-default-500">{{ _("This advanced capability is not implemented yet.") }}</p>
+          {% else %}
+            <h2 class="om-card-title mb-2">{{ _("Example shell ready") }}</h2>
+            <p class="mb-0 text-default-500">{{ _("The real database-backed example will be added in its planned implementation slice.") }}</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

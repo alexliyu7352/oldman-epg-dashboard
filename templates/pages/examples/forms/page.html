@@ -1,0 +1,111 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% macro slider_control(form_class) %}
+  <div class="order-first mb-3 w-full">
+    <div
+      data-om-component="slider"
+      data-om-slider-min-input="{{ example_page }}-utilization"
+      data-om-slider-form-selector=".{{ form_class }}"
+      data-om-slider-options='{"start":45,"connect":"lower","range":{"min":0,"max":100},"step":1,"tooltips":true}'
+    ></div>
+  </div>
+{% endmacro %}
+
+{% block example_content %}
+  {% if show_color_picker %}
+  <section class="om-card mb-4">
+    <div class="om-card-header flex items-center gap-3">
+      <h2 class="om-card-title mb-0 flex-1">{{ _("Dynamic Modal lifecycle") }}</h2>
+      <button
+        type="button"
+        class="om-button om-button-primary om-button-sm"
+        data-om-modal-target="#example-color-picker-modal"
+        data-om-modal-url="/examples/forms/color-picker/modal"
+      >{{ _("Open Color Picker Modal") }}</button>
+    </div>
+    <div class="om-card-body text-default-500">{{ _("The remote Form uses the same ColorPicker component and is mounted only after insertion.") }}</div>
+  </section>
+  {% call modal(
+    "example-color-picker-modal",
+    _("Color Picker in a remote Modal"),
+    component="modal",
+    close_label=_("Close"),
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="text-default-500 mb-0">{{ _("Open the Modal to load its Color Picker Form.") }}</p>
+  {% endcall %}
+  {% endif %}
+
+  {% if show_rich_text %}
+  <section class="om-alert om-alert-warning mb-4" role="note">
+    <span class="ri-shield-check-line text-xl" aria-hidden="true"></span>
+    <div>
+      <h2 class="om-alert-title">{{ _("Trusted author content") }}</h2>
+      <p class="mb-0">{{ _("This example stores HTML without a sanitizer. Only use that mode for trusted authors, and never mark untrusted HTML as safe when rendering it.") }}</p>
+    </div>
+  </section>
+  <section class="om-card mb-4">
+    <div class="om-card-header flex items-center gap-3">
+      <h2 class="om-card-title mb-0 flex-1">{{ _("Dynamic Modal lifecycle") }}</h2>
+      <button
+        type="button"
+        class="om-button om-button-primary om-button-sm"
+        data-om-modal-target="#example-rich-text-modal"
+        data-om-modal-url="/examples/forms/rich-text/modal"
+      >{{ _("Open Rich Text Modal") }}</button>
+    </div>
+    <div class="om-card-body text-default-500">{{ _("The remote Form mounts and cleans up the same Rich Text Editor after its HTML is inserted.") }}</div>
+  </section>
+  {% call modal(
+    "example-rich-text-modal",
+    _("Rich Text Editor in a remote Modal"),
+    component="modal",
+    close_label=_("Close"),
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="text-default-500 mb-0">{{ _("Open the Modal to load its Rich Text Form.") }}</p>
+  {% endcall %}
+  {% endif %}
+
+  {% if show_static_fields %}
+  <section class="om-card" data-example-form-static>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Static HTML controls") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Use plain semantic HTML when no server binding is needed.") }}</p>
+      <div class="om-form-grid">
+        <div class="om-form-field md:col-span-6">
+          <label class="om-form-label" for="static-name">{{ _("Name") }}</label>
+          <input class="om-field" id="static-name" name="static-name" value="Oldman Dashboard">
+        </div>
+        <div class="om-form-field md:col-span-6">
+          <label class="om-form-label" for="static-state">{{ _("State") }}</label>
+          <select class="om-select" id="static-state" name="static-state"><option>{{ _("Ready") }}</option></select>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    {% for card in form_cards %}
+    <section class="om-card" data-example-form-card="{{ card.mode }}">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ card.title }}</h2></div>
+      <div class="om-card-body">
+        <p class="text-default-500">{{ card.description }}</p>
+        {% set form_class = "example-form-" ~ example_page ~ "-" ~ card.mode %}
+        {{ card.form.render(
+          action=card.action,
+          form_mode=card.mode,
+          form_class=form_class,
+          submit_label=card.submit_label,
+          validate=true,
+          extra_buttons=slider_control(form_class) if show_slider else ""
+        ) }}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("One shared Modal component") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("The local dialog keeps title, body, footer, keyboard focus and close behavior in one component.") }}</p>
+      </div>
+      <button id="basic-modal-opener" type="button" class="om-button om-button-primary" data-om-modal-target="#basic-example-modal">{{ _("Open local Modal") }}</button>
+    </div>
+  </section>
+
+  {% call modal(
+    "basic-example-modal",
+    _("Local Modal title"),
+    close_label=_("Close"),
+    footer_close_label=_("Close Modal"),
+    inline_hidden_style=true
+  ) %}
+    <p class="mb-2">{{ _("This body is rendered with the page and needs no private JavaScript.") }}</p>
+    <a href="#basic-modal-focus-target" id="basic-modal-focus-target" class="text-primary-600">{{ _("Focusable content") }}</a>
+  {% endcall %}
+{% endblock %}

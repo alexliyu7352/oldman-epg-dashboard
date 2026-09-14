@@ -1,0 +1,29 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid gap-5 xl:grid-cols-2" data-example-ui-reference="timeline">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title">{{ _("Deployment timeline") }}</h2><span class="om-badge om-badge-warning">{{ _("In progress") }}</span></div>
+    <div class="om-card-body">
+      <ol class="om-timeline">
+        <li class="om-timeline-item is-complete"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Build completed") }}</h3><p class="om-timeline-content">{{ _("Application assets and container image were created successfully.") }}</p><time class="om-timeline-time">09:12</time></li>
+        <li class="om-timeline-item is-complete"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Checks passed") }}</h3><p class="om-timeline-content">{{ _("Unit, type, and browser checks reported no failures.") }}</p><time class="om-timeline-time">09:18</time></li>
+        <li class="om-timeline-item" aria-current="step"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Deploying to production") }}</h3><p class="om-timeline-content">{{ _("Three of five application instances are serving the new release.") }}</p><time class="om-timeline-time">{{ _("Now") }}</time></li>
+        <li class="om-timeline-item"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Verify service health") }}</h3><p class="om-timeline-content">{{ _("Traffic will increase after every instance passes its health check.") }}</p><time class="om-timeline-time">{{ _("Pending") }}</time></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title">{{ _("Activity timeline") }}</h2></div>
+    <div class="om-card-body">
+      <ol class="om-timeline">
+        <li class="om-timeline-item is-complete"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Channel mapping updated") }}</h3><p class="om-timeline-content">{{ _("Alex changed the primary source for World News HD.") }}</p><time class="om-timeline-time">{{ _("Five minutes ago") }}</time></li>
+        <li class="om-timeline-item is-complete"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Schedule imported") }}</h3><p class="om-timeline-content">{{ _("The nightly import added 2,418 programme records.") }}</p><time class="om-timeline-time">{{ _("One hour ago") }}</time></li>
+        <li class="om-timeline-item is-complete"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Quality warning resolved") }}</h3><p class="om-timeline-content">{{ _("The backup feed is healthy and automatic failover is available again.") }}</p><time class="om-timeline-time">{{ _("Yesterday") }}</time></li>
+        <li class="om-timeline-item"><span class="om-timeline-marker"></span><h3 class="om-timeline-title">{{ _("Retention window reached") }}</h3><p class="om-timeline-content break-words">{{ _("Older operational events remain available in the audit export rather than crowding this compact timeline.") }}</p><time class="om-timeline-time">{{ _("Seven days ago") }}</time></li>
+      </ol>
+    </div>
+  </section>
+</div>
+{% endblock %}

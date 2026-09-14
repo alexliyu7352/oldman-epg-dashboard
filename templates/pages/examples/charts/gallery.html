@@ -1,0 +1,18 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    {% for item in charts %}
+      <section class="om-card" data-example-chart-card="{{ item.key }}">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ item.title }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("Aggregated from the imported Example database rows.") }}</p>
+          </div>
+          <span class="om-badge om-badge-primary">{{ item.key }}</span>
+        </div>
+        <div class="om-card-body">{{ item.chart }}</div>
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}

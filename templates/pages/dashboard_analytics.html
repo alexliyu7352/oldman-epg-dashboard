@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Analytics") }} · Oldman{% endblock %}
+
+{% block content %}
+<section class="om-page-section" data-om-component="dashboard-overview">
+    <div class="om-page-heading">
+      <div>
+        <p class="om-page-kicker">Oldman</p>
+        <h1 class="om-page-title">{{ _("Analytics") }}</h1>
+      </div>
+      <div class="om-page-actions">
+        <div class="om-dropdown">
+          <button class="om-button om-button-soft-secondary om-button-sm" type="button" data-om-dropdown-toggle aria-expanded="false">
+            <i class="ri-calendar-event-line"></i>{{ _("Range") }}
+          </button>
+          <div class="om-dropdown-menu om-dropdown-menu-end">
+            <button class="om-dropdown-item" type="button" data-om-dashboard-range="7d">7 {{ _("Days") }}</button>
+            <button class="om-dropdown-item active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+            <button class="om-dropdown-item" type="button" data-om-dashboard-range="90d">90 {{ _("Days") }}</button>
+          </div>
+        </div>
+        <button class="om-button om-button-soft-success om-button-sm" type="button" data-om-dashboard-refresh>
+          <i class="ri-refresh-line"></i>{{ _("Refresh") }}
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="font-medium text-default-500 mb-0">{{ _("Programmes") }}</p>
+            <h2 class="mt-4  text-xl font-semibold">
+              <span class="counter-value" data-target="{{ stats.epg_count }}">0</span>
+            </h2>
+            <p class="mb-0 text-default-500 truncate">{{ _("programme records") }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="font-medium text-default-500 mb-0">{{ _("Catalog Feeds") }}</p>
+            <h2 class="mt-4  text-xl font-semibold">
+              <span class="counter-value" data-target="{{ stats.catalog_feed_count }}">0</span>
+            </h2>
+            <p class="mb-0 text-default-500 truncate">{{ _("runtime feeds") }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="font-medium text-default-500 mb-0">{{ _("Logo Coverage") }}</p>
+            <h2 class="mt-4  text-xl font-semibold text-xl">{{ stats.logo_coverage_percent }}%</h2>
+            <p class="mb-0 text-default-500 truncate">{{ stats.logo_asset_count }} {{ _("logo assets") }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="font-medium text-default-500 mb-0">{{ _("Pending Decisions") }}</p>
+            <h2 class="mt-4  text-xl font-semibold">
+              <span class="counter-value" data-target="{{ stats.pending_decision_count }}">0</span>
+            </h2>
+            <p class="mb-0 text-default-500 truncate">{{ _("manual review") }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-8">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Programme Trend") }}</h4>
+            <div class="shrink-0">
+              <a href="/epg-list" class="om-button om-button-soft-primary om-button-sm">{{ _("Review programmes") }}</a>
+            </div>
+          </div>
+          <div class="om-card-body min-h-[260px]" data-om-loading-initial="true">
+            {{ programme_trend_chart.render_shell(html_id="programme-trend-chart") }}
+          </div>
+        </div>
+      </div>
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Feed Status") }}</h4>
+          </div>
+          <div class="om-card-body min-h-[260px]" data-om-loading-initial="true">
+            {{ feed_status_chart.render_shell(html_id="feed-status-chart") }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-6">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Logo Quality") }}</h4>
+          </div>
+          <div class="om-card-body min-h-[220px]" data-om-loading-initial="true">
+            {{ logo_quality_chart.render_shell(html_id="logo-quality-chart") }}
+          </div>
+        </div>
+      </div>
+    </div>
+</section>
+
+<div id="dashboard-feedback" data-om-component="feedback"></div>
+{% endblock %}

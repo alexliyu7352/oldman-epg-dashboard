@@ -1,0 +1,14 @@
+{# Render a compact status badge with a constrained visual tone. #}
+{% macro badge(text, tone="default") %}
+  {% set tone_classes = {
+    "success": "bg-success/10 text-green-700",
+    "info": "bg-info/10 text-cyan-700",
+    "warning": "bg-warning/10 text-amber-700",
+    "danger": "bg-danger/10 text-red-700",
+    "primary": "bg-primary/10 text-primary-600",
+    "default": "bg-default-100 text-default-600"
+  } %}
+  <span class="inline-flex items-center rounded px-2 py-1 text-xs font-medium {{ tone_classes.get(tone, tone_classes.default) }}">
+    {{ text }}
+  </span>
+{% endmacro %}

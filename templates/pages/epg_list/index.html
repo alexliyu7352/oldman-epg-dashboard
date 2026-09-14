@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Programmes") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Programmes") }}</h1>
+          <div class="page-title-right">
+            <a href="/epg-list/new" class="om-button om-button-primary om-button-sm">
+              <i class="ri-add-line align-bottom mr-1"></i>{{ _("New Programme") }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-body">
+        {{ filter_form.render(method="get", submit_label="Filter", table_target="#epg-list-table") }}
+        {{ table.render_shell(html_id="epg-list-table", show_search=False) }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

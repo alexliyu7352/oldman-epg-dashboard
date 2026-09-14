@@ -1,0 +1,43 @@
+{% macro task_form(operation, label, field="project_id") %}
+<form method="post" action="/examples/tasks/run/{{ operation }}" data-om-component="form" data-om-form data-om-form-mode="json" novalidate>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ dashboard_csrf_token(request) }}">
+  <div class="om-form-message" data-om-form-message role="alert" hidden></div>
+  {% if field %}
+  <div class="om-form-field mb-3" data-om-form-field data-om-form-field-name="{{ field }}">
+    <label class="om-form-label" for="task-{{ operation }}">{{ _("Task record") if field == "record_id" else _("Project") }}</label>
+    <select class="om-select w-full" id="task-{{ operation }}" name="{{ field }}" required>
+      <option value="">{{ _("Choose a record") }}</option>
+      {% if field == "record_id" %}
+        {% for record in task_records %}<option value="{{ record.id }}">#{{ record.id }} {{ record.title }}{% if record.is_completed %} ({{ _("Completed") }}){% endif %}</option>{% endfor %}
+      {% else %}
+        {% for project in projects %}<option value="{{ project.id }}">{{ project.name }}</option>{% endfor %}
+      {% endif %}
+    </select>
+    <div class="om-form-error" data-om-error-for="{{ field }}" hidden></div>
+  </div>
+  {% endif %}
+  <p data-om-form-status role="status" aria-live="polite" hidden></p>
+  <button type="submit" class="om-button om-button-primary"{% if not taskiq_enabled %} disabled{% endif %}>{{ label }}</button>
+</form>
+{% endmacro %}
+
+{% macro prerequisites() %}
+{% if not taskiq_enabled %}
+<div class="om-alert om-alert-warning mb-5" role="note">
+  <p class="mb-0">{{ _("Taskiq is disabled. Follow the Demo README to configure NATS, Redis and the three services, then restart Web. No task is started by opening this page.") }}</p>
+</div>
+{% elif not projects %}
+<div class="om-alert om-alert-info mb-5" role="note">
+  <p class="mb-0">{{ _("No example projects exist. Load the demo fixture before trying database tasks.") }}</p>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro result_panel() %}
+<section class="om-card mt-5">
+  <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+  <div class="om-card-body" id="task-result" aria-live="polite" aria-atomic="true">
+    <p class="mb-0 text-default-500">{{ _("Submit an operation above. The response shows its task ID immediately; query the result separately.") }}</p>
+  </div>
+</section>
+{% endmacro %}

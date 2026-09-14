@@ -1,0 +1,51 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <section class="om-card" data-om-component="list" data-om-list-page-size="6" data-om-list-search-field=".name" data-example-project-list>
+    <div class="om-card-header flex items-center gap-2">
+      <h2 class="om-card-title mb-0 flex-1">{{ _("Database project list") }}</h2>
+      <button type="button" class="om-button om-button-ghost-secondary om-button-sm" data-om-list-sort="name">{{ _("Sort name") }}</button>
+      <button type="button" class="om-button om-button-ghost-secondary om-button-sm" data-om-list-sort="progress">{{ _("Sort progress") }}</button>
+    </div>
+    <div class="om-card-body">
+      <label class="om-form-label" for="example-project-search">{{ _("Contains search") }}</label>
+      <input id="example-project-search" type="search" class="om-field mb-3" data-om-list-search placeholder="{{ _('Search project name') }}">
+      <ul class="om-list mb-3" data-om-list-items>
+        {% for project in projects %}
+        <li class="om-list-item" data-om-list-item data-name="{{ project.name }}" data-progress="{{ project.progress }}" data-project-id="{{ project.id }}">
+          <div class="flex items-center gap-3">
+            <div class="min-w-0 flex-1">
+              <strong class="name block truncate">{{ project.name }}</strong>
+              <span class="text-xs text-default-500">{{ project.team.name }} · {{ project.status }}</span>
+            </div>
+            <span class="progress om-badge bg-primary-50 text-primary-600">{{ project.progress }}%</span>
+            <a class="om-button om-button-ghost-primary om-button-sm" href="/examples/forms/json-list">{{ _("Open") }}</a>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="text-default-500" data-om-list-empty hidden>{{ _("No matching projects.") }}</p>
+      <ul class="om-list-pagination justify-end" data-om-list-pagination></ul>
+    </div>
+  </section>
+
+  <section class="om-card" data-om-component="list" data-om-list-search-mode="fuzzy" data-om-list-page-size="8" data-om-list-search-field=".name" data-example-project-fuzzy-list>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Fuzzy search") }}</h2></div>
+    <div class="om-card-body">
+      <label class="om-form-label" for="example-project-fuzzy">{{ _("Ordered character search") }}</label>
+      <input id="example-project-fuzzy" type="search" class="om-field mb-3" data-om-list-search placeholder="{{ _('Try p10') }}">
+      <ul class="om-list mb-3" data-om-list-items>
+        {% for project in projects %}
+        <li class="om-list-item" data-om-list-item data-name="{{ project.name }}">
+          <span class="name font-medium">{{ project.name }}</span>
+          <span class="float-right text-xs text-default-500">#{{ project.id }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="text-default-500" data-om-list-empty hidden>{{ _("No fuzzy matches.") }}</p>
+      <ul class="om-list-pagination justify-end" data-om-list-pagination></ul>
+    </div>
+  </section>
+</div>
+{% endblock %}

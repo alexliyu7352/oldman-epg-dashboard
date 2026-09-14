@@ -1,0 +1,38 @@
+{% if error %}<p class="om-alert om-alert-danger" role="alert">{{ error }}</p>{% endif %}
+{% if reply %}
+<div data-rpc-peer="{{ reply.peer_id }}" data-rpc-pid="{{ reply.pid }}" data-project-id="{{ reply.project_id }}">
+  <p class="mb-3 font-medium">{{ _("Reply from %(peer)s (PID %(pid)s)", peer=reply.peer_id, pid=reply.pid) }}</p>
+  {% if reply.found %}
+  <dl class="grid grid-cols-1 gap-3 md:grid-cols-2">
+    <div><dt class="text-sm text-default-600">{{ _("Project") }}</dt><dd>{{ reply.name }}</dd></div>
+    <div><dt class="text-sm text-default-600">{{ _("Status") }}</dt><dd>{{ reply.status }}</dd></div>
+    <div><dt class="text-sm text-default-600">{{ _("Progress") }}</dt><dd>{{ reply.progress }}%</dd></div>
+    <div><dt class="text-sm text-default-600">{{ _("Task records") }}</dt><dd>{{ reply.task_count }}</dd></div>
+  </dl>
+  {% endif %}
+  {% if reported %}<p class="mt-4 mb-0 text-default-600">{{ _("The reply was also sent to project.status.read. Query counters to observe its processing.") }}</p>{% endif %}
+</div>
+{% elif observations %}
+<div class="overflow-x-auto">
+  <table class="om-table" data-communication-counters>
+    <caption class="sr-only">{{ _("Receiving service counters since startup") }}</caption>
+    <thead><tr>
+      <th scope="col">{{ _("Receiving service") }}</th><th scope="col">PID</th>
+      <th scope="col" class="text-end">{{ _("Competing") }}</th><th scope="col" class="text-end">{{ _("Broadcast") }}</th>
+      <th scope="col" class="text-end">{{ _("Reports") }}</th><th scope="col">{{ _("Last senders: competing / broadcast / report") }}</th>
+    </tr></thead>
+    <tbody>{% for row in observations %}
+      <tr data-counter-peer="{{ row.peer_id }}"><th scope="row">{{ row.peer_id }}</th>
+      {% if row.error %}<td colspan="5">{{ row.error }}</td>{% else %}
+      <td>{{ row.snapshot.pid }}</td><td class="text-end">{{ row.snapshot.compete }}</td>
+      <td class="text-end">{{ row.snapshot.broadcast }}</td><td class="text-end">{{ row.snapshot.reports }}</td>
+      <td>{{ row.snapshot.compete_sender or '—' }} / {{ row.snapshot.broadcast_sender or '—' }} / {{ row.snapshot.report_sender or '—' }}</td>
+      {% endif %}</tr>
+    {% endfor %}</tbody>
+  </table>
+</div>
+{% elif sent %}
+<p class="mb-0" data-events-sent="{{ sent }}" data-event-kind="{{ kind }}">{{ _("Sent %(count)s events. Use Query current counters to see what receivers have processed.", count=sent) }}</p>
+{% elif unexpected_reply %}
+<p class="mb-0">{{ _("A reply arrived. No failure was observed; check the receiver configuration rather than assuming the example failed as expected.") }}</p>
+{% endif %}

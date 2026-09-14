@@ -1,0 +1,22 @@
+{% macro prerequisites() %}
+{% if not bus_enabled %}
+<div class="om-alert om-alert-warning mb-5" role="note">
+  <p class="mb-0">{{ _("Core NATS is disabled. Enable nats_bus using the Demo README, then restart this service. Opening this page never sends a message.") }}</p>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro operation(operation, label) %}
+<fieldset{% if not bus_enabled %} disabled{% endif %}>
+  {{ operation_form.render(action="/examples/communication/run/" ~ operation, form_mode="json", submit_label=label) }}
+</fieldset>
+{% endmacro %}
+
+{% macro result_panel() %}
+<section class="om-card mt-5">
+  <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+  <div class="om-card-body" id="communication-result" aria-live="polite" aria-atomic="true">
+    <p class="mb-0 text-default-600">{{ _("Choose an operation above. Results come from real receiving services, not from opening this page.") }}</p>
+  </div>
+</section>
+{% endmacro %}

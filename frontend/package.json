@@ -1,0 +1,52 @@
+{
+  "name": "oldman-epg-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "generate:icons": "oldman-web-icons --output src/css/generated/icons.css --source src/components --source src/pages --source src/main.ts --source ../templates --source ../apps --exclude-shared",
+    "generate:i18n": "../.venv/bin/python ../scripts/compile_js_messages.py",
+    "prebuild": "pnpm generate:icons && pnpm generate:i18n",
+    "predev": "pnpm generate:icons && pnpm generate:i18n",
+    "prepreview:templates": "pnpm generate:icons",
+    "pretest": "pnpm generate:icons",
+    "pretypecheck": "pnpm generate:icons",
+    "preview:templates": "vite --host 0.0.0.0",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "oldman-web": "^0.1.0",
+    "@fontsource/dm-sans": "^5.2.7",
+    "@hotwired/stimulus": "^3.2.2",
+    "@hotwired/turbo": "^8.0.12",
+    "@tanstack/table-core": "^9.2.4",
+    "apexcharts": "^4.7.0",
+    "axios": "^1.13.2",
+    "choices.js": "^11.2.3",
+    "cleave.js": "^1.6.0",
+    "flatpickr": "^4.6.13",
+    "node-waves": "^0.7.6",
+    "nouislider": "^15.8.1",
+    "simplebar": "^6.3.1",
+    "sweetalert2": "^11.22.0",
+    "wnumb": "^1.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^22.0.0",
+    "@types/nunjucks": "^3.2.6",
+    "jsdom": "^25.0.1",
+    "nunjucks": "^3.2.4",
+    "sass": "1.69.5",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.8"
+  }
+}

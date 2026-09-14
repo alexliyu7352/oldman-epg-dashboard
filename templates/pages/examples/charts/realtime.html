@@ -1,0 +1,45 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section
+    class="om-card"
+    data-om-component="example-chart"
+    data-om-chart-target="#example-chart-realtime"
+    data-om-realtime-chart-url="/examples/charts/realtime/events?server_id=1"
+    data-example-realtime-chart
+  >
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Server metrics over SSE") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("The connection replays stored rows with stream.send(), then receives committed metrics through Redis publish_stream().") }}</p>
+      </div>
+      <span class="om-badge om-badge-success"><i class="ri-pulse-line mr-1" aria-hidden="true"></i>{{ _("Live") }}</span>
+    </div>
+    <div class="om-card-body border-b border-default-200">
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          class="om-button om-button-primary"
+          data-om-action="post"
+          data-om-url="/examples/charts/realtime/publish?server_id=1"
+          data-example-publish-metric
+        >{{ _("Persist and publish metric") }}</button>
+        <span class="text-sm text-default-500">{{ _("Last source:") }} <strong data-example-realtime-source>{{ _("waiting") }}</strong></span>
+        <span class="text-sm text-default-500">{{ _("Updates:") }} <strong data-example-realtime-count>0</strong></span>
+      </div>
+    </div>
+    <div class="om-card-body">{{ chart }}</div>
+  </section>
+
+  <section class="om-card mt-5">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Database server inventory") }}</h2></div>
+    <div class="om-card-body grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      {% for server in servers %}
+        <div class="rounded-lg border border-default-200 p-3" data-example-server-id="{{ server.id }}">
+          <strong class="block">{{ server.name }}</strong>
+          <span class="text-sm text-default-500">{{ server.region }} · {{ server.bandwidth_mbps }} Mbps</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

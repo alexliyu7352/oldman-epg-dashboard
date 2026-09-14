@@ -1,0 +1,56 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+    <section class="om-card xl:col-span-4">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Database profiles") }}</h2></div>
+      <div class="om-card-body">
+        <p class="text-default-500">{{ _("Every row below comes from ExampleStreamProfile.") }}</p>
+        <ul class="divide-y divide-default-200" data-example-stream-profiles>
+          {% for profile in profiles %}
+          <li class="flex items-center justify-between gap-3 py-3" data-profile-id="{{ profile.id }}">
+            <div><strong>{{ profile.name }}</strong><div class="text-xs text-default-500">{{ profile.status }}</div></div>
+            <code class="text-xs">#{{ profile.id }}</code>
+          </li>
+          {% else %}
+          <li class="py-3 text-default-500">{{ _("No fixture profiles are available.") }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <div class="space-y-4 xl:col-span-8">
+      <section class="om-card" data-example-json-list-create>
+        <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("HTML submission · create") }}</h2></div>
+        <div class="om-card-body">
+          <p class="text-default-500">{{ _("The server returns a rendered HTML fragment for validation or success.") }}</p>
+          {{ create_form.render(
+            action="/examples/forms/json-list/create",
+            form_mode="html",
+            submit_label=_("Create stream profile"),
+            validate=true
+          ) }}
+        </div>
+      </section>
+
+      <section class="om-card" data-example-json-list-edit>
+        <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("JSON submission · edit") }}</h2></div>
+        <div class="om-card-body">
+          <p class="text-default-500">{{ _("The server returns ordered Feedback and replace_html actions, then this Form reloads from the saved Text column.") }}</p>
+          <div id="json-stream-profile-form">
+            {% if edit_form and selected_profile %}
+              {{ edit_form.render(
+                action="/examples/forms/json-list/" ~ selected_profile.id ~ "/edit",
+                form_mode="json",
+                submit_label=_("Save JSON list"),
+                validate=true
+              ) }}
+            {% else %}
+              <div class="om-alert-warning">{{ _("Load the example fixture to enable the edit form.") }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,65 @@
+<section
+  id="sortable-workflow-board"
+  class="grid grid-cols-1 gap-4 xl:grid-cols-4"
+  data-om-component="sortable-list"
+  data-om-sortable-group="example-review"
+  data-om-sortable-url="/examples/sortable/tasks/move"
+  data-example-sortable-board
+>
+  {% for status in task_statuses %}
+    {% set lane_index = loop.index0 %}
+    {% set lane_tasks = tasks_by_status[status] %}
+    <div class="om-card min-w-0" data-example-sortable-lane="{{ status }}">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ status_labels[status] }}</h2>
+        <span class="om-badge om-badge-secondary">{{ lane_tasks|length }}</span>
+      </div>
+      <div
+        class="flex min-h-48 flex-col gap-3 p-4"
+        data-om-sortable-list
+        data-om-list-id="{{ status }}"
+      >
+        {% for task in lane_tasks %}
+          {% set task_index = loop.index0 %}
+          <article
+            class="rounded-lg border border-default-200 bg-surface p-3 shadow-sm"
+            data-om-sortable-item
+            data-om-item-id="{{ task.id }}"
+            data-example-task-priority="{{ task.priority }}"
+          >
+            <div class="flex items-start gap-2">
+              <button type="button" class="mt-0.5 text-default-400" data-om-sortable-handle aria-label="{{ _('Drag task') }}">
+                <i class="ri-drag-move-2-line text-lg" aria-hidden="true"></i>
+              </button>
+              <div class="min-w-0 flex-1">
+                <h3 class="mb-1 font-semibold text-default-900">{{ task.title }}</h3>
+                <p class="mb-2 text-xs text-default-500">{{ task.project.name }} · {{ task.priority }}</p>
+                {% if task.priority == "critical" %}
+                  <span class="om-badge om-badge-danger">{{ _("Approval required") }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-1" aria-label="{{ _('Keyboard move controls') }}">
+              {% if task_index > 0 %}
+                <button type="button" class="om-button om-button-light px-2 py-1" aria-label="{{ _('Move up') }}" data-om-action="post" data-om-url="/examples/sortable/tasks/move?item_id={{ task.id }}&source_list={{ status }}&target_list={{ status }}&target_position={{ task_index - 1 }}&interaction=keyboard"><i class="ri-arrow-up-line" aria-hidden="true"></i></button>
+              {% endif %}
+              {% if task_index + 1 < lane_tasks|length %}
+                <button type="button" class="om-button om-button-light px-2 py-1" aria-label="{{ _('Move down') }}" data-om-action="post" data-om-url="/examples/sortable/tasks/move?item_id={{ task.id }}&source_list={{ status }}&target_list={{ status }}&target_position={{ task_index + 1 }}&interaction=keyboard"><i class="ri-arrow-down-line" aria-hidden="true"></i></button>
+              {% endif %}
+              {% if lane_index > 0 %}
+                {% set previous_status = task_statuses[lane_index - 1] %}
+                <button type="button" class="om-button om-button-light px-2 py-1" aria-label="{{ _('Move to previous lane') }}" data-om-action="post" data-om-url="/examples/sortable/tasks/move?item_id={{ task.id }}&source_list={{ status }}&target_list={{ previous_status }}&target_position={{ tasks_by_status[previous_status]|length }}&interaction=keyboard"><i class="ri-arrow-left-line" aria-hidden="true"></i></button>
+              {% endif %}
+              {% if lane_index + 1 < task_statuses|length %}
+                {% set next_status = task_statuses[lane_index + 1] %}
+                <button type="button" class="om-button om-button-light px-2 py-1" aria-label="{{ _('Move to next lane') }}" data-om-action="post" data-om-url="/examples/sortable/tasks/move?item_id={{ task.id }}&source_list={{ status }}&target_list={{ next_status }}&target_position={{ tasks_by_status[next_status]|length }}&interaction=keyboard"><i class="ri-arrow-right-line" aria-hidden="true"></i></button>
+              {% endif %}
+            </div>
+          </article>
+        {% else %}
+          <p class="text-center text-sm text-default-400" data-example-sortable-empty>{{ _("Drop a task here") }}</p>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</section>

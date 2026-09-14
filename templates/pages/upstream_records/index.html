@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block title %}{{ _("Upstream Records") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Upstream Records") }}</h1>
+          <div class="page-title-right">
+            <button type="button" class="om-button om-button-soft-info om-button-sm" data-om-modal-target="#upstream-records-help">
+              <i class="ri-file-search-line align-bottom mr-1"></i>{{ _("Raw Payload") }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-8">
+        <div class="om-card">
+          <div class="om-card-body">
+            {{ filter_form.render(method="get", submit_label="Filter", table_target="#upstream-records-table") }}
+            {{ table.render_shell(html_id="upstream-records-table", show_search=False) }}
+          </div>
+        </div>
+      </div>
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card" data-om-component="list" data-om-list-page-size="6" data-om-list-search-field=".name">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Sources & Status") }}</h4>
+            <button type="button" class="om-button om-button-ghost-secondary om-button-sm" data-om-list-sort="count">
+              <i class="ri-sort-desc"></i>
+            </button>
+          </div>
+          <div class="om-card-body">
+            <div class="relative mb-3">
+              <input type="search" class="om-field pl-9" data-om-list-search placeholder="{{ _('Search source or status') }}">
+              <i class="ri-search-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-default-400"></i>
+            </div>
+            <ul class="om-list mb-3" data-om-list-items>
+              {% for source in facets.sources %}
+              <li class="om-list-item" data-om-list-item data-count="{{ source.count }}">
+                <div class="flex items-center gap-3">
+                  <div class="flex-1 min-w-0">
+                    <a href="{{ source.href }}" class="name font-medium text-body">{{ source.label }}</a>
+                    <div class="text-default-500 text-xs">{{ _("Source") }}</div>
+                  </div>
+                  <span class="om-badge bg-primary-50 text-primary-600 count">{{ source.count }}</span>
+                </div>
+              </li>
+              {% endfor %}
+              {% for status in facets.statuses %}
+              <li class="om-list-item" data-om-list-item data-count="{{ status.count }}">
+                <div class="flex items-center gap-3">
+                  <div class="flex-1 min-w-0">
+                    <a href="{{ status.href }}" class="name font-medium text-body">{{ status.label }}</a>
+                    <div class="text-default-500 text-xs">{{ _("Status") }}</div>
+                  </div>
+                  <span class="om-badge bg-cyan-50 text-cyan-700 count">{{ status.count }}</span>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+            <p class="text-default-500 mb-0" data-om-list-empty hidden>{{ _("No matching upstream facets.") }}</p>
+            <div class="flex justify-end">
+              <ul class="om-list-pagination" data-om-list-pagination></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call modal(
+  "upstream-records-help",
+  _("Raw Payload Preview"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Use each row action menu to inspect the stored upstream payload without leaving this audit page.") }}</p>
+{% endcall %}
+
+{% call modal(
+  "upstream-record-raw-modal",
+  _("Raw Payload"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  dialog_class="om-modal-dialog-lg",
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a row action to load the raw payload.") }}</p>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% if result %}
+<dl class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm" data-storage-api-result>
+  <dt>{{ _("Saved name") }}</dt><dd><code>{{ result.saved_name }}</code></dd>
+  <dt>{{ _("Collision name") }}</dt><dd><code>{{ result.collision_name }}</code></dd>
+  <dt>{{ _("Overwrite result") }}</dt><dd><code>{{ result.overwritten_name }}</code></dd>
+  <dt>{{ _("Read content") }}</dt><dd>{{ result.content }}</dd>
+  <dt>{{ _("Stat size") }}</dt><dd>{{ result.info.size }} bytes</dd>
+  <dt>{{ _("Exists before delete") }}</dt><dd>{{ result.exists_before_delete }}</dd>
+  <dt>{{ _("Exists after delete") }}</dt><dd>{{ result.exists_after_delete }}</dd>
+</dl>
+{% else %}
+<p class="mb-0 text-default-500">{{ _("Run the sequence to see save, collision avoidance, overwrite, stat, open, exists and delete results.") }}</p>
+{% endif %}

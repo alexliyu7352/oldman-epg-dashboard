@@ -1,0 +1,32 @@
+# Copy to task_scheduler_settings.yaml. Run only one Scheduler per namespace.
+apps:
+  - oldman.auth
+  - apps.auth
+  - apps.examples
+app_settings:
+  auth:
+    user_model: apps.auth.models.OldmanUser
+database:
+  url: sqlite+aiosqlite:///data/epg_dashboard.db
+process:
+  pid_dir: pids
+nats:
+  TASKIQ:
+    nats_url: nats://127.0.0.1:4222
+nats_bus:
+  enabled: true
+  nats_alias: TASKIQ
+  namespace: epg_demo
+  consume: false
+  peer_id: task_scheduler
+redis:
+  TASKIQ:
+    redis_url: redis://127.0.0.1:6379/7
+taskiq:
+  enabled: true
+  namespace: epg_demo
+  nats_alias: TASKIQ
+  redis_alias: TASKIQ
+  schedule_update_interval: 5
+i18n:
+  default_language: en

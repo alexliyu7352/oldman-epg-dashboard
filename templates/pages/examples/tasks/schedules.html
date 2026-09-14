@@ -1,0 +1,48 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/tasks/_controls.html" import task_form, prerequisites, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<p class="mb-5 text-default-600">{{ _("Run task_scheduler separately. Time and retry plans are checked periodically; queue load can delay execution. Opening or refreshing this page never creates a plan.") }}</p>
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Run once in 20 seconds") }}</h2></div>
+    <div class="om-card-body">{{ task_form("time", _("Schedule summary")) }}</div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Retry a business error") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("This demonstration fails on its first attempt. SmartRetry asks Scheduler to retry after five seconds; the final result includes the attempt count.") }}</p>
+      {{ task_form("retry", _("Submit retry example")) }}
+    </div>
+  </section>
+  <section class="om-card xl:col-span-2">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Periodic process-cache refresh") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The code already declares a harmless 300-second refresh. Dynamic plans below are optional and remain until cancelled. They log PID and counts without saving results.") }}</p>
+      <div class="flex flex-wrap gap-3">
+        {{ task_form("interval", _("Add 60-second interval"), field="") }}
+        {{ task_form("cron", _("Add two-minute cron"), field="") }}
+      </div>
+      <p class="mt-3 mb-0 text-sm text-default-500">{{ _("Run only one Scheduler. Fixed-code changes require its restart; an interval may execute immediately on the first scheduler pass.") }}</p>
+    </div>
+  </section>
+</div>
+{{ result_panel() }}
+<section class="om-card mt-5">
+  <div class="om-card-header flex flex-wrap items-center justify-between gap-3">
+    <h2 class="om-card-title mb-0">{{ _("Your example plans") }}</h2>
+    <a href="/examples/tasks/schedules" class="om-button om-button-light">{{ _("Refresh plan list") }}</a>
+  </div>
+  <div class="om-card-body">
+    <p class="text-sm text-default-500">{{ _("This list records your submitted plans, not live task status. A one-time plan may already have run. Cancel removes the plan record but cannot recall work already queued.") }}</p>
+    {% for plan in schedules %}
+    <div class="flex flex-wrap items-center gap-3 border-b border-default-200 py-3">
+      <span class="om-badge om-badge-soft-info">{{ plan.operation }}</span>
+      <code class="min-w-0 flex-1 break-all text-sm">{{ plan.schedule_id }}</code>
+      <button type="button" class="om-button om-button-light om-button-sm" data-om-action="post" data-om-url="/examples/tasks/cancel/{{ plan.schedule_id }}">{{ _("Cancel plan") }}</button>
+    </div>
+    {% else %}<p class="mb-0 text-default-500">{{ _("You have no example plans. Use a scheduling control above to add one.") }}</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

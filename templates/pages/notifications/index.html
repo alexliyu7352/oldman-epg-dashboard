@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block title %}{{ _("Notifications") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content" data-om-component="notifications-center">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Notifications") }}</h1>
+          <div class="page-title-right">
+            <button type="button" class="om-button om-button-soft-danger om-button-sm" data-notifications-clear-selected>
+              <i class="ri-delete-bin-line align-bottom mr-1"></i>{{ _("Clear Selected") }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <div class="flex items-center">
+              <div class="flex-1 overflow-hidden">
+                <p class="uppercase font-medium text-default-500 truncate mb-0">{{ _("Pending") }}</p>
+              </div>
+              <div class="shrink-0">
+                <span class="om-badge bg-primary-50 text-primary-600">{{ _("Live") }}</span>
+              </div>
+            </div>
+            <div class="flex items-end justify-between mt-4">
+              <div>
+                <h4 class="text-[1.375rem] font-semibold  mb-0">
+                  <span class="counter-value" data-target="{{ notification_stats.pending }}">{{ notification_stats.pending }}</span>
+                </h4>
+                <a href="/notifications" class="om-link">{{ _("View all") }}</a>
+              </div>
+              <div class="om-avatar-sm">
+                <span class="om-avatar-title bg-primary-50 rounded text-xl">
+                  <i class="ri-notification-3-line text-primary-600"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="uppercase font-medium text-default-500 truncate mb-0">{{ _("Critical") }}</p>
+            <div class="flex items-end justify-between mt-4">
+              <h4 class="text-[1.375rem] font-semibold  mb-0">{{ notification_stats.critical }}</h4>
+              <div class="om-avatar-sm">
+                <span class="om-avatar-title bg-red-50 text-red-700 rounded text-xl">
+                  <i class="ri-error-warning-line"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="uppercase font-medium text-default-500 truncate mb-0">{{ _("Warning") }}</p>
+            <div class="flex items-end justify-between mt-4">
+              <h4 class="text-[1.375rem] font-semibold  mb-0">{{ notification_stats.warning }}</h4>
+              <div class="om-avatar-sm">
+                <span class="om-avatar-title bg-amber-50 text-amber-700 rounded text-xl">
+                  <i class="ri-image-line"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="xl:col-span-3 md:col-span-6">
+        <div class="om-card om-card-animate">
+          <div class="om-card-body">
+            <p class="uppercase font-medium text-default-500 truncate mb-0">{{ _("Info") }}</p>
+            <div class="flex items-end justify-between mt-4">
+              <h4 class="text-[1.375rem] font-semibold  mb-0">{{ notification_stats.info }}</h4>
+              <div class="om-avatar-sm">
+                <span class="om-avatar-title bg-cyan-50 text-cyan-700 rounded text-xl">
+                  <i class="ri-information-line"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-body">
+        <p class="text-default-500 mb-3">{{ _("Latest") }} {{ notification_limit }} {{ _("realtime notifications from existing business data.") }}</p>
+        {{ filter_form.render(method="get", submit_label="Filter", table_target="#notifications-table") }}
+        <div id="notifications-feedback" data-om-component="feedback"></div>
+        {{ table.render_shell(html_id="notifications-table", show_search=False) }}
+        <p class="text-default-500 mb-0 mt-3" data-notifications-empty hidden>{{ _("No notifications remain in this view.") }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call modal(
+  "notification-detail-modal",
+  _("Notification Detail"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a notification row action to inspect the linked object.") }}</p>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  <section class="om-card" data-example-project-table="{{ table_format }}">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("HTML-over-the-wire Table") if table_format == "html" else _("TanStack JSON Table") }}</h2>
+        <p class="mb-0 text-sm text-default-500">
+          {{ _("Rows arrive as a server-rendered HTML fragment.") if table_format == "html" else _("Rows arrive as structured JSON and are rendered by the existing TanStack adapter.") }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="om-button om-button-primary om-button-sm"
+        data-om-modal-target="#example-project-modal"
+        data-om-modal-url="/examples/tables/projects/new-modal"
+      ><i class="ri-add-line mr-1"></i>{{ _("New project") }}</button>
+    </div>
+    <div class="om-card-body">
+      {{ filter_form.render(method="get", submit_label=_("Filter"), table_target="#example-projects-table") }}
+      <div data-om-component="feedback"></div>
+      {{ table.render_shell(
+        html_id="example-projects-table",
+        show_search=false,
+        data_format=table_format,
+      ) }}
+    </div>
+  </section>
+
+  {% call modal(
+    "example-project-modal",
+    _("Example project"),
+    component="modal",
+    close_label=_("Close"),
+    dialog_scrollable=true,
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="text-default-500 mb-0">{{ _("Choose create, edit or delete to load the real database Form.") }}</p>
+  {% endcall %}
+{% endblock %}

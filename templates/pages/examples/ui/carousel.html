@@ -1,0 +1,64 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="carousel">
+  <section
+    class="om-card overflow-hidden"
+    data-om-component="carousel"
+    data-om-carousel-options='{"slidesPerView":1.1,"spaceBetween":16,"grabCursor":true,"breakpoints":{"640":{"slidesPerView":2},"1024":{"slidesPerView":3}}}'
+    data-example-carousel
+  >
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Responsive content carousel") }}</h2>
+        <p class="text-sm text-default-500">{{ _("Drag, swipe, use the arrow keys, or choose the previous and next buttons. The number of visible cards follows the viewport width.") }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" class="om-button om-button-light om-button-sm" data-om-carousel-prev aria-label="{{ _('Previous items') }}">
+          <i class="ri-arrow-left-line" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="om-button om-button-light om-button-sm" data-om-carousel-next aria-label="{{ _('Next items') }}">
+          <i class="ri-arrow-right-line" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="om-card-body">
+      <div class="swiper" data-om-carousel-viewport>
+        <div class="swiper-wrapper">
+          {% set services = [
+            ("stream-edge-01", "Los Angeles", "482 Mbps", _("Healthy"), "success", "ri-server-line"),
+            ("stream-edge-02", "New York", "391 Mbps", _("Healthy"), "success", "ri-cloud-line"),
+            ("stream-edge-03", "Frankfurt", "274 Mbps", _("Degraded"), "warning", "ri-pulse-line"),
+            ("stream-edge-04", "Singapore", "356 Mbps", _("Healthy"), "success", "ri-global-line"),
+            ("stream-edge-05", "Tokyo", "188 Mbps", _("Maintenance"), "info", "ri-tools-line")
+          ] %}
+          {% for name, region, throughput, status, tone, icon in services %}
+          <article class="swiper-slide h-auto">
+            <div class="h-full rounded border border-default-200 bg-default-50 p-5">
+              <div class="mb-5 flex items-start justify-between gap-3">
+                <span class="grid size-10 place-items-center rounded bg-primary-50 text-lg text-primary"><i class="{{ icon }}" aria-hidden="true"></i></span>
+                <span class="om-badge om-badge-{{ tone }}">{{ status }}</span>
+              </div>
+              <h3 class="font-semibold text-default-900">{{ name }}</h3>
+              <p class="mt-1 text-sm text-default-500">{{ region }}</p>
+              <div class="mt-5 border-t border-default-200 pt-4">
+                <span class="text-xs uppercase tracking-wide text-default-500">{{ _("Current throughput") }}</span>
+                <strong class="mt-1 block text-xl text-default-900">{{ throughput }}</strong>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-center" data-om-carousel-pagination aria-label="{{ _('Carousel pagination') }}"></div>
+    </div>
+  </section>
+
+  <section class="om-alert om-alert-info">
+    <i class="ri-information-line" aria-hidden="true"></i>
+    <p class="mb-0">{{ _("The server renders ordinary HTML cards. Oldman owns the component lifecycle, while Swiper only supplies horizontal interaction and responsive layout.") }}</p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Known Table gaps") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("These are real Dashboard needs, but they are not implemented in the framework yet.") }}</p>
+      <dl class="divide-y divide-default-200">
+        {% for title, description in gaps %}
+        <div class="grid gap-2 py-4 md:grid-cols-3">
+          <dt class="font-medium text-default-900">{{ title }}</dt>
+          <dd class="text-default-500 md:col-span-2">{{ description }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/storage/_asset_form.html" import asset_form %}
+
+{% block example_content %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+  <section class="om-card xl:col-span-8" data-example-asset-create>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Real ModelForm upload") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The document and preview are stored independently. The database receives only the logical names returned by Storage.") }}</p>
+      {{ asset_form(form, "/examples/storage/assets/create", _("Upload asset")) }}
+    </div>
+  </section>
+
+  <aside class="space-y-4 xl:col-span-4">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Recent assets") }}</h2></div>
+      <div class="om-card-body">
+        <ul class="divide-y divide-default-200" data-example-assets>
+          {% for asset in assets %}
+          <li class="py-3">
+            <a class="font-medium text-primary-600" href="/examples/storage/lifecycle?asset={{ asset.id }}">{{ asset.display_name }}</a>
+            <code class="mt-1 block break-all text-xs text-default-500">{{ asset.document_path }}</code>
+          </li>
+          {% else %}
+          <li class="py-3 text-default-500">{{ _("Upload the first asset to begin the lifecycle example.") }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+    <section class="om-alert-info">
+      <strong>{{ _("Current boundary") }}</strong>
+      <p class="mb-0 mt-1">{{ _("This Form reads each file into memory. It does not claim streaming, chunked uploads or object-storage direct upload.") }}</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

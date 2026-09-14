@@ -1,0 +1,19 @@
+# Local runtime state
+/data/web_settings.yaml
+/data/.web_settings.yaml.lock
+/data/.settings.yaml.lock
+/data/*.db
+/data/*.db-journal
+/data/*.db-shm
+/data/*.db-wal
+/logs/
+/pids/
+/static/dist/
+/.local/
+/.venv/
+
+# Local dependency and Python artifacts
+/frontend/node_modules/
+/.ruff_cache/
+__pycache__/
+*.py[cod]

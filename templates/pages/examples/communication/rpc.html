@@ -1,0 +1,36 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/communication/_controls.html" import prerequisites, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<p class="mb-5 text-default-600">{{ _("Start nats_a and nats_b in separate terminals. Select a database project and the receiving service; this request waits for its reply, without creating a Taskiq task.") }}</p>
+{% if not projects %}
+<p class="om-alert om-alert-info">{{ _("No example projects exist. Run ./run.sh web loaddata demo before trying database queries.") }}</p>
+{% endif %}
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Query project status") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("The receiver reads the project and counts its task records. Its PID identifies the process that performed the query.") }}</p>
+      <fieldset{% if not bus_enabled or not projects %} disabled{% endif %}>
+        {{ rpc_forms.query.render(action="/examples/communication/run/query", form_mode="json", submit_label=_("Query project")) }}
+      </fieldset>
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Query and publish the reply") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("The publisher decorator sends project.status.read after RPC and still returns the same reply. Check the report counter on the events page.") }}</p>
+      <fieldset{% if not bus_enabled or not projects %} disabled{% endif %}>
+        {{ rpc_forms.publish.render(action="/examples/communication/run/publish", form_mode="json", submit_label=_("Query and publish")) }}
+      </fieldset>
+    </div>
+  </section>
+</div>
+{{ result_panel() }}
+<p class="mt-4 text-default-600"><a class="text-primary-600 underline" href="/examples/tasks/results">{{ _("Try RPC inside a Taskiq task") }}</a></p>
+<pre class="mt-4 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>from apps.examples.nats_example import query_project_status, query_and_publish_status
+
+reply = await query_project_status(project_id, "monitor_a")
+reply = await query_and_publish_status(project_id, "monitor_b")</code></pre>
+{% endblock %}

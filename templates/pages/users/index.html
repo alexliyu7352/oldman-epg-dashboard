@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block title %}{{ _("Users") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Users") }}</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title">{{ _("Users List") }}</h2>
+        <a href="/users/new" class="om-button om-button-primary om-button-sm">
+          <i class="ri-user-add-line align-bottom mr-1"></i>{{ _("New User") }}
+        </a>
+      </div>
+      <div class="om-card-body">
+        {{ filter_form.render(method="get", submit_label="Filter", table_target="#users-table") }}
+        <div id="users-feedback" data-om-component="feedback"></div>
+        {{ table.render_shell(
+          html_id="users-table",
+          show_search=False,
+          data_format="json",
+        ) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call modal(
+  "user-password-modal",
+  _("Change Password"),
+  component="modal",
+  close_label=_("Close"),
+  dialog_scrollable=true,
+  inline_hidden_style=true,
+  remote_content=true
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a row action to continue.") }}</p>
+{% endcall %}
+
+{% call modal(
+  "user-status-modal",
+  _("Change Status"),
+  component="modal",
+  close_label=_("Close"),
+  dialog_scrollable=true,
+  inline_hidden_style=true,
+  remote_content=true
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a row action to continue.") }}</p>
+{% endcall %}
+
+{% call modal(
+  "user-delete-modal",
+  _("Delete User"),
+  component="modal",
+  close_label=_("Close"),
+  dialog_scrollable=true,
+  inline_hidden_style=true,
+  remote_content=true
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a row action to continue.") }}</p>
+{% endcall %}
+{% endblock %}

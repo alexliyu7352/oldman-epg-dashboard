@@ -1,0 +1,65 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/storage/_asset_form.html" import action_form, asset_form, rollback_form %}
+
+{% block example_content %}
+{% if selected_asset %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-12" data-example-asset-lifecycle data-asset-id="{{ selected_asset.id }}">
+  <aside class="om-card xl:col-span-3">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Stored assets") }}</h2></div>
+    <div class="om-card-body">
+      <nav class="space-y-2">
+        {% for asset in assets %}
+        <a class="block rounded-lg px-3 py-2 {{ 'bg-primary-50 text-primary-700' if asset.id == selected_asset.id else 'text-default-600 hover:bg-default-50' }}" href="/examples/storage/lifecycle?asset={{ asset.id }}">{{ asset.display_name }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </aside>
+
+  <div class="space-y-4 xl:col-span-9">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Database and Storage state") }}</h2></div>
+      <div class="om-card-body grid grid-cols-1 gap-4 md:grid-cols-2">
+        {% for field_name, state in file_states.items() %}
+        <article class="rounded-lg border border-default-200 p-4" data-asset-file-state="{{ field_name }}" data-storage-exists="{{ 'true' if state.exists else 'false' }}">
+          <h3 class="mb-2 font-semibold">{{ _("Document") if field_name == "document_path" else _("Preview image") }}</h3>
+          <code class="block break-all text-xs" data-asset-logical-name>{{ state.path or _("No file") }}</code>
+          <p class="mb-0 mt-2 text-sm text-default-500">{{ _("Exists in Storage") }}: {{ _("Yes") if state.exists else _("No") }}</p>
+          {% if state.info %}<p class="mb-0 text-sm text-default-500">{{ state.info.size }} bytes · {{ state.info.modified_at }}</p>{% endif %}
+          {% if state.url %}
+          <a class="om-button om-button-soft-primary om-button-sm mt-3" href="{{ state.url }}" target="_blank" rel="noopener">{{ _("Open media") }}</a>
+          {% if field_name == "preview_path" %}<img class="mt-3 max-h-48 rounded border border-default-200" src="{{ state.url }}" alt="{{ selected_asset.display_name }}">{% endif %}
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="om-card" data-example-asset-edit>
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Replace or preserve files") }}</h2></div>
+      <div class="om-card-body">
+        <p class="text-default-500">{{ _("Leave a file input empty to preserve its current logical name. Uploading a replacement cleans the old file only after the database commit succeeds.") }}</p>
+        {{ asset_form(form, "/examples/storage/assets/" ~ selected_asset.id ~ "/update", _("Save asset")) }}
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="om-card">
+        <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Rollback cleanup") }}</h2></div>
+        <div class="om-card-body" data-example-asset-rollback>
+          {{ rollback_form(rollback_asset_form, "/examples/storage/assets/" ~ selected_asset.id ~ "/rollback") }}
+        </div>
+      </div>
+      <div class="om-card">
+        <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Explicit lifecycle actions") }}</h2></div>
+        <div class="om-card-body flex flex-wrap gap-3">
+          {{ action_form(form, "/examples/storage/assets/" ~ selected_asset.id ~ "/clear-preview", _("Clear optional preview")) }}
+          {{ action_form(form, "/examples/storage/assets/" ~ selected_asset.id ~ "/delete", _("Delete asset"), danger=true) }}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% else %}
+<div class="om-card"><div class="om-card-body"><p>{{ _("No uploaded asset exists yet.") }}</p><a class="om-button om-button-primary" href="/examples/storage/upload">{{ _("Open upload example") }}</a></div></div>
+{% endif %}
+{% endblock %}

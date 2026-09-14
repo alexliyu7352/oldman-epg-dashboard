@@ -1,0 +1,20 @@
+{# Render a labeled or unlabeled progress bar for dashboard metrics. #}
+{% macro progress(value, tone="primary", label=None) %}
+  {% set tone_classes = {
+    "primary": "bg-primary",
+    "success": "bg-success",
+    "info": "bg-info",
+    "warning": "bg-warning",
+    "danger": "bg-danger",
+    "default": "bg-default-500"
+  } %}
+  {% if label %}
+    <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+      <span class="font-medium text-default-700">{{ label }}</span>
+      <span class="text-default-500">{{ value }}%</span>
+    </div>
+  {% endif %}
+  <div class="h-2 overflow-hidden rounded bg-default-100" role="progressbar" aria-label="{{ label or '进度' }}" aria-valuenow="{{ value }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="h-full rounded {{ tone_classes.get(tone, tone_classes.default) }} transition-all" style="width: {{ value }}%;"></div>
+  </div>
+{% endmacro %}

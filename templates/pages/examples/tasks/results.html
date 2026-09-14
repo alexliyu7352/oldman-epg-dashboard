@@ -1,0 +1,53 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/tasks/_controls.html" import task_form, prerequisites, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<p class="mb-5 text-default-600">{{ _("Web confirms queue submission, not task completion. Stop Worker to see tasks wait in the persistent queue, then start it and query again.") }}</p>
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("RPC inside a task") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("Worker calls monitor_a through its Core NATS connection. The saved result includes the receiver reply and Worker PID. Start nats_a and enable nats_bus in Worker first.") }}</p>
+      <fieldset{% if not nats_enabled %} disabled{% endif %}>
+        {{ task_form("rpc", _("Submit RPC task")) }}
+      </fieldset>
+      {% if not nats_enabled %}<p class="mt-3 text-default-600">{{ _("Enable nats_bus in Web and Worker before submitting the RPC task.") }}</p>{% endif %}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Project summary") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Read the selected project and count its actual task records in the reports queue.") }}</p>
+      {{ task_form("summary", _("Submit summary")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Storage export") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The exports queue writes a JSON file through Storage and returns its logical filename. Files remain until explicitly deleted.") }}</p>
+      {{ task_form("export", _("Export project")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Business failure") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Read a real project, then deliberately raise an error. This task has no automatic business retry.") }}</p>
+      {{ task_form("fail", _("Submit failing task")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Without a saved result") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The same summary is executed and logged, but ignore_result=True prevents result storage. Do not wait for a result.") }}</p>
+      {{ task_form("ignored", _("Submit without result")) }}
+    </div>
+  </section>
+</div>
+{{ result_panel() }}
+<p class="mt-4 text-sm text-default-500">{{ _("Saved results expire %(seconds)s seconds after writing. Reading does not renew them. Missing results do not prove that a task is still running.", seconds=result_ttl) }}</p>
+<pre class="mt-4 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>from apps.examples.tasks import project_summary
+
+job = await project_summary.kiq(project_id)
+# Later, explicitly inspect job.is_ready() / job.get_result().</code></pre>
+{% endblock %}

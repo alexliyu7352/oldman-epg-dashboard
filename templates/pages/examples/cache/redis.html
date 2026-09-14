@@ -1,0 +1,41 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Project statistics cache") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Read real project counts from the database once, then reuse the Redis snapshot for %(seconds)s seconds.", seconds=cache_ttl) }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <div class="mb-4 flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-primary" data-om-action="post" data-om-url="/examples/cache/redis/read" data-om-target="#cache-result">{{ _("Read statistics") }}</button>
+        <button type="button" class="om-button om-button-secondary" data-om-action="post" data-om-url="/examples/cache/redis/refresh" data-om-target="#cache-result">{{ _("Recalculate from database") }}</button>
+        <button type="button" class="om-button om-button-light" data-om-action="post" data-om-url="/examples/cache/redis/clear" data-om-target="#cache-result">{{ _("Clear this example cache") }}</button>
+      </div>
+      <p class="mb-2 text-sm text-default-500">{{ _("A cache hit does not extend its lifetime. Wait for expiry and read again, or recalculate after editing a project in the table example.") }}</p>
+      <p class="mb-0 text-sm text-default-500">{{ _("All staff users share this snapshot. Clearing it affects their next read, but does not change projects, sessions or other cached data.") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+    <div class="om-card-body" id="cache-result" aria-live="polite" aria-atomic="true">
+      <p class="mb-0 text-default-500">{{ _("No statistics have been requested. Choose Read statistics to begin.") }}</p>
+    </div>
+  </section>
+  <section class="om-card mt-5">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("HTTP response cache") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-4 text-sm text-default-500">{{ _("This separate example reuses the complete response for %(seconds)s seconds. Compare the calculation time, then invalidate it or wait for expiry.", seconds=response_cache_ttl) }}</p>
+      <div class="mb-4 flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-primary" data-om-action="get" data-om-url="/examples/cache/response" data-om-target="#cache-response-result">{{ _("Read cached response") }}</button>
+        <button type="button" class="om-button om-button-light" data-om-action="post" data-om-url="/examples/cache/response" data-om-target="#cache-response-result">{{ _("Invalidate response cache") }}</button>
+      </div>
+      <div id="cache-response-result" aria-live="polite" aria-atomic="true">
+        <p class="mb-0 text-default-500">{{ _("No response has been requested. The project database is not changed by these controls.") }}</p>
+      </div>
+    </div>
+  </section>
+{% endblock %}

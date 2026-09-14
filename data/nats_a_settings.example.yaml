@@ -1,0 +1,26 @@
+# Copy once to nats_a_settings.yaml; never overwrite an existing local config.
+apps:
+  - oldman.auth
+  - apps.auth
+  - apps.examples
+  - apps.communication
+app_settings:
+  auth:
+    user_model: apps.auth.models.OldmanUser
+database:
+  url: sqlite+aiosqlite:///data/epg_dashboard.db
+process:
+  pid_dir: pids
+nats:
+  TASKIQ:
+    nats_url: nats://127.0.0.1:4222
+nats_bus:
+  enabled: true
+  nats_alias: TASKIQ
+  namespace: epg_demo
+  consume: true
+  peer_id: monitor_a
+taskiq:
+  enabled: false
+i18n:
+  default_language: en

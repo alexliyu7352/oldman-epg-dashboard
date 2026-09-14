@@ -1,0 +1,26 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Remote title, body and footer") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Each step replaces all three parts while the same Modal stays open.") }}</p>
+      </div>
+      <button id="remote-modal-opener" type="button" class="om-button om-button-primary" data-om-modal-target="#remote-example-modal" data-om-modal-url="/examples/modals/remote/parts/1">{{ _("Load remote Modal") }}</button>
+    </div>
+  </section>
+
+  {% call modal(
+    "remote-example-modal",
+    _("Remote Modal"),
+    close_label=_("Close"),
+    footer_close_label=_("Close Modal"),
+    dialog_scrollable=true,
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="mb-0 text-default-500">{{ _("Open the Modal to fetch its first step.") }}</p>
+  {% endcall %}
+{% endblock %}

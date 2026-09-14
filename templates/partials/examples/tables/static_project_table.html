@@ -1,0 +1,42 @@
+<div class="overflow-x-auto" data-example-static-table>
+  <table class="om-table w-full{% if compact %} text-sm{% endif %}">
+    <thead>
+      <tr>
+        <th>{{ _("ID") }}</th>
+        <th>{{ _("Project") }}</th>
+        <th>{{ _("Team") }}</th>
+        <th>{{ _("Status") }}</th>
+        <th>{{ _("Priority") }}</th>
+        <th>{{ _("Progress") }}</th>
+        {% if wide %}
+        <th>{{ _("Budget") }}</th>
+        <th>{{ _("Start date") }}</th>
+        <th>{{ _("End date") }}</th>
+        <th>{{ _("Description") }}</th>
+        {% endif %}
+        <th>{{ _("Actions") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+      <tr data-project-id="{{ project.id }}">
+        <td>{{ project.id }}</td>
+        <td><strong>{{ project.name }}</strong><div class="text-xs text-default-500">{{ project.slug }}</div></td>
+        <td>{{ project.team.name }}</td>
+        <td><span class="om-badge om-badge-{{ 'success' if project.status == 'active' else 'secondary' }}">{{ project.status }}</span></td>
+        <td><span class="om-badge om-badge-{{ 'danger' if project.priority in ('high', 'critical') else 'info' }}">{{ project.priority }}</span></td>
+        <td>{{ project.progress }}%</td>
+        {% if wide %}
+        <td>${{ "{:,.2f}".format(project.budget) }}</td>
+        <td>{{ project.start_date or "—" }}</td>
+        <td>{{ project.end_date or "—" }}</td>
+        <td class="min-w-72">{{ project.description or "—" }}</td>
+        {% endif %}
+        <td><a class="om-button om-button-soft-primary om-button-sm" href="/examples/tables/html?q={{ project.slug }}">{{ _("Open") }}</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="11" class="py-8 text-center text-default-500">{{ _("Load the demo fixture to show projects.") }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

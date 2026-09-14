@@ -1,0 +1,25 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Use the real login page") }}</h2></div>
+      <div class="om-card-body space-y-4">
+        <p class="text-default-500">{{ _("The Dashboard uses the project LoginForm, configured User model, Redis Session and exclusive-login flow. This example does not create a second login form.") }}</p>
+        <a class="om-button om-button-primary" href="/logout" data-example-auth-login-link>
+          <i class="ri-login-box-line mr-2" aria-hidden="true"></i>{{ _("Sign out and open the login page") }}
+        </a>
+      </div>
+    </section>
+    <section class="om-card">
+      <div class="om-card-body">
+        <h2 class="om-card-title mb-3">{{ _("Current login contract") }}</h2>
+        <dl class="grid gap-3 text-sm">
+          <div><dt class="text-default-500">{{ _("Username") }}</dt><dd class="font-medium" data-example-auth-username>{{ session_profile.username }}</dd></div>
+          <div><dt class="text-default-500">{{ _("Session storage") }}</dt><dd class="font-medium">Redis</dd></div>
+          <div><dt class="text-default-500">{{ _("Login mode") }}</dt><dd class="font-medium">{{ _("Exclusive per user") }}</dd></div>
+        </dl>
+      </div>
+    </section>
+  </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="cards">
+  <section class="grid gap-5 lg:grid-cols-3">
+    <article class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Standard card") }}</h2><span class="om-badge om-badge-primary">{{ _("Live") }}</span></div>
+      <div class="om-card-body"><p class="text-sm leading-6 text-content-muted">{{ _("Use a card for one coherent group of information or controls.") }}</p></div>
+      <div class="om-card-footer justify-end"><button type="button" class="om-button om-button-light om-button-sm">{{ _("Cancel") }}</button><button type="button" class="om-button om-button-primary om-button-sm">{{ _("Save") }}</button></div>
+    </article>
+
+    <article class="om-card om-card-compact">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Compact card") }}</h2></div>
+      <div class="om-card-body space-y-2 text-sm">
+        <div class="flex justify-between gap-3"><span class="text-content-muted">{{ _("Region") }}</span><strong>us-west</strong></div>
+        <div class="flex justify-between gap-3"><span class="text-content-muted">{{ _("Latency") }}</span><strong>84 ms</strong></div>
+        <div class="flex justify-between gap-3"><span class="text-content-muted">{{ _("Error rate") }}</span><strong>0.12%</strong></div>
+      </div>
+    </article>
+
+    <article class="om-card om-card-flat">
+      <div class="om-card-body">
+        <span class="grid size-10 place-items-center rounded-full bg-primary-soft text-xl text-primary"><i class="ri-server-line" aria-hidden="true"></i></span>
+        <p class="mt-4 text-sm text-content-muted">{{ _("Active servers") }}</p>
+        <strong class="mt-1 block text-3xl text-content-strong">28</strong>
+        <p class="mt-2 text-sm text-success">+4.8% {{ _("this week") }}</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><div><h2 class="om-card-title">{{ _("Accent cards") }}</h2><p class="mt-1 text-sm text-content-muted">{{ _("Use color to communicate status, not decoration alone.") }}</p></div></div>
+    <div class="om-card-body grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <article class="om-card om-card-accent om-card-flat"><div class="om-card-body"><strong>{{ _("Primary") }}</strong><p class="mt-2 text-sm text-content-muted">{{ _("Default emphasis") }}</p></div></article>
+      <article class="om-card om-card-accent om-card-accent-success om-card-flat"><div class="om-card-body"><strong>{{ _("Healthy") }}</strong><p class="mt-2 text-sm text-content-muted">{{ _("All checks passed") }}</p></div></article>
+      <article class="om-card om-card-accent om-card-accent-warning om-card-flat"><div class="om-card-body"><strong>{{ _("Degraded") }}</strong><p class="mt-2 text-sm text-content-muted">{{ _("Review recommended") }}</p></div></article>
+      <article class="om-card om-card-accent om-card-accent-danger om-card-flat"><div class="om-card-body"><strong>{{ _("Failed") }}</strong><p class="mt-2 text-sm text-content-muted">{{ _("Action required") }}</p></div></article>
+    </div>
+  </section>
+
+  <section class="om-card om-card-animate">
+    <div class="om-card-header"><h2 class="om-card-title">{{ _("Responsive content card") }}</h2><button type="button" class="om-button om-button-ghost om-button-sm"><i class="ri-more-fill" aria-hidden="true"></i><span class="sr-only">{{ _("More actions") }}</span></button></div>
+    <div class="om-card-body grid gap-4 md:grid-cols-3">
+      <div><p class="text-sm text-content-muted">{{ _("Requests") }}</p><strong class="mt-1 block text-2xl">18,420</strong></div>
+      <div><p class="text-sm text-content-muted">{{ _("Throughput") }}</p><strong class="mt-1 block text-2xl">482 Mbps</strong></div>
+      <div><p class="text-sm text-content-muted">{{ _("Long content") }}</p><p class="mt-1 break-words text-sm">edge-service-with-a-deliberately-long-operational-identifier.example.internal</p></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

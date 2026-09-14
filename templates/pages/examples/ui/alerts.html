@@ -1,0 +1,52 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="alerts">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Soft alerts") }}</h2></div>
+    <div class="om-card-body space-y-3">
+      <div class="om-alert-success" role="status">{{ _("The configuration was saved.") }}</div>
+      <div class="om-alert-info" role="status">{{ _("A new version is available.") }}</div>
+      <div class="om-alert-warning" role="alert">{{ _("Two servers are responding slowly.") }}</div>
+      <div class="om-alert-error" role="alert">{{ _("The request could not be completed.") }}</div>
+    </div>
+  </section>
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Outline alerts") }}</h2></div>
+      <div class="om-card-body space-y-3">
+        <div class="om-alert-success om-alert-outline" role="status"><strong>{{ _("Healthy") }}</strong> — {{ _("All workers are responding.") }}</div>
+        <div class="om-alert-info om-alert-outline" role="status"><strong>{{ _("Information") }}</strong> — {{ _("The next scan starts in five minutes.") }}</div>
+        <div class="om-alert-warning om-alert-outline" role="alert"><strong>{{ _("Warning") }}</strong> — {{ _("Storage usage is above eighty percent.") }}</div>
+        <div class="om-alert-danger om-alert-outline" role="alert"><strong>{{ _("Action required") }}</strong> — {{ _("One provider needs new credentials.") }}</div>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Solid alerts") }}</h2></div>
+      <div class="om-card-body space-y-3">
+        <div class="om-alert-success om-alert-solid" role="status">{{ _("The configuration was saved.") }}</div>
+        <div class="om-alert-info om-alert-solid" role="status">{{ _("A new version is available.") }}</div>
+        <div class="om-alert-warning om-alert-solid" role="alert">{{ _("Two servers are responding slowly.") }}</div>
+        <div class="om-alert-danger om-alert-solid" role="alert">{{ _("The request could not be completed.") }}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Alerts with details and actions") }}</h2></div>
+    <div class="om-card-body space-y-3">
+      <div class="om-alert-info om-alert-layout" role="status">
+        <i class="om-alert-icon ri-information-line" aria-hidden="true"></i>
+        <div class="om-alert-content"><strong class="om-alert-title">{{ _("Maintenance scheduled") }}</strong><span class="om-alert-description">{{ _("The media worker will restart at 02:00 UTC. No action is required.") }}</span></div>
+      </div>
+      <div class="om-alert-warning om-alert-layout" role="alert" data-om-component="alert">
+        <i class="om-alert-icon ri-error-warning-line" aria-hidden="true"></i>
+        <div class="om-alert-content"><strong class="om-alert-title">{{ _("Review required") }}</strong><span class="om-alert-description">{{ _("Three channel mappings need a manual decision before publishing.") }}</span><a class="mt-2 inline-flex font-medium underline underline-offset-2" href="/match-decisions">{{ _("Open review queue") }}</a></div>
+        <button type="button" class="om-alert-dismiss" data-om-alert-dismiss aria-label="{{ _('Dismiss alert') }}"><i class="ri-close-line" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+[project]
+name = "oldman-epg-dashboard-example"
+version = "0.1.0"
+description = "EPG dashboard consumer application for the Oldman framework."
+requires-python = ">=3.12, <3.14"
+dependencies = [
+    "oldman>=0.1.0,<0.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "sanic-testing>=24.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.oldman]
+project_id = "327c6c3a-30e1-4d72-b60a-278de522f7d1"

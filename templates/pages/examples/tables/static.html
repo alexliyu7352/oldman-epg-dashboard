@@ -1,0 +1,19 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Semantic database table") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The server queried ExampleProject and rendered this table directly. No dynamic Table component is mounted.") }}</p>
+      {% with compact=false, wide=false %}{% include "partials/examples/tables/static_project_table.html" %}{% endwith %}
+    </div>
+  </section>
+
+  <section class="om-card mt-4">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Compact status table") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The same records use denser text, status badges, long names and an ordinary action link.") }}</p>
+      {% with compact=true, wide=false %}{% include "partials/examples/tables/static_project_table.html" %}{% endwith %}
+    </div>
+  </section>
+{% endblock %}

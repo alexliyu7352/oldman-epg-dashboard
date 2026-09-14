@@ -1,0 +1,40 @@
+# Copy to task_worker_settings.yaml; match Web's database, namespace and aliases.
+apps:
+  - oldman.auth
+  - apps.auth
+  - apps.examples
+app_settings:
+  auth:
+    user_model: apps.auth.models.OldmanUser
+database:
+  url: sqlite+aiosqlite:///data/epg_dashboard.db
+process:
+  pid_dir: pids
+nats:
+  TASKIQ:
+    nats_url: nats://127.0.0.1:4222
+nats_bus:
+  enabled: true
+  nats_alias: TASKIQ
+  namespace: epg_demo
+  consume: false
+  peer_id: task_worker
+redis:
+  TASKIQ:
+    redis_url: redis://127.0.0.1:6379/7
+taskiq:
+  enabled: true
+  namespace: epg_demo
+  nats_alias: TASKIQ
+  redis_alias: TASKIQ
+  consume_queues: [reports, exports]
+  workers: 2
+  max_async_tasks: 3
+  max_prefetch: 0
+storages:
+  default:
+    backend: oldman.storage.backends.filesystem.FileSystemStorage
+    options:
+      location: media
+i18n:
+  default_language: en

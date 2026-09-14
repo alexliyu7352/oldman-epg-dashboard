@@ -1,0 +1,14 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card border border-amber-200">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observe expired-Session UI") }}</h2></div>
+    <div class="om-card-body space-y-4">
+      <p class="text-default-500">{{ _("Redis normally removes the record after %(seconds)s seconds. This demonstration removes only the current record now; the browser then follows the same SSE invalidation path as natural expiry.", seconds=session_expiry) }}</p>
+      <form method="post" action="/examples/session/expiry/submit" data-om-action="submit" data-om-confirm="{{ _('Expire this Session now?') }}" data-example-session-expire>
+        {% csrf_token %}
+        <button type="submit" class="om-button om-button-warning">{{ _("Expire current Session") }}</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

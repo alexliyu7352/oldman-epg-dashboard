@@ -1,0 +1,86 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+    <section class="om-card">
+      <div class="om-card-header">
+        <div>
+          <h2 class="om-card-title mb-1">{{ _("Send a real user notification") }}</h2>
+          <p class="mb-0 text-sm text-default-500">{{ _("Persistent notifications are stored before SSE delivery. Temporary pushes are online-only and never enter the notification center.") }}</p>
+        </div>
+      </div>
+      <div class="om-card-body">
+        <form method="post" action="/examples/notifications/send" data-om-action="submit" data-example-notification-form class="grid gap-4 md:grid-cols-2">
+          {% csrf_token %}
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Delivery") }}</span>
+            <select name="mode" class="om-select" required>
+              <option value="persistent">{{ _("Persistent database notification") }}</option>
+              <option value="temporary">{{ _("Temporary online push") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Presentation") }}</span>
+            <select name="presentation" class="om-select" required>
+              <option value="none">{{ _("Notification center only") }}</option>
+              <option value="toast">{{ _("Toast") }}</option>
+              <option value="modal">{{ _("Modal") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Level") }}</span>
+            <select name="level" class="om-select" required>
+              <option value="success">{{ _("Success") }}</option>
+              <option value="info" selected>{{ _("Info") }}</option>
+              <option value="warning">{{ _("Warning") }}</option>
+              <option value="error">{{ _("Error") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Content mode") }}</span>
+            <select name="content_mode" class="om-select" required>
+              <option value="text">{{ _("Escaped user text") }}</option>
+              <option value="trusted_html" selected>{{ _("Fixed trusted HTML body") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block md:col-span-2">
+            <span class="om-form-label">{{ _("Title") }}</span>
+            <input name="title" class="om-field" value="Database import finished" required>
+          </label>
+          <label class="om-form-group block md:col-span-2">
+            <span class="om-form-label">{{ _("Body") }}</span>
+            <textarea name="body" class="om-field" rows="3">User input stays text.</textarea>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Safe internal link") }}</span>
+            <select name="href" class="om-select">
+              <option value="">{{ _("No link") }}</option>
+              <option value="/">{{ _("Dashboard") }}</option>
+              <option value="/user-notifications">{{ _("User notification center") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Icon") }}</span>
+            <select name="icon" class="om-select">
+              <option value="">{{ _("No icon") }}</option>
+              <option value="ri-notification-3-line">ri-notification-3-line</option>
+              <option value="mdi-check-circle-outline">mdi-check-circle-outline</option>
+              <option value="bx-error-circle">bx-error-circle</option>
+            </select>
+          </label>
+          <div class="md:col-span-2">
+            <button type="submit" class="om-button om-button-primary">{{ _("Send notification") }}</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-body space-y-3">
+        <h2 class="om-card-title">{{ _("Boundary") }}</h2>
+        <p class="text-sm text-default-500">{{ _("The recipient is always the current signed-in user. Browser input is always text; HTML mode ignores the body field and uses one fixed server fragment.") }}</p>
+        <p class="text-sm text-default-500">{{ _("Temporary delivery supports toast or modal only. Selecting center-only with temporary delivery returns a visible business error.") }}</p>
+      </div>
+    </section>
+  </div>
+{% endblock %}

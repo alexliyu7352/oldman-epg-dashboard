@@ -1,0 +1,47 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section
+    class="om-card"
+    data-om-component="realtime-table"
+    data-om-realtime-url="/examples/tables/realtime/events"
+  >
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Realtime server metrics") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("The initial values and every SSE update come from ExampleServerMetric fixture rows.") }}</p>
+      </div>
+      <span class="om-badge om-badge-success"><i class="ri-pulse-line mr-1"></i>{{ _("Live") }}</span>
+    </div>
+    <div class="om-card-body overflow-x-auto">
+      <table class="om-table w-full">
+        <thead>
+          <tr>
+            <th>{{ _("Server") }}</th>
+            <th>{{ _("Region") }}</th>
+            <th>{{ _("Sampled") }}</th>
+            <th>{{ _("CPU") }}</th>
+            <th>{{ _("Memory") }}</th>
+            <th>{{ _("Upload") }}</th>
+            <th>{{ _("Download") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for server, metric in metric_rows %}
+          <tr data-om-table-row data-om-table-row-id="{{ server.id }}">
+            <td data-om-column="name"><strong>{{ server.name }}</strong><div class="text-xs text-default-500">{{ server.host }}</div></td>
+            <td data-om-column="region">{{ server.region }}</td>
+            <td data-om-column="sampled_at">{{ metric.sampled_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td data-om-column="cpu_percent">{{ "{:.2f}%".format(metric.cpu_percent) }}</td>
+            <td data-om-column="memory_percent">{{ "{:.2f}%".format(metric.memory_percent) }}</td>
+            <td data-om-column="upload_mbps">{{ "{:.2f} Mbps".format(metric.upload_mbps) }}</td>
+            <td data-om-column="download_mbps">{{ "{:.2f} Mbps".format(metric.download_mbps) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="py-8 text-center text-default-500">{{ _("Load the demo fixture to replay server metrics.") }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

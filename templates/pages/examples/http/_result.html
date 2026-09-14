@@ -1,0 +1,36 @@
+<div data-http-outcome="{{ result.outcome }}">
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <span class="om-badge {{ 'om-badge-success' if result.outcome == 'success' else 'om-badge-danger' }}">{{ _("Upstream request succeeded") if result.outcome == "success" else _("Upstream request did not succeed") }}</span>
+    <code class="break-all">GET {{ result.path }}</code>
+  </div>
+  {% if result.outcome == "http_error" %}
+    <p class="mb-4">{{ _("The upstream returned HTTP %(status)s. This is not a missing Demo page or a successful upstream response.", status=result.status_code) }}</p>
+  {% elif result.outcome == "timeout" %}
+    <p class="mb-4">{{ _("The upstream operation timed out within the %(seconds)s-second budget. No retry was made.", seconds=request_timeout) }}</p>
+  {% elif result.outcome == "connection_error" %}
+    <p class="mb-4">{{ _("The upstream connection or transfer failed. Check its availability and the server network; TLS verification remains enabled.") }}</p>
+  {% elif result.outcome == "invalid_content" %}
+    <p class="mb-4">{{ _("The upstream content could not be decoded or parsed as JSON.") }}</p>
+  {% elif result.outcome == "too_large" %}
+    <p class="mb-4">{{ _("The byte stream exceeded this example's 1 MiB limit and was closed. No complete checksum is reported.") }}</p>
+  {% endif %}
+  <dl class="mb-4 text-sm">
+    <dt class="text-default-500">{{ _("Upstream HTTP status") }}</dt>
+    <dd class="mb-3" data-http-status>{{ result.status_code if result.status_code is not none else _("No response status received") }}</dd>
+    <dt class="text-default-500">{{ _("Elapsed time (ms)") }}</dt><dd class="mb-3">{{ result.elapsed_ms }}</dd>
+    {% if result.content_type %}
+      <dt class="text-default-500">Content-Type</dt><dd class="mb-3 break-all">{{ result.content_type }}</dd>
+    {% endif %}
+    {% if result.byte_count is not none %}
+      <dt class="text-default-500">{{ _("Bytes received") }}</dt><dd class="mb-3" data-http-bytes>{{ result.byte_count }}</dd>
+    {% endif %}
+    {% if result.sha256 %}
+      <dt class="text-default-500">SHA-256</dt><dd class="mb-3 break-all" data-http-sha256>{{ result.sha256 }}</dd>
+    {% endif %}
+  </dl>
+  {% if result.json_text is not none %}
+    <h3 class="mb-2 text-sm font-medium">{{ _("JSON received from upstream") }}</h3>
+    <pre class="mb-4 overflow-x-auto rounded border border-default-200 p-4 text-xs" tabindex="0" aria-label="{{ _('JSON received from upstream') }}"><code>{{ result.json_text }}</code></pre>
+  {% endif %}
+  <p class="mb-0 text-sm text-default-500">{{ _("This panel reports the upstream result. The Demo successfully delivering these diagnostics does not mean the upstream operation succeeded.") }}</p>
+</div>

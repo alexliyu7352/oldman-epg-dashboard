@@ -1,0 +1,18 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Strongly typed current identity") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-5 text-default-500">{{ _("These values come directly from DashboardSessionData. Rendering the page does not query the User table.") }}</p>
+      <dl class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-example-auth-identity>
+        <div><dt class="text-sm text-default-500">{{ _("User ID") }}</dt><dd class="font-medium">{{ session.user_id }}</dd></div>
+        <div><dt class="text-sm text-default-500">{{ _("Username") }}</dt><dd class="font-medium">{{ session_profile.username }}</dd></div>
+        <div><dt class="text-sm text-default-500">{{ _("Display Name") }}</dt><dd class="font-medium">{{ session_profile.display_name }}</dd></div>
+        <div><dt class="text-sm text-default-500">{{ _("Active") }}</dt><dd class="font-medium">{{ session_profile.is_active }}</dd></div>
+        <div><dt class="text-sm text-default-500">{{ _("Staff") }}</dt><dd class="font-medium">{{ session_profile.is_staff }}</dd></div>
+        <div><dt class="text-sm text-default-500">{{ _("Superuser") }}</dt><dd class="font-medium">{{ session_profile.is_superuser }}</dd></div>
+      </dl>
+    </div>
+  </section>
+{% endblock %}

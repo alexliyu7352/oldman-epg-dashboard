@@ -1,0 +1,27 @@
+<div data-cache-source="{{ source }}">
+  {% if source == "cleared" %}
+    <p class="mb-2 font-medium">{{ _("Example cache cleared.") if deleted else _("There was no cached snapshot to clear.") }}</p>
+    <p class="mb-0 text-sm text-default-500">{{ _("The next read will calculate fresh statistics from the database.") }}</p>
+  {% else %}
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <span class="om-badge {{ 'om-badge-success' if source == 'cache' else 'om-badge-primary' }}">{{ _("Redis cache hit") if source == "cache" else _("Calculated from database") }}</span>
+      <span class="font-medium">{{ _("Total projects: %(count)s", count=statistics.total) }}</span>
+    </div>
+    <p class="mb-4 text-sm text-default-500">{{ _("Calculated at (UTC)") }}: <time class="break-all" datetime="{{ statistics.calculated_at }}">{{ statistics.calculated_at }}</time></p>
+    {% if statistics.counts %}
+      <div class="overflow-x-auto">
+        <table class="om-table" data-cache-counts>
+          <caption class="sr-only">{{ _("Project counts by status") }}</caption>
+          <thead><tr><th scope="col">{{ _("Status") }}</th><th scope="col" class="text-end">{{ _("Projects") }}</th></tr></thead>
+          <tbody>
+            {% for status, count in statistics.counts.items() %}
+              <tr><th scope="row">{{ status }}</th><td class="text-end">{{ count }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-0 text-default-500">{{ _("No projects exist. This zero-project result is also cached.") }}</p>
+    {% endif %}
+  {% endif %}
+</div>

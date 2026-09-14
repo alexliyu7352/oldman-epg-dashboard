@@ -1,0 +1,27 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card" data-example-navigation-actions>
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Cancel work when its page leaves") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Start the delayed Action and immediately leave. The Page-bound request is cancelled, so its late HTML cannot update the next page.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button
+        type="button"
+        class="om-button om-button-primary"
+        data-example-slow-action
+        data-om-action="get"
+        data-om-url="/examples/navigation/actions/slow"
+        data-om-target="#navigation-slow-action-result"
+      >{{ _("Start delayed Action") }}</button>
+      <a class="om-button om-button-secondary" href="/examples/navigation/loading" data-example-leave-action>{{ _("Leave for Loading examples") }}</a>
+      <button type="button" class="om-button om-button-light" data-om-history-back data-om-history-fallback="/examples/navigation/lifecycle">{{ _("Back in history") }}</button>
+    </div>
+    <div class="om-card-body border-t border-default-200">
+      <p id="navigation-slow-action-result" class="mb-0 text-default-600">{{ _("The delayed Action has not completed.") }}</p>
+    </div>
+  </section>
+{% endblock %}

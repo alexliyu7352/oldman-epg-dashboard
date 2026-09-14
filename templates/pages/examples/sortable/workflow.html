@@ -1,0 +1,17 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-alert-info mb-4">
+    <strong>{{ _("One service, two inputs") }}</strong>
+    <p class="mb-0 mt-1">{{ _("Drag a task or use its keyboard buttons. Both paths save the same real ExampleTask rows. Critical tasks deliberately refuse a direct move to Done.") }}</p>
+  </section>
+
+  {% include "partials/examples/sortable/board.html" %}
+
+  <section class="om-card mt-4">
+    <div class="om-card-body">
+      <h2 class="om-card-title mb-2">{{ _("Failure behaviour") }}</h2>
+      <p class="mb-0 text-sm text-default-500">{{ _("A rejected move or a lost connection restores the same task card to its previous lane and position. Reload the page to confirm that successful moves came from the database.") }}</p>
+    </div>
+  </section>
+{% endblock %}

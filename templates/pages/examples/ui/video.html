@@ -1,0 +1,42 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="video">
+  <section class="om-card overflow-hidden">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title">{{ _("Native video") }}</h2>
+        <p class="mt-1 text-sm text-default-500">{{ _("Browser controls preserve keyboard, touch, captions, and no-JavaScript playback without another media library.") }}</p>
+      </div>
+      <span class="om-badge om-badge-soft-success"><i class="ri-play-circle-line" aria-hidden="true"></i>WebM</span>
+    </div>
+    <div class="om-card-body">
+      <div class="om-media om-media-video" data-example-video-frame>
+        <video controls muted loop preload="metadata" aria-label="{{ _('Animated dashboard media sample') }}" data-example-video>
+          <source src="/static/examples/media/dashboard-demo.webm" type="video/webm">
+          {{ _("Your browser does not support embedded video.") }}
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Standard media frame") }}</h2><span class="text-sm text-default-500">4:3</span></div>
+      <div class="om-card-body">
+        <div class="om-media om-media-standard grid place-items-center bg-default-100 text-default-500">
+          <div class="text-center"><i class="ri-dashboard-3-line text-3xl" aria-hidden="true"></i><p class="mt-2 text-sm">{{ _("Charts and remote players keep a stable frame.") }}</p></div>
+        </div>
+      </div>
+    </section>
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Square media frame") }}</h2><span class="text-sm text-default-500">1:1</span></div>
+      <div class="om-card-body max-w-sm">
+        <div class="om-media om-media-square grid place-items-center bg-primary-50 text-primary-700">
+          <div class="text-center"><i class="ri-image-line text-3xl" aria-hidden="true"></i><p class="mt-2 text-sm">{{ _("Useful for artwork and compact previews.") }}</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+apps:
+  - oldman.auth
+  - oldman.apps.admin
+  - oldman.web.messages.notifications
+  - apps.auth
+  - apps.dashboard
+  - apps.epg_admin
+  - apps.examples
+  - apps.web
+app_settings:
+  auth:
+    user_model: apps.auth.models.OldmanUser
+  admin:
+    require_superuser: false
+  examples:
+    http_base_url: https://httpbin.org
+process:
+  pid_dir: pids
+web:
+  listen_host: 127.0.0.1
+  listen_port: 17998
+  debug: false
+  auto_reload: false
+  workers: 1
+  access_log: false
+  response_timeout: 120
+  request_timeout: 120
+  keep_alive_timeout: 120
+  real_ip_header: X-Real-IP
+  websocket_max_size: 1048576
+  websocket_ping_interval: 5
+  websocket_ping_timeout: 20
+  security:
+    secret_key:
+    token_expire_time: 86400
+    csrf:
+      ttl: 3600
+      check_referer: true
+      check_url: false
+    fingerprint:
+      aes_secret_key:
+      timestamp_max_diff: 300000
+      rate_limits:
+        default:
+          window: 60
+          fp_max: 20
+          ip_max: 40
+        /api/login:
+          window: 300
+          fp_max: 5
+          ip_max: 10
+      max_fingerprints_per_ip: 5
+      max_ips_per_fingerprint: 3
+      blacklist_threshold: 5
+      blacklist_duration: 3600
+      violation_ttl: 3600
+  session:
+    enabled: true
+    redis_alias: SESSION
+    expiry: 86400
+    prefix: "oldman_session:"
+    user_prefix: "oldman_user_session:"
+    cookie_name: oldman_session_id
+    cookie_domain:
+    cookie_httponly: true
+    cookie_secure: false
+    cookie_samesite: Lax
+  messages:
+    enabled: true
+  sse:
+    enabled: true
+    redis_alias: SSE
+    channel_prefix: oldman_epg_dashboard
+    heartbeat_interval: 15.0
+    session_check_interval: 30.0
+    queue_size: 100
+    max_message_size: 65536
+  template:
+    dir: templates
+  static:
+    dir: static
+    root: static
+    url: /static
+  media:
+    storage: default
+    url: /media/
+  frontend:
+    vite_dev_server_url: http://localhost:5173
+database:
+  url: sqlite+aiosqlite:///data/epg_dashboard.db
+  echo: false
+  enable_sql_logging: false
+redis:
+  TASKIQ:
+    redis_url: redis://127.0.0.1:6379/7
+  CACHE:
+    redis_url: redis://localhost:6379/2
+  SESSION:
+    redis_url: redis://127.0.0.1:6379/5
+  SSE:
+    redis_url: redis://127.0.0.1:6379/6
+nats:
+  TASKIQ:
+    nats_url: nats://127.0.0.1:4222
+nats_bus:
+  enabled: true
+  nats_alias: TASKIQ
+  namespace: epg_demo
+  consume: false
+  peer_id: web
+taskiq:
+  enabled: true
+  namespace: epg_demo
+  nats_alias: TASKIQ
+  redis_alias: TASKIQ
+storages:
+  default:
+    backend: oldman.storage.backends.filesystem.FileSystemStorage
+    options:
+      location: media
+i18n:
+  use_i18n: true
+  use_i18n_path: false
+  default_language: en
+  languages:
+    en:
+      flag: us
+    zh-Hans:
+      flag: cn
+    zh-Hant:
+      flag: tw
+logging:
+  level: 20
+core:
+  app_name: oldman

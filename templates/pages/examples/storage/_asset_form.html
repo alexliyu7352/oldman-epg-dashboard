@@ -1,0 +1,87 @@
+{% macro upload_field(field, title, description, image=false) %}
+<div class="om-form-field" data-om-form-field data-om-form-field-name="{{ field.name }}">
+  <label class="om-form-label" for="{{ field.id }}">{{ title }}</label>
+  <div
+    class="om-upload-dropzone"
+    data-om-component="upload"
+    data-om-upload-click-select="true"
+    data-om-upload-max-files="1"
+    data-om-upload-max-size="{{ 524288 if image else 1048576 }}"
+  >
+    {{ field() }}
+    <div>
+      <div class="om-upload-icon"><i class="ri-upload-cloud-2-fill" aria-hidden="true"></i></div>
+      <p class="mb-1 text-sm font-semibold text-default-800">{{ description }}</p>
+      <span class="text-[0.8125rem] text-default-500">
+        {{ _("PNG, JPG or WebP up to 512 KiB.") if image else _("TXT or PDF up to 1 MiB.") }}
+      </span>
+    </div>
+    <ul class="mt-3" data-om-upload-preview>
+      <li class="om-upload-preview-item" data-om-upload-template hidden>
+        <div class="flex items-center gap-3">
+          <div class="grid size-10 shrink-0 place-items-center rounded bg-default-50">
+            {% if image %}
+              <img data-om-upload-thumbnail class="block h-auto max-w-full rounded" alt="{{ _('Selected preview') }}">
+            {% else %}
+              <i class="ri-file-text-line text-xl text-primary-600" aria-hidden="true"></i>
+            {% endif %}
+          </div>
+          <div class="min-w-0 flex-1">
+            <strong class="block truncate text-sm" data-om-upload-name></strong>
+            <span class="text-xs text-default-500" data-om-upload-size></span>
+            <strong class="block text-xs text-red-700" data-om-upload-error></strong>
+          </div>
+          <button type="button" class="om-button om-button-danger om-button-sm" data-om-upload-remove>{{ _("Remove") }}</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="om-form-error" data-om-error-for="{{ field.name }}"{% if not field.errors %} hidden{% endif %}>
+    {{ field.errors[0] if field.errors else "" }}
+  </div>
+</div>
+{% endmacro %}
+
+{% macro asset_form(form, action, submit_label) %}
+{% set message = form.error_message or (_("Form validation failed") if form.errors else none) %}
+<form
+  method="post"
+  action="{{ action }}"
+  enctype="multipart/form-data"
+  data-om-component="form"
+  data-om-form
+  data-om-form-mode="json"
+  data-om-form-validate
+  novalidate
+>
+  {% if form.csrf_token %}<input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">{% endif %}
+  <div class="om-form-message" data-om-form-message data-om-tone="error" role="alert"{% if not message %} hidden{% endif %}>{{ message or "" }}</div>
+  <div class="space-y-4">
+    <div data-om-form-field data-om-form-field-name="{{ form.display_name.name }}">{{ form.render_field(form.display_name) }}</div>
+    {{ upload_field(form.document_path, form.document_path.label.text, _("Drop the required document here or click to choose.")) }}
+    {{ upload_field(form.preview_path, form.preview_path.label.text, _("Drop an optional image preview here or click to choose."), image=true) }}
+    <div data-om-form-field data-om-form-field-name="{{ form.description.name }}">{{ form.render_field(form.description) }}</div>
+  </div>
+  <p data-om-form-status role="status" aria-live="polite" hidden></p>
+  {{ form.render_actions(submit_label=submit_label) }}
+</form>
+{% endmacro %}
+
+{% macro rollback_form(form, action) %}
+<form method="post" action="{{ action }}" enctype="multipart/form-data" data-om-component="form" data-om-form data-om-form-mode="json" novalidate>
+  {% if form.csrf_token %}<input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">{% endif %}
+  <div class="om-form-message" data-om-form-message hidden></div>
+  {{ upload_field(form.preview_path, form.preview_path.label.text, _("Choose a temporary replacement; the database transaction will be rolled back."), image=true) }}
+  <p data-om-form-status role="status" aria-live="polite" hidden></p>
+  {{ form.render_actions(submit_label=_("Run rollback")) }}
+</form>
+{% endmacro %}
+
+{% macro action_form(form, action, label, danger=false) %}
+<form method="post" action="{{ action }}" data-om-component="form" data-om-form data-om-form-mode="json" novalidate>
+  {% if form.csrf_token %}<input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">{% endif %}
+  <div data-om-form-message hidden></div>
+  <p data-om-form-status role="status" aria-live="polite" hidden></p>
+  <button type="submit" class="om-button {{ 'om-button-danger' if danger else 'om-button-soft-secondary' }}">{{ label }}</button>
+</form>
+{% endmacro %}

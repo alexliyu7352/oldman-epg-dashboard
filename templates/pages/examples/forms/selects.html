@@ -1,0 +1,32 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <section class="om-card" data-example-logo-select>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Rich dependent Select") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Change the country to clear the old choice, then search the real ExampleLogo table. The saved value is the Logo primary key.") }}</p>
+      <div id="example-logo-select-form">
+        {% if form and profile %}
+          {{ form.render(
+            action="/examples/forms/selects/" ~ profile.id ~ "/edit",
+            form_mode="json",
+            submit_label=_("Save logo"),
+            validate=true
+          ) }}
+        {% else %}
+          <div class="om-alert-warning">{{ _("Load the example fixture to enable this form.") }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="om-card" data-example-logo-multiple>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Paged multi-select") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The first two values are restored by one initial provider lookup. Search and load more reuse the same signed provider.") }}</p>
+      {{ multiple_form.render_field("logo_ids") }}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("One catalog, two runtime formats") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-5 text-default-500">{{ _("Python, Jinja and TypeScript messages are extracted into one messages catalog. The backend compiles MO files; the browser build filters the same translations into JSON.") }}</p>
+      <div class="om-table-scroll" data-example-i18n-coverage>
+        <table class="om-table">
+          <thead><tr><th>{{ _("Consumer") }}</th><th>{{ _("Source") }}</th><th>{{ _("Runtime artifact") }}</th><th>{{ _("Supported languages") }}</th></tr></thead>
+          <tbody>
+            <tr><td>Python / Jinja</td><td>messages.po</td><td>messages.mo</td><td>en · zh-Hans · zh-Hant</td></tr>
+            <tr><td>oldman-web / TypeScript</td><td>messages.po</td><td>i18n/*.json</td><td>en · zh-Hans · zh-Hant</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-4 text-sm text-default-500">{{ _("No extra translation domain or App-specific scanner is used.") }}</p>
+    </div>
+  </section>
+{% endblock %}

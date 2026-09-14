@@ -1,0 +1,119 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="dropdowns-overlays">
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header">
+        <div><h2 class="om-card-title">{{ _("Dropdown menu") }}</h2><p class="mt-1 text-sm text-default-500">{{ _("Menus stay inside the viewport and close on outside click or Escape.") }}</p></div>
+      </div>
+      <div class="om-card-body flex min-h-48 items-start justify-between gap-4">
+        <div class="om-dropdown" data-om-component="dropdown" data-example-dropdown>
+          <button type="button" class="om-button om-button-primary" data-om-dropdown-toggle aria-expanded="false">
+            {{ _("Project actions") }}<i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="om-dropdown-menu hidden" data-om-dropdown-menu hidden>
+            <button type="button" class="om-dropdown-item"><i class="ri-edit-line" aria-hidden="true"></i>{{ _("Edit project") }}</button>
+            <button type="button" class="om-dropdown-item"><i class="ri-file-copy-line" aria-hidden="true"></i>{{ _("Duplicate") }}</button>
+            <button type="button" class="om-dropdown-item text-danger-600"><i class="ri-delete-bin-line" aria-hidden="true"></i>{{ _("Archive project") }}</button>
+          </div>
+        </div>
+        <div class="om-dropdown" data-om-component="dropdown">
+          <button type="button" class="om-button om-button-light om-button-icon" data-om-dropdown-toggle aria-expanded="false" aria-label="{{ _('Open aligned menu') }}"><i class="ri-more-2-fill" aria-hidden="true"></i></button>
+          <div class="om-dropdown-menu om-dropdown-menu-end hidden" data-om-dropdown-menu hidden>
+            <a class="om-dropdown-item" href="#dropdowns">{{ _("View activity") }}</a>
+            <a class="om-dropdown-item" href="#dropdowns">{{ _("Manage access") }}</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header">
+        <div><h2 class="om-card-title">{{ _("Tooltips") }}</h2><p class="mt-1 text-sm text-default-500">{{ _("Short help appears on hover and keyboard focus.") }}</p></div>
+      </div>
+      <div class="om-card-body grid min-h-48 grid-cols-2 place-items-center gap-8 sm:grid-cols-4">
+        {% for placement, label, icon in [("top", _("Top"), "ri-arrow-up-line"), ("right", _("Right"), "ri-arrow-right-line"), ("bottom", _("Bottom"), "ri-arrow-down-line"), ("left", _("Left"), "ri-arrow-left-line")] %}
+          <span class="om-tooltip" data-om-component="tooltip" data-om-placement="{{ placement }}">
+            <button type="button" class="om-button om-button-light om-button-icon" data-om-tooltip-trigger aria-label="{{ _('Show placement help') }}"><i class="{{ icon }}" aria-hidden="true"></i></button>
+            <span class="om-tooltip-content" data-om-tooltip-content hidden>{{ _("Placement: %(placement)s", placement=label) }}</span>
+          </span>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title">{{ _("Interactive popovers") }}</h2><p class="mt-1 text-sm text-default-500">{{ _("Popovers may contain actions; they remain non-modal and close without trapping focus.") }}</p></div>
+    </div>
+    <div class="om-card-body flex flex-wrap items-center justify-between gap-4">
+      <div class="om-popover" data-om-component="popover" data-om-placement="bottom-start" data-example-popover>
+        <button type="button" class="om-button om-button-primary" data-om-popover-trigger aria-expanded="false">
+          <i class="ri-team-line" aria-hidden="true"></i>{{ _("Deployment owners") }}
+        </button>
+        <div class="om-popover-content" data-om-popover-content hidden>
+          <div class="flex items-start gap-3">
+            <span class="om-avatar om-avatar-md om-avatar-primary">OP</span>
+            <div><h3 class="font-semibold text-default-900">{{ _("Operations team") }}</h3><p class="mt-1 text-sm text-default-500">{{ _("Three operators can approve production releases.") }}</p></div>
+          </div>
+          <div class="mt-4 flex gap-2 border-t border-default-200 pt-3">
+            <a class="om-button om-button-soft-primary om-button-sm" href="#popover">{{ _("View team") }}</a>
+            <button type="button" class="om-button om-button-light om-button-sm">{{ _("Request review") }}</button>
+          </div>
+        </div>
+      </div>
+      <p class="max-w-lg text-sm text-default-500">{{ _("Use a tooltip for a short label, a popover for interactive details, and a Modal or Drawer for a focused workflow.") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title">{{ _("Drawer directions") }}</h2><p class="mt-1 text-sm text-default-500">{{ _("Drawers reuse the Modal lifecycle, focus trap, backdrop, remote content support, and focus restoration.") }}</p></div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      {% for direction, label, icon in [("start", _("Open left Drawer"), "ri-arrow-right-line"), ("end", _("Open right Drawer"), "ri-arrow-left-line"), ("top", _("Open top Drawer"), "ri-arrow-down-line"), ("bottom", _("Open bottom Drawer"), "ri-arrow-up-line")] %}
+        <button type="button" class="om-button om-button-light" data-om-modal-target="#example-drawer-{{ direction }}">
+          <i class="{{ icon }}" aria-hidden="true"></i>{{ label }}
+        </button>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+{% for direction, title in [("start", _("Left Drawer")), ("end", _("Right Drawer")), ("top", _("Top Drawer")), ("bottom", _("Bottom Drawer"))] %}
+  {% call modal(
+    "example-drawer-" ~ direction,
+    title,
+    root_class="om-drawer om-drawer-" ~ direction,
+    close_label=_("Close"),
+    footer_close_label=_("Close Drawer"),
+    inline_hidden_style=true
+  ) %}
+    <div class="space-y-4">
+      <p>{{ _("This panel is the standard Modal component with a directional Drawer layout.") }}</p>
+      <div class="rounded-surface border border-default-200 bg-default-50 p-4">
+        <p class="font-medium text-default-900">{{ _("Release checklist") }}</p>
+        <ul class="mt-2 space-y-2 text-sm text-default-600">
+          <li class="flex items-center gap-2"><i class="ri-checkbox-circle-line text-success-600" aria-hidden="true"></i>{{ _("Tests completed") }}</li>
+          <li class="flex items-center gap-2"><i class="ri-time-line text-warning-600" aria-hidden="true"></i>{{ _("Approval pending") }}</li>
+        </ul>
+      </div>
+      {% if direction == "end" %}
+        <button type="button" class="om-button om-button-soft-primary" data-om-modal-target="#nested-overlay-modal">{{ _("Open nested Modal") }}</button>
+      {% endif %}
+    </div>
+  {% endcall %}
+{% endfor %}
+
+{% call modal(
+  "nested-overlay-modal",
+  _("Nested confirmation"),
+  close_label=_("Close"),
+  footer_close_label=_("Close Modal"),
+  inline_hidden_style=true
+) %}
+  <p>{{ _("Escape closes this Modal first and leaves the Drawer open.") }}</p>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/communication/_controls.html" import prerequisites, operation, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<p class="mb-5 text-default-600">{{ _("These fixed examples do not change records or kill services. The caller does not retry; an RPC timeout does not prove the receiving operation was cancelled.") }}</p>
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("No receiver") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("Request a reserved Demo address with no subscriber. Expect NoRespondersError.") }}</p>
+      {{ operation("missing", _("Request missing receiver")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Slow reply") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("monitor_a waits two seconds without changing data. The caller waits only 0.5 seconds and then reports a timeout.") }}</p>
+      {{ operation("slow", _("Request slow reply")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Receiver exception") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("monitor_a raises an intentional ValueError. Its log contains the actual error; the caller sees a timeout, not a reconstructed remote exception.") }}</p>
+      {{ operation("raise", _("Request failing handler")) }}
+    </div>
+  </section>
+</div>
+{{ result_panel() }}
+<div class="mt-5 text-default-600">
+  <p>{{ _("To observe an offline node, run ./run.sh nats_b stop in a terminal, then query monitor_b on the RPC page. Counter queries still show monitor_a. Restart with ./run.sh nats_b start.") }}</p>
+  <a class="text-primary-600 underline" href="/examples/communication/rpc">{{ _("Return to immediate RPC") }}</a>
+</div>
+{% endblock %}

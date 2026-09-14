@@ -1,0 +1,45 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)]" data-example-ui-reference="typography">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Type scale") }}</h2></div>
+    <div class="om-card-body space-y-6">
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Display / 36</span><p class="mt-1 text-4xl font-semibold leading-tight text-default-950">{{ _("Operational clarity at a glance") }}</p></div>
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Heading / 30</span><h2 class="mt-1 text-3xl font-semibold text-default-900">{{ _("Live service health") }}</h2></div>
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Heading / 24</span><h3 class="mt-1 text-2xl font-semibold text-default-900">{{ _("Regional traffic") }}</h3></div>
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Heading / 20</span><h4 class="mt-1 text-xl font-semibold text-default-900">{{ _("Recent incidents") }}</h4></div>
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Body / 14</span><p class="mt-1 max-w-3xl text-sm leading-6 text-default-600">{{ _("Use concise labels for scanning and reserve longer prose for explanations that help someone make a decision.") }}</p></div>
+      <div><span class="text-xs uppercase tracking-widest text-default-500">Code / 13</span><code class="mt-1 block rounded bg-default-100 px-3 py-2 text-[0.8125rem] text-default-800">data-om-component="table"</code></div>
+    </div>
+  </section>
+
+  <div class="space-y-5">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Long content") }}</h2></div>
+      <div class="om-card-body space-y-4 text-sm leading-6 text-default-600">
+        <p data-example-ui-long-chinese>{{ _("这是一个用于验证中文长文本换行、标点间距和窄屏阅读体验的完整句子；内容不应溢出卡片，也不应因为语言差异破坏页面布局。") }}</p>
+        <p data-example-ui-long-english>{{ _("This deliberately long English sentence verifies comfortable wrapping, readable line length, and resilient layout behavior when operational copy cannot be shortened.") }}</p>
+        <p class="break-all font-mono text-xs text-default-500">https://dashboard.example.test/streams/a-very-long-resource-name-without-natural-breakpoints/health</p>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Chinese system font fallbacks") }}</h2></div>
+      <div class="om-card-body space-y-3 text-sm leading-6 text-default-700">
+        <p lang="zh-Hans" data-example-font-zh-hans>简体中文：频道状态、实时带宽与服务健康。</p>
+        <p lang="zh-Hant" data-example-font-zh-hant>繁體中文：頻道狀態、即時頻寬與服務健康。</p>
+        <p lang="en" data-example-font-latin>DM Sans: Stream health 0123456789</p>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Truncation is deliberate") }}</h2></div>
+      <div class="om-card-body space-y-3">
+        <div class="max-w-xs"><p class="truncate font-medium text-default-800">{{ _("A very long channel name that is intentionally truncated in a compact row") }}</p><p class="text-xs text-default-500">{{ _("Compact table or list row") }}</p></div>
+        <div><p class="font-medium text-default-800">{{ _("The full value remains available in detail views.") }}</p><p class="text-xs text-default-500">{{ _("Never truncate errors or required instructions.") }}</p></div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

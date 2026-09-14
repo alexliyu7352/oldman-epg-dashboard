@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("User Session") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  {% include "oldman/auth/user_session_content.html" %}
+</div>
+{% endblock %}

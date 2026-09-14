@@ -1,0 +1,56 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Feedback resolution") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Lightweight toasts use Toastify and can stack without blocking the page. Alerts use SweetAlert2 when the user must stop and read or respond.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button type="button" class="om-button om-button-primary" data-example-feedback="default" data-om-action="get" data-om-url="/examples/messages/feedback/default">{{ _("Show lightweight toast") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-feedback="target" data-om-action="get" data-om-url="/examples/messages/feedback/target">{{ _("Show modal alert") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-feedback="message" data-om-action="get" data-om-url="/examples/messages/feedback/message">{{ _("Message fallback") }}</button>
+      <button type="button" class="om-button om-button-light" data-example-feedback="no_duplicate" data-om-action="get" data-om-url="/examples/messages/feedback/no-duplicate">{{ _("No duplicate message") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-feedback="error" data-om-action="get" data-om-url="/examples/messages/feedback/error">{{ _("Business error") }}</button>
+    </div>
+  </section>
+
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <h2 class="om-card-title mb-0">{{ _("Confirm changes to a real project") }}</h2>
+    </div>
+    <div class="om-card-body">
+      <p class="mb-4 text-sm text-default-500">{{ _("These dialogs update the same projects as the table example. Cancel sends no request. Moving a project already in review shows a server-side business error.") }}</p>
+      {% if projects %}
+        <form data-om-component="feedback-workflow" data-om-action="post" method="post"
+              action="/examples/messages/feedback/project" data-om-target="#feedback-project-result">
+          <div class="om-form-field mb-4 max-w-xl">
+            <label for="feedback-project" class="om-form-label">{{ _("Project") }}</label>
+            <select id="feedback-project" name="project_id" class="om-select" required>
+              {% for project in projects %}<option value="{{ project.id }}">{{ project.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-4 flex flex-wrap gap-3">
+            <button type="button" class="om-button om-button-primary" data-feedback-operation="review">{{ _("Move to review") }}</button>
+            <button type="button" class="om-button om-button-secondary" data-feedback-operation="rename">{{ _("Rename project") }}</button>
+          </div>
+          <div id="feedback-project-result" aria-live="polite" aria-atomic="true">
+            <p class="mb-0 text-sm text-default-500">{{ _("No project changes have been submitted on this page.") }}</p>
+          </div>
+        </form>
+      {% else %}
+        <p class="mb-0 text-default-500">{{ _("Load the demo fixture to try project confirmation and input dialogs.") }}</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-body">
+      <h2 class="om-card-title mb-2">{{ _("Explicit Feedback component") }}</h2>
+      <p class="mb-4 text-default-500">{{ _("The target example resolves this mounted component. Other examples use the current Dashboard Page Feedback.") }}</p>
+      <div id="example-target-feedback" data-om-component="feedback"></div>
+    </div>
+  </section>
+{% endblock %}

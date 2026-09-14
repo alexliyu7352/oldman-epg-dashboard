@@ -1,0 +1,28 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card" data-om-component="navigation-probe" data-example-navigation-lifecycle>
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Page and component lifecycle") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Turbo replaces only the main frame. The Dashboard Page stays mounted while components in the old frame are unmounted before the new frame is mounted.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div><span class="block text-sm text-default-500">{{ _("Page mounts") }}</span><strong class="text-2xl" data-example-page-mounts>0</strong></div>
+      <div><span class="block text-sm text-default-500">{{ _("Component mounts") }}</span><strong class="text-2xl" data-example-component-mounts>0</strong></div>
+      <div><span class="block text-sm text-default-500">{{ _("Previous component unmounts") }}</span><strong class="text-2xl" data-example-component-unmounts>0</strong></div>
+      <div><span class="block text-sm text-default-500">{{ _("Main frame state") }}</span><strong class="text-lg" data-example-frame-state>unknown</strong></div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3 border-t border-default-200">
+      <a class="om-button om-button-primary" href="/examples/navigation/actions" data-example-lifecycle-next>{{ _("Open Action cancellation") }}</a>
+      <a class="om-button om-button-secondary" href="/examples/navigation/loading?slow=1" data-example-slow-navigation>{{ _("Open slow Loading page") }}</a>
+      <button type="button" class="om-button om-button-light" data-om-history-back data-om-history-fallback="/examples/navigation/lifecycle">{{ _("Back in history") }}</button>
+    </div>
+  </section>
+
+  <section class="om-alert-info mt-4">
+    <strong>{{ _("Prefetch is disabled") }}</strong>
+    <p class="mb-0 mt-1">{{ _("Oldman does not send a hidden request when a pointer merely hovers over a navigation link.") }}</p>
+  </section>
+{% endblock %}

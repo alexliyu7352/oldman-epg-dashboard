@@ -1,0 +1,36 @@
+{% extends "pages/examples/base.html" %}
+{% from "pages/examples/communication/_controls.html" import prerequisites, operation, result_panel with context %}
+
+{% block example_content %}
+{{ prerequisites() }}
+<p class="mb-5 text-default-600">{{ _("Counters belong to the two receiving processes, are shared by all staff users, and reset on restart. This example writes no database or Redis records.") }}</p>
+<div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Same queue: one receiver per message") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("The combined competing count increases by ten. Distribution need not be five per process.") }}</p>
+      {{ operation("compete", _("Send 10 competing events")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("No queue: each online receiver gets a copy") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-600">{{ _("Each online receiver's broadcast count increases by ten. Offline receivers do not replay missed events.") }}</p>
+      {{ operation("broadcast", _("Broadcast 10 events")) }}
+    </div>
+  </section>
+</div>
+<section class="om-card mt-5">
+  <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Read the current counters") }}</h2></div>
+  <div class="om-card-body">
+    <p class="text-default-600">{{ _("Sending is not a processing receipt. Query a snapshot separately; if receivers were still handling events, query again. There is no automatic polling.") }}</p>
+    {{ operation("observe", _("Query current counters")) }}
+  </div>
+</section>
+{{ result_panel() }}
+<pre class="mt-4 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>from apps.examples.nats_example import send_example_events, query_observations
+
+await send_example_events("compete")
+# Explicitly inspect each known peer later.
+snapshot = await query_observations("monitor_a")</code></pre>
+{% endblock %}

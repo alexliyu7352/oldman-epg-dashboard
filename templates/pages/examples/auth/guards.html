@@ -1,0 +1,21 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Dashboard staff guard") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-5 text-default-500">{{ _("This page and the probe below use the same admin_required guard as the real Dashboard. HTML requests redirect anonymous users; structured requests return authentication or permission errors.") }}</p>
+      <div class="om-table-scroll">
+        <table class="om-table">
+          <thead><tr><th>{{ _("Request identity") }}</th><th>{{ _("Result") }}</th></tr></thead>
+          <tbody>
+            <tr><td>{{ _("Anonymous") }}</td><td><span class="om-badge bg-amber-50 text-amber-700">401 / {{ _("login redirect") }}</span></td></tr>
+            <tr><td>{{ _("Signed in, not staff") }}</td><td><span class="om-badge bg-red-50 text-red-700">403</span></td></tr>
+            <tr><td>{{ _("Active staff user") }}</td><td><span class="om-badge bg-green-50 text-green-700">200</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <a class="om-button om-button-primary mt-5" href="/examples/auth/probe" data-om-action="get" data-example-auth-probe>{{ _("Run authenticated probe") }}</a>
+    </div>
+  </section>
+{% endblock %}

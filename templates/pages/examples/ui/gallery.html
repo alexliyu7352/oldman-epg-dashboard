@@ -1,0 +1,78 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+{% set gallery_items = [
+  ("atlas.svg", _("Atlas control plane")),
+  ("beacon.svg", _("Beacon monitoring")),
+  ("cascade.svg", _("Cascade delivery")),
+  ("delta.svg", _("Delta analytics")),
+  ("ember.svg", _("Ember alerts")),
+  ("flux.svg", _("Flux automation")),
+  ("horizon.svg", _("Horizon regions")),
+  (none, _("Unavailable preview"))
+] %}
+<div class="space-y-5" data-om-component="gallery" data-example-ui-reference="gallery">
+  <section class="om-card">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title">{{ _("Operations gallery") }}</h2>
+        <p class="mt-1 text-sm text-default-500">{{ _("Choose any preview to open the shared Modal and Carousel at that exact item.") }}</p>
+      </div>
+      <span class="text-sm text-default-500">{{ _("8 items") }}</span>
+    </div>
+    <div class="om-card-body">
+      <div class="om-gallery-grid">
+        {% for filename, label in gallery_items %}
+          <button
+            type="button"
+            class="om-gallery-item"
+            data-om-gallery-item
+            data-om-gallery-index="{{ loop.index0 }}"
+            data-om-modal-target="#example-gallery-modal"
+            aria-label="{{ _("Open %(name)s", name=label) }}"
+          >
+            <img{% if filename %} src="/static/examples/logos/{{ filename }}"{% endif %} alt="" loading="lazy" data-om-gallery-image>
+            <span class="om-gallery-fallback" data-om-gallery-fallback hidden><i class="ri-image-line text-2xl" aria-hidden="true"></i>{{ _("Preview unavailable") }}</span>
+            <span class="om-gallery-item-label">{{ label }}</span>
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  {% call modal(
+    "example-gallery-modal",
+    _("Operations gallery"),
+    close_label=_("Close"),
+    footer_close_label=_("Close Gallery"),
+    dialog_class="max-w-4xl",
+    inline_hidden_style=true
+  ) %}
+    <section
+      data-om-component="carousel"
+      data-om-gallery-carousel
+      data-om-carousel-options='{"slidesPerView":1,"spaceBetween":16,"grabCursor":true}'
+    >
+      <div class="swiper" data-om-carousel-viewport>
+        <div class="swiper-wrapper">
+          {% for filename, label in gallery_items %}
+            <figure class="swiper-slide" data-example-gallery-slide="{{ loop.index0 }}">
+              <div class="om-gallery-media">
+                <img{% if filename %} src="/static/examples/logos/{{ filename }}"{% endif %} alt="{{ label }}" data-om-gallery-image>
+                <span class="om-gallery-fallback" data-om-gallery-fallback hidden><i class="ri-image-line text-3xl" aria-hidden="true"></i>{{ _("Image unavailable") }}</span>
+              </div>
+              <figcaption class="mt-3 text-center text-sm font-medium text-default-700">{{ label }}</figcaption>
+            </figure>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <button type="button" class="om-button om-button-light om-button-sm" data-om-carousel-prev><i class="ri-arrow-left-line" aria-hidden="true"></i>{{ _("Previous") }}</button>
+        <div data-om-carousel-pagination aria-label="{{ _('Gallery pagination') }}"></div>
+        <button type="button" class="om-button om-button-light om-button-sm" data-om-carousel-next>{{ _("Next") }}<i class="ri-arrow-right-line" aria-hidden="true"></i></button>
+      </div>
+    </section>
+  {% endcall %}
+</div>
+{% endblock %}

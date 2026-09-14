@@ -1,0 +1,29 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section
+    class="om-card"
+    data-om-component="example-chart"
+    data-om-chart-target="#example-chart-states"
+    data-example-chart-states
+  >
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Remote Chart states") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Every control reloads the same mounted Chart through its public load method.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3 border-b border-default-200">
+      <button type="button" class="om-button om-button-primary" data-example-chart-source="/examples/charts/data/states?range=30d">{{ _("Normal") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-chart-source="/examples/charts/data/empty">{{ _("Empty") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-chart-source="/examples/charts/data/states?range=90d&filter.delay=0.8" data-example-chart-slow>{{ _("Slow 90 days") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-chart-source="/examples/charts/data/states?range=7d" data-example-chart-latest>{{ _("Latest 7 days") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-chart-source="/examples/charts/data/unknown">{{ _("Error") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-chart-source="/examples/charts/data/forbidden">{{ _("Permission denied") }}</button>
+    </div>
+    <div class="om-card-body">
+      <p class="mb-3 text-sm text-default-500" data-example-chart-request-state>{{ _("No manual reload yet.") }}</p>
+      {{ chart }}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,30 @@
+<div data-task-outcome="{{ outcome }}"{% if task_id %} data-task-id="{{ task_id }}"{% endif %}{% if schedule_id %} data-schedule-id="{{ schedule_id }}"{% endif %}>
+  {% if outcome == "published" %}
+    <p class="om-alert om-alert-success">{{ _("Submitted. The task may still be queued or running.") }}</p>
+  {% elif outcome == "scheduled" %}
+    <p class="om-alert om-alert-success">{{ _("Plan saved. Scheduler must be running to publish it when due.") }}</p>
+  {% elif outcome == "publication_error" %}
+    <p class="om-alert om-alert-danger" role="alert">{{ _("Submission could not be confirmed. Check service logs and infrastructure; do not blindly submit again, because a lost confirmation may still mean the task was queued.") }}</p>
+  {% elif outcome == "unavailable" %}
+    <p class="text-default-600">{{ _("No saved result is available to this user. It may be queued, running, expired, unsaved, or its ownership record may have expired. This is not a running-status indicator.") }}</p>
+  {% elif outcome == "ignored" %}
+    <p class="text-default-600">{{ _("This operation deliberately stores no result. Inspect Worker logs instead of waiting for a result.") }}</p>
+  {% elif outcome == "cancelled" %}
+    <p class="om-alert om-alert-success">{{ _("Plan cancelled and removed from your list. Work already queued or cached by Scheduler may still run. Refresh the plan list to update it.") }}</p>
+  {% elif outcome == "failed" %}
+    <p class="om-alert om-alert-danger">{{ _("Task failed") }}</p>
+    <pre class="overflow-x-auto whitespace-pre-wrap break-words text-sm">{{ error }}</pre>
+  {% elif outcome == "success" %}
+    <p class="om-alert om-alert-success">{{ _("Task completed") }}</p>
+    <dl class="space-y-2">
+      {% for key, item in value.items() %}<div class="flex flex-wrap gap-x-4 gap-y-1"><dt class="text-default-500">{{ key }}</dt><dd class="min-w-0 break-all font-mono text-sm">{{ item }}</dd></div>{% endfor %}
+    </dl>
+  {% endif %}
+  {% if task_id %}
+    <p class="mt-4 mb-2 break-all text-sm"><span class="text-default-500">{{ _("Task ID") }}:</span> <code>{{ task_id }}</code></p>
+    <button type="button" class="om-button om-button-secondary" data-om-action="post" data-om-url="/examples/tasks/result/{{ task_id }}">{{ _("Query this result") }}</button>
+  {% endif %}
+  {% if schedule_id and outcome != "cancelled" %}
+    <button type="button" class="om-button om-button-light" data-om-action="post" data-om-url="/examples/tasks/cancel/{{ schedule_id }}">{{ _("Cancel plan") }}</button>
+  {% endif %}
+</div>

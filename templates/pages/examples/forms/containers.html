@@ -1,0 +1,38 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-header flex items-center gap-3">
+      <h2 class="om-card-title mb-0 flex-1">{{ _("One Form, two containers") }}</h2>
+      <button
+        type="button"
+        class="om-button om-button-primary om-button-sm"
+        data-om-modal-target="#example-form-modal"
+        data-om-modal-url="/examples/forms/containers/modal"
+      >{{ _("Open remote Form") }}</button>
+    </div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("The page and Modal use the same ContainerExampleForm and the same Form component.") }}</p>
+      {% set card = form_cards[0] %}
+      {{ card.form.render(
+        action=card.action,
+        form_mode=card.mode,
+        submit_label=card.submit_label,
+        validate=true
+      ) }}
+    </div>
+  </section>
+
+  {% call modal(
+    "example-form-modal",
+    _("Remote ordinary Form"),
+    component="modal",
+    close_label=_("Close"),
+    dialog_scrollable=true,
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="text-default-500 mb-0">{{ _("Open the Modal to load its Form.") }}</p>
+  {% endcall %}
+{% endblock %}

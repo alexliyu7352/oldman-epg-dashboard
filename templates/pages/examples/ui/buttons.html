@@ -1,0 +1,100 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="buttons">
+  <section class="om-card">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title mb-1">{{ _("Solid buttons") }}</h2><p class="text-sm text-default-500">{{ _("Use one primary action per task area and semantic colors only when the meaning is clear.") }}</p></div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button type="button" class="om-button om-button-primary waves-effect waves-light">{{ _("Primary") }}</button>
+      <button type="button" class="om-button om-button-secondary waves-effect">{{ _("Secondary") }}</button>
+      <button type="button" class="om-button om-button-success waves-effect">{{ _("Success") }}</button>
+      <button type="button" class="om-button om-button-info waves-effect">{{ _("Info") }}</button>
+      <button type="button" class="om-button om-button-warning waves-effect">{{ _("Warning") }}</button>
+      <button type="button" class="om-button om-button-danger waves-effect">{{ _("Danger") }}</button>
+    </div>
+  </section>
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Soft buttons") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-soft-primary">{{ _("Primary") }}</button>
+        <button type="button" class="om-button om-button-soft-secondary">{{ _("Secondary") }}</button>
+        <button type="button" class="om-button om-button-soft-success">{{ _("Success") }}</button>
+        <button type="button" class="om-button om-button-soft-info">{{ _("Info") }}</button>
+        <button type="button" class="om-button om-button-soft-warning">{{ _("Warning") }}</button>
+        <button type="button" class="om-button om-button-soft-danger">{{ _("Danger") }}</button>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Outline buttons") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-outline-primary">{{ _("Primary") }}</button>
+        <button type="button" class="om-button om-button-outline-secondary">{{ _("Secondary") }}</button>
+        <button type="button" class="om-button om-button-outline-success">{{ _("Success") }}</button>
+        <button type="button" class="om-button om-button-outline-info">{{ _("Info") }}</button>
+        <button type="button" class="om-button om-button-outline-warning">{{ _("Warning") }}</button>
+        <button type="button" class="om-button om-button-outline-danger">{{ _("Danger") }}</button>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Dashed buttons") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-dashed-primary">{{ _("Primary") }}</button>
+        <button type="button" class="om-button om-button-dashed-secondary">{{ _("Secondary") }}</button>
+        <button type="button" class="om-button om-button-dashed-success">{{ _("Success") }}</button>
+        <button type="button" class="om-button om-button-dashed-info">{{ _("Info") }}</button>
+        <button type="button" class="om-button om-button-dashed-warning">{{ _("Warning") }}</button>
+        <button type="button" class="om-button om-button-dashed-danger">{{ _("Danger") }}</button>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Ghost and text buttons") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-ghost-primary">{{ _("Primary") }}</button>
+        <button type="button" class="om-button om-button-ghost-secondary">{{ _("Secondary") }}</button>
+        <button type="button" class="om-button om-button-ghost-success">{{ _("Success") }}</button>
+        <button type="button" class="om-button om-button-ghost-warning">{{ _("Warning") }}</button>
+        <button type="button" class="om-button om-button-ghost-danger">{{ _("Danger") }}</button>
+        <button type="button" class="om-button om-button-link">{{ _("Text action") }}</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Sizes and shapes") }}</h2></div>
+    <div class="om-card-body space-y-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="button" class="om-button om-button-primary om-button-sm">{{ _("Small") }}</button>
+        <button type="button" class="om-button om-button-primary">{{ _("Default") }}</button>
+        <button type="button" class="om-button om-button-primary om-button-lg">{{ _("Large") }}</button>
+        <button type="button" class="om-button om-button-soft-primary om-button-pill">{{ _("Rounded button") }}</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="button" class="om-button om-button-primary om-button-sm om-button-icon" aria-label="{{ _('Add item') }}"><i class="ri-add-line" aria-hidden="true"></i></button>
+        <button type="button" class="om-button om-button-primary om-button-icon" aria-label="{{ _('Open settings') }}"><i class="ri-settings-3-line" aria-hidden="true"></i></button>
+        <button type="button" class="om-button om-button-primary om-button-lg om-button-icon" aria-label="{{ _('Open notifications') }}"><i class="ri-notification-3-line" aria-hidden="true"></i></button>
+        <button type="button" class="om-button om-button-soft-primary"><i class="ri-add-line" aria-hidden="true"></i>{{ _("Create project") }}</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Control states") }}</h2></div>
+    <div class="om-card-body">
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="button" class="om-button om-button-primary" aria-pressed="true">{{ _("Pressed") }}</button>
+        <button type="button" class="om-button om-button-primary" aria-busy="true"><span class="om-button-spinner" aria-hidden="true"></span>{{ _("Saving") }}</button>
+        <button type="button" class="om-button om-button-primary" disabled>{{ _("Disabled") }}</button>
+        <button type="button" class="om-button om-button-light" disabled><i class="ri-lock-line" aria-hidden="true"></i>{{ _("Unavailable") }}</button>
+      </div>
+      <p class="mt-4 text-sm text-default-500">{{ _("Use Tab to inspect the visible keyboard focus ring. Icon-only controls always keep an accessible name.") }}</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

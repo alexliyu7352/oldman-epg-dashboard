@@ -1,0 +1,55 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="lists">
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Basic list") }}</h2></div>
+      <div class="om-card-body">
+        <ul class="om-list">
+          <li class="om-list-item"><div class="om-list-row"><span class="om-list-marker"></span><div class="om-list-content"><p class="om-list-title">{{ _("Receive source data") }}</p><p class="om-list-meta">{{ _("Completed two minutes ago") }}</p></div><span class="om-badge om-badge-success">{{ _("Done") }}</span></div></li>
+          <li class="om-list-item"><div class="om-list-row"><span class="om-list-marker bg-warning"></span><div class="om-list-content"><p class="om-list-title">{{ _("Normalize channel names") }}</p><p class="om-list-meta">{{ _("Running now") }}</p></div><span class="om-badge om-badge-warning">{{ _("Running") }}</span></div></li>
+          <li class="om-list-item"><div class="om-list-row"><span class="om-list-marker bg-border-strong"></span><div class="om-list-content"><p class="om-list-title">{{ _("Publish programme guide") }}</p><p class="om-list-meta">{{ _("Waiting for dependencies") }}</p></div><span class="om-badge om-badge-neutral">{{ _("Queued") }}</span></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Bordered interactive list") }}</h2></div>
+      <div class="om-card-body">
+        <nav class="om-list om-list-bordered om-list-hover" aria-label="{{ _('Example sections') }}">
+          <a class="om-list-item om-list-row" href="#" aria-current="page"><i class="ri-dashboard-2-line om-list-leading text-primary" aria-hidden="true"></i><span class="om-list-content"><span class="om-list-title block">{{ _("Overview") }}</span><span class="om-list-meta block">{{ _("Current section") }}</span></span><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
+          <a class="om-list-item om-list-row" href="#"><i class="ri-bar-chart-box-line om-list-leading text-content-muted" aria-hidden="true"></i><span class="om-list-content"><span class="om-list-title block">{{ _("Analytics") }}</span><span class="om-list-meta block">{{ _("Traffic and quality") }}</span></span><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
+          <span class="om-list-item om-list-row" aria-disabled="true"><i class="ri-lock-line om-list-leading" aria-hidden="true"></i><span class="om-list-content"><span class="om-list-title block">{{ _("Billing") }}</span><span class="om-list-meta block">{{ _("Unavailable for this account") }}</span></span></span>
+        </nav>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.75fr)]">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Dense records") }}</h2><span class="om-badge om-badge-neutral">6</span></div>
+      <div class="om-card-body">
+        <ul class="om-list om-list-dense">
+          {% for name, region, status in [("edge-ams-01", "Amsterdam", "Healthy"), ("edge-fra-02", "Frankfurt", "Healthy"), ("edge-sfo-03", "San Francisco", "Degraded"), ("edge-sin-04", "Singapore", "Healthy"), ("edge-syd-05", "Sydney", "Queued"), ("edge-tok-06", "Tokyo", "Healthy")] %}
+          <li class="om-list-item"><div class="om-list-row"><span class="om-avatar om-avatar-sm om-list-leading"><span class="om-avatar-fallback">{{ name[-2:] | upper }}</span></span><div class="om-list-content"><p class="om-list-title truncate">{{ name }}</p><p class="om-list-meta">{{ region }}</p></div><span class="om-badge {{ 'om-badge-success' if status == 'Healthy' else 'om-badge-warning' if status == 'Degraded' else 'om-badge-neutral' }}">{{ _(status) }}</span></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <aside class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title">{{ _("Scrollable activity") }}</h2></div>
+      <div class="om-card-body">
+        <div class="max-h-72 pe-2" data-om-component="scroll-area" data-simplebar-auto-hide="false">
+          <ol class="om-list">
+            {% for item in range(1, 10) %}
+            <li class="om-list-item"><p class="om-list-title">{{ _("Activity") }} {{ item }}</p><p class="om-list-meta">{{ _("A compact event summary remains readable.") }}</p></li>
+            {% endfor %}
+          </ol>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

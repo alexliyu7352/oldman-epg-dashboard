@@ -1,0 +1,43 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ _("HTML Form response") }}</h2>
+      </div>
+      <div class="om-card-body">
+        <p class="text-sm text-default-500">{{ _("A simple page Form still uses the ordinary HTML response path.") }}</p>
+        {{ inline_form.render(
+          action="/examples/forms/containers/submit/html",
+          form_mode="html",
+          submit_label=_("Submit HTML Form"),
+          validate=true
+        ) }}
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ _("JSON Form workflow") }}</h2>
+      </div>
+      <div class="om-card-body">
+        <p class="text-sm text-default-500">{{ _("The same ordinary Form runs two steps inside a remote Modal through ordered Actions.") }}</p>
+        <button id="workflow-modal-opener" type="button" class="om-button om-button-primary" data-om-modal-target="#workflow-example-modal" data-om-modal-url="/examples/modals/workflow/parts/1">{{ _("Start Modal workflow") }}</button>
+      </div>
+    </section>
+  </div>
+
+  {% call modal(
+    "workflow-example-modal",
+    _("Modal workflow"),
+    close_label=_("Close"),
+    footer_close_label=_("Close Modal"),
+    dialog_scrollable=true,
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="mb-0 text-default-500">{{ _("Open the Modal to load the first ordinary Form.") }}</p>
+  {% endcall %}
+{% endblock %}

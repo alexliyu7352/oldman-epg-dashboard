@@ -1,0 +1,18 @@
+{# Render a Tailwick/Oldman card shell with optional header copy. #}
+{% macro card(title=None, subtitle=None, class_name="") %}
+  <section class="om-card {{ class_name }}">
+    {% if title or subtitle %}
+      <header class="om-card-header flex-col items-start py-4 sm:flex sm:flex-row sm:items-center sm:py-0">
+        {% if title %}
+          <h2 class="om-card-title">{{ title }}</h2>
+        {% endif %}
+        {% if subtitle %}
+          <p class="mt-1 text-sm text-default-500">{{ subtitle }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+    <div class="om-card-body">
+      {{ caller() }}
+    </div>
+  </section>
+{% endmacro %}

@@ -1,0 +1,22 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<section class="om-card" data-example-data-input-autocomplete>
+  <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Reusable database autocomplete") }}</h2></div>
+  <div class="om-card-body">
+    <p class="text-default-500">{{ _("This is the same provider contract used by a normal ModelForm, including initial lookup, country dependency and server-side ID validation.") }}</p>
+    <div id="example-logo-autocomplete-form">
+      {% if autocomplete_form and profile %}
+        {{ autocomplete_form.render(
+          action="/examples/data-inputs/autocomplete/" ~ profile.id ~ "/edit",
+          form_mode="json",
+          submit_label=_("Save logo"),
+          validate=true
+        ) }}
+      {% else %}
+        <div class="om-alert-warning">{{ _("Load the example fixture to enable this form.") }}</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% set is_edit = catalog_feed is not none %}
+{% block title %}{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }}</h1>
+          <div class="page-title-right">
+            <a href="/catalog-feeds" class="om-button om-button-soft-secondary om-button-sm">{{ _("Back") }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-8">
+        <div class="om-card">
+          <div class="om-card-body">
+            {{ form.render(cancel_url="/catalog-feeds", form_mode="json") }}
+          </div>
+        </div>
+      </div>
+
+      <div class="md:col-span-12 xl:col-span-4 space-y-4">
+        <div class="om-card">
+          <div class="om-card-body">
+            <h5 class="om-card-title">{{ _("Logo Upload Preview") }}</h5>
+            <p class="mt-1 mb-3 text-default-500">{{ _("Preview only; this does not update CatalogLogoAsset or write files to the catalog.") }}</p>
+            <div class="om-upload-dropzone"
+                 data-om-component="upload"
+                 data-om-upload-click-select="true"
+                 data-om-upload-max-files="1"
+                 data-om-upload-max-size="1048576">
+              <input type="file" accept="image/*" class="hidden" data-om-upload-input>
+              <div>
+                <div class="om-upload-icon">
+                  <i class="ri-upload-cloud-2-fill" aria-hidden="true"></i>
+                </div>
+                <h5 class="text-sm font-semibold text-default-800">{{ _("Drop logo preview here or click to choose.") }}</h5>
+                <span class="text-default-500 text-[0.8125rem]">{{ _("PNG, JPG or SVG up to 1 MB. The selected file is previewed in browser only.") }}</span>
+              </div>
+              <ul class="mt-3" data-om-upload-preview>
+                <li class="om-upload-preview-item" data-om-upload-template hidden>
+                  <div>
+                    <div class="flex gap-3">
+                      <div class="shrink-0">
+                        <div class="grid size-10 place-items-center rounded bg-default-50">
+                          <img data-om-upload-thumbnail
+                               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                               class="max-w-full h-auto rounded block"
+                               alt="{{ _('Logo preview') }}">
+                        </div>
+                      </div>
+                      <div class="flex-1">
+                        <div class="pt-1">
+                          <h5 class="text-sm mb-1" data-om-upload-name></h5>
+                          <p class="text-[0.8125rem] text-default-500 mb-0" data-om-upload-size></p>
+                          <strong class="error text-red-700 text-[0.8125rem]" data-om-upload-error></strong>
+                        </div>
+                      </div>
+                      <div class="shrink-0">
+                        <button type="button" class="om-button om-button-sm om-button-danger" data-om-upload-remove>{{ _("Delete") }}</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {% if is_edit %}
+        <div class="om-card">
+          <div class="om-card-body">
+            <h5 class="om-card-title">{{ _("Danger Zone") }}</h5>
+            <p class="text-default-500">{{ _("Delete only when this feed is no longer used by runtime exports.") }}</p>
+            <form method="post" action="/catalog-feeds/{{ catalog_feed.id }}/delete">
+              <input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">
+              <button type="submit" class="om-button om-button-danger">{{ _("Delete") }}</button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

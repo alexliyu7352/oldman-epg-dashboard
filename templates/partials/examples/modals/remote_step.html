@@ -1,0 +1,16 @@
+<div data-example-remote-step="{{ step }}">
+  {% if step == 1 %}
+    <p>{{ _("This compact first step was fetched after the trigger was clicked.") }}</p>
+    <div data-om-component="dropdown" class="om-dropdown">
+      <button type="button" class="om-button om-button-light" data-om-dropdown-toggle aria-expanded="false">{{ _("Mounted remote component") }}</button>
+      <div class="om-dropdown-menu" data-om-dropdown-menu hidden>{{ _("This Dropdown mounted after the remote HTML arrived.") }}</div>
+    </div>
+  {% else %}
+    <p>{{ _("The second request replaced the existing remote body while the Modal remained open.") }}</p>
+    <ul class="list-disc space-y-2 pl-5 text-default-600">
+      <li>{{ _("The previous dynamic component was unmounted.") }}</li>
+      <li>{{ _("The larger body changed the dialog height naturally.") }}</li>
+      <li>{{ _("Closing still restores focus to the original opener.") }}</li>
+    </ul>
+  {% endif %}
+</div>

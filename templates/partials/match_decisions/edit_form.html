@@ -1,0 +1,33 @@
+<form method="post" action="/match-decisions/{{ decision.id }}/edit" data-om-component="form" data-om-form data-om-form-mode="json" data-om-form-validate data-om-feedback-target="#match-decisions-feedback" novalidate>
+  <span data-om-component="form-validator" hidden></span>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">
+  <div class="mb-3">
+    <div class="flex flex-wrap gap-2 items-center">
+      <span class="om-badge bg-cyan-50 text-cyan-700">{{ decision.decision_scope }}</span>
+      {% if decision.catalog_feed %}
+      <span class="om-badge bg-primary-50 text-primary-600">{{ decision.catalog_feed.tvg_id }}</span>
+      {% endif %}
+      {% if decision.catalog_channel %}
+      <span class="om-badge bg-default-100 text-default-500">{{ decision.catalog_channel.identity_name }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+    <div class="md:col-span-12 mb-3" data-om-form-field data-om-form-field-name="decision">
+      {{ form.render_field("decision") }}
+    </div>
+    <div class="md:col-span-12 mb-3" data-om-form-field data-om-form-field-name="reason">
+      {{ form.render_field("reason") }}
+    </div>
+  </div>
+  <div class="om-alert-danger mb-3" data-om-form-message hidden></div>
+  <p class="text-default-500 text-xs mb-0" data-om-form-status role="status" aria-live="polite" hidden></p>
+  <div class="om-modal-footer px-0 pb-0">
+    <button class="om-button om-button-light" type="button" data-om-modal-close>
+      {{ _("Cancel") }}
+    </button>
+    <button class="om-button om-button-primary" type="submit" data-om-form-submit>
+      {{ _("Save") }}
+    </button>
+  </div>
+</form>

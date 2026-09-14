@@ -1,0 +1,31 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Requests made by the Python server") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("The browser calls this Demo; MultiHttpClient contacts the configured upstream only after you choose an operation.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <p class="mb-4 text-sm">{{ _("Configured upstream") }}: <code class="break-all">{{ http_base_url }}</code></p>
+      <div class="mb-4 flex flex-wrap gap-3">
+        <button type="button" class="om-button om-button-primary" data-om-action="post" data-om-url="/examples/http/client/json" data-om-target="#http-result">{{ _("Read JSON") }}</button>
+        <button type="button" class="om-button om-button-secondary" data-om-action="post" data-om-url="/examples/http/client/status" data-om-target="#http-result">{{ _("Observe upstream 404") }}</button>
+        <button type="button" class="om-button om-button-secondary" data-om-action="post" data-om-url="/examples/http/client/timeout" data-om-target="#http-result">{{ _("Observe timeout") }}</button>
+        <button type="button" class="om-button om-button-light" data-om-action="post" data-om-url="/examples/http/client/stream" data-om-target="#http-result">{{ _("Read byte stream") }}</button>
+      </div>
+      <p class="mb-2 text-sm text-default-500">{{ _("Each operation waits at most %(seconds)s seconds, with no retries or redirects. The delay endpoint requests 10 seconds; an early upstream response is shown as it actually arrives.", seconds=request_timeout) }}</p>
+      <p class="mb-2 text-sm text-default-500">{{ _("The stream endpoint requests 65536 bytes. Python reads chunks and computes SHA-256 without saving a file; the browser receives the final result, not live progress.") }}</p>
+      <p class="mb-0 text-sm text-default-500">{{ _("The upstream sees the server address, Demo User-Agent and fixed example parameters, never your login cookie or database records. Public httpbin may be unavailable; configure your own compatible instance when needed.") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+    <div class="om-card-body" id="http-result" aria-live="polite" aria-atomic="true">
+      <p class="mb-0 text-default-500">{{ _("No upstream request has been sent. Choose Read JSON to begin.") }}</p>
+    </div>
+  </section>
+{% endblock %}

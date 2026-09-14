@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% set is_edit = channel is not none %}
+{% block title %}{{ _("Edit Channel") if is_edit else _("New Channel") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Edit Channel") if is_edit else _("New Channel") }}</h1>
+          <div class="page-title-right">
+            <a href="/channels-epg" class="om-button om-button-soft-secondary om-button-sm">{{ _("Back") }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-8">
+        <div class="om-card">
+          <div class="om-card-body">
+            {{ form.render(cancel_url="/channels-epg", form_mode="json") }}
+          </div>
+        </div>
+      </div>
+      {% if is_edit %}
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card">
+          <div class="om-card-body">
+            <h5 class="om-card-title">{{ _("Danger Zone") }}</h5>
+            <p class="text-default-500">{{ _("Delete only when this channel is no longer needed.") }}</p>
+            <form method="post" action="/channels-epg/{{ channel.id }}/delete">
+              <input type="hidden" name="csrfmiddlewaretoken" value="{{ form.csrf_token }}">
+              <button type="submit" class="om-button om-button-danger">{{ _("Delete") }}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 xl:grid-cols-3">
+    <section class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ _("One escaped text message") }}</h2>
+      </div>
+      <div class="om-card-body">
+        <p class="mb-4 text-sm text-default-500">{{ _("The POST stores translated text in a signed Cookie. The redirect displays it once above this page.") }}</p>
+        <form method="post" action="/examples/messages/page/single" data-turbo="false" data-example-message-form="single" class="space-y-4">
+          {% csrf_token %}
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Level") }}</span>
+            <select name="level" class="om-select" required>
+              <option value="success">{{ _("Success") }}</option>
+              <option value="info">{{ _("Info") }}</option>
+              <option value="warning" selected>{{ _("Warning") }}</option>
+              <option value="error">{{ _("Error") }}</option>
+            </select>
+          </label>
+          <label class="om-form-group block">
+            <span class="om-form-label">{{ _("Message") }}</span>
+            <input name="content" class="om-field" value="&lt;em&gt;Browser input stays text&lt;/em&gt;" required>
+          </label>
+          <button class="om-button om-button-primary" type="submit">{{ _("POST and redirect") }}</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ _("Several messages") }}</h2>
+      </div>
+      <div class="om-card-body">
+        <p class="mb-4 text-sm text-default-500">{{ _("One request appends all four levels. The next page renders them together in the same order.") }}</p>
+        <form method="post" action="/examples/messages/page/multiple" data-turbo="false" data-example-message-form="multiple">
+          {% csrf_token %}
+          <button class="om-button om-button-secondary" type="submit">{{ _("Show four messages") }}</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header">
+        <h2 class="om-card-title mb-0">{{ _("Fixed trusted HTML") }}</h2>
+      </div>
+      <div class="om-card-body">
+        <p class="mb-4 text-sm text-default-500">{{ _("Only fixed server-authored markup uses HTML mode. User input always remains escaped text.") }}</p>
+        <form method="post" action="/examples/messages/page/trusted-html" data-turbo="false" data-example-message-form="trusted-html">
+          {% csrf_token %}
+          <button class="om-button om-button-light" type="submit">{{ _("Show trusted HTML") }}</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card mt-5">
+    <div class="om-card-body">
+      <h2 class="om-card-title mb-2">{{ _("Page Message boundary") }}</h2>
+      <p class="mb-0 text-default-500">{{ _("These inline messages are consumed by page rendering. They do not create a toast, modal, persistent notification, or notification-center item.") }}</p>
+    </div>
+  </section>
+{% endblock %}

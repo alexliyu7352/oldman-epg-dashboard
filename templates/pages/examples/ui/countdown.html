@@ -1,0 +1,38 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="countdown">
+  <section class="om-card overflow-hidden">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title">{{ _("Release countdown") }}</h2>
+        <p class="mt-1 text-sm text-default-500">{{ _("The server supplies one ISO timestamp. The component updates the four visible values and stops itself at zero.") }}</p>
+      </div>
+      <span class="om-badge om-badge-soft-primary"><i class="ri-time-line" aria-hidden="true"></i>{{ _("Running") }}</span>
+    </div>
+    <div class="om-card-body">
+      <div
+        class="om-countdown"
+        data-om-component="countdown"
+        data-om-countdown-target="{{ countdown_target }}"
+        aria-live="polite"
+        aria-atomic="true"
+        data-example-countdown
+      >
+        {% for key, label in [("days", _("Days")), ("hours", _("Hours")), ("minutes", _("Minutes")), ("seconds", _("Seconds"))] %}
+          <div class="om-countdown-part">
+            <strong class="om-countdown-value" data-om-countdown-{{ key }}>00</strong>
+            <span class="om-countdown-label">{{ label }}</span>
+          </div>
+        {% endfor %}
+        <p class="col-span-full text-center font-medium text-success-600" data-om-countdown-complete hidden>{{ _("The release window is open.") }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="om-alert om-alert-info">
+    <i class="ri-information-line" aria-hidden="true"></i>
+    <p class="mb-0">{{ _("Use the om:countdown:complete event only when the surrounding page needs a follow-up action. The clock itself needs no page script.") }}</p>
+  </section>
+</div>
+{% endblock %}

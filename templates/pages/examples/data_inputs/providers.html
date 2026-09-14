@@ -1,0 +1,30 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <section class="om-card" data-example-provider-control>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Model provider") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("Search, paging and ordered initial lookup query ExampleLogo through the shared read-only database session.") }}</p>
+      {{ multiple_form.render_field("logo_ids") }}
+      <p class="mt-5 text-default-500">{{ _("A finite server-side enum uses DataSelectProvider instead of loading a database table into memory.") }}</p>
+      {{ multiple_form.render_field("country_codes") }}
+    </div>
+  </section>
+
+  <section class="om-card" data-example-provider-records>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Provider source rows") }}</h2></div>
+    <div class="om-card-body">
+      <ul class="om-list">
+        {% for item in logos %}
+        <li class="om-list-item flex items-center gap-3" data-logo-id="{{ item.id }}">
+          <img src="{{ item.svg_path }}" alt="" width="36" height="36" loading="lazy" class="size-9 rounded bg-default-50 object-contain">
+          <div class="min-w-0 flex-1"><strong class="block truncate">{{ item.name }}</strong><span class="text-xs text-default-500">{{ item.country_code }} · {{ item.slug }}</span></div>
+          {% if not item.is_available %}<span class="om-badge bg-yellow-50 text-yellow-700">{{ _("Unavailable") }}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+</div>
+{% endblock %}

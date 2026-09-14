@@ -1,0 +1,24 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Server-rendered translations") }}</h2></div>
+      <div class="om-card-body">
+        <p class="mb-5 text-default-500">{{ _("These labels were translated by Jinja for the current request. Change the language, then refresh or revisit this page to render them again on the server.") }}</p>
+        <div class="grid gap-3 sm:grid-cols-3" data-example-i18n-server>
+          <div class="rounded-lg border border-default-200 p-4"><span class="text-sm text-default-500">msgid</span><strong class="mt-1 block" data-example-i18n-server-loading>{{ _("Loading...") }}</strong></div>
+          <div class="rounded-lg border border-default-200 p-4"><span class="text-sm text-default-500">msgid</span><strong class="mt-1 block" data-example-i18n-server-failed>{{ _("Request failed") }}</strong></div>
+          <div class="rounded-lg border border-default-200 p-4"><span class="text-sm text-default-500">msgid</span><strong class="mt-1 block" data-example-i18n-server-empty>{{ _("No results found") }}</strong></div>
+        </div>
+      </div>
+    </section>
+    <aside class="om-card">
+      <div class="om-card-body">
+        <p class="text-sm font-medium uppercase tracking-wide text-primary-600">{{ _("Request locale") }}</p>
+        <p class="mt-2 text-2xl font-semibold" data-example-i18n-locale>{{ get_locale() }}</p>
+        <p class="mt-3 text-sm text-default-500">{{ _("The backend reads the same language preference saved by the Dashboard language switcher.") }}</p>
+      </div>
+    </aside>
+  </div>
+{% endblock %}

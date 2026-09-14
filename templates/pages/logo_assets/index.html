@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block title %}{{ _("Logo Assets") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Logo Assets") }}</h1>
+          <div class="page-title-right">
+            <button type="button" class="om-button om-button-soft-info om-button-sm" data-om-modal-target="#logo-assets-help">
+              <i class="ri-image-line align-bottom mr-1"></i>{{ _("Image Compare") }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Quality Distribution") }}</h4>
+          </div>
+          <div class="om-card-body min-h-[240px]" data-om-loading-initial="true">
+            {{ quality_distribution_chart.render_shell(html_id="logo-quality-distribution-chart") }}
+          </div>
+        </div>
+      </div>
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("MIME Distribution") }}</h4>
+          </div>
+          <div class="om-card-body min-h-[240px]" data-om-loading-initial="true">
+            {{ mime_distribution_chart.render_shell(html_id="logo-mime-distribution-chart") }}
+          </div>
+        </div>
+      </div>
+      <div class="md:col-span-12 xl:col-span-4">
+        <div class="om-card">
+          <div class="om-card-header items-center flex">
+            <h4 class="om-card-title mb-0 flex-1">{{ _("Dimensions") }}</h4>
+          </div>
+          <div class="om-card-body min-h-[240px]" data-om-loading-initial="true">
+            {{ dimension_scatter_chart.render_shell(html_id="logo-dimension-scatter-chart") }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-body">
+        {{ filter_form.render(method="get", submit_label="Filter", table_target="#logo-assets-table") }}
+        <div class="mb-4">
+          <label class="om-form-label">{{ _("Quality Range") }}</label>
+          <div
+            data-om-component="slider"
+            data-om-slider-min-input="quality_min"
+            data-om-slider-max-input="quality_max"
+            data-om-slider-form-selector='form[data-om-component="table-filter-form"][data-om-table-target="#logo-assets-table"]'
+            data-om-slider-submit-on-change="true"
+            data-slider-color="warning"
+            data-om-slider-options='{"start":[0,100],"connect":true,"range":{"min":0,"max":100},"step":1,"tooltips":true}'
+          ></div>
+        </div>
+        {{ table.render_shell(html_id="logo-assets-table", show_search=False) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call modal(
+  "logo-assets-help",
+  _("Logo Image Compare"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Use each row action menu to compare original, normalized, preview, edge and mask images.") }}</p>
+{% endcall %}
+
+{% call modal(
+  "logo-asset-compare-modal",
+  _("Logo Comparison"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  dialog_class="om-modal-dialog-lg",
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Select a row action to load image comparison.") }}</p>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Current Session snapshot") }}</h2></div>
+      <div class="om-card-body">
+        <dl class="grid gap-3 text-sm" data-example-session-lifecycle>
+          <div><dt class="text-default-500">{{ _("Username") }}</dt><dd class="font-medium">{{ session_profile.username }}</dd></div>
+          <div><dt class="text-default-500">{{ _("Login Time") }}</dt><dd class="font-medium">{{ session_profile.login_time }}</dd></div>
+          <div><dt class="text-default-500">{{ _("Login IP") }}</dt><dd class="font-medium">{{ session_profile.login_ip }}</dd></div>
+          <div><dt class="text-default-500">{{ _("Active Session records") }}</dt><dd class="font-medium" data-example-active-session-count>{{ active_session_count }}</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Storage boundary") }}</h2></div>
+      <div class="om-card-body space-y-3 text-default-500">
+        <p>{{ _("The signed cookie contains only the Session ID. Strongly typed identity data lives in Redis and works across Sanic workers.") }}</p>
+        <p>{{ _("Configured lifetime: %(seconds)s seconds", seconds=session_expiry) }}</p>
+        <p>{{ _("The raw Session ID is intentionally not rendered into the page.") }}</p>
+      </div>
+    </section>
+  </div>
+{% endblock %}

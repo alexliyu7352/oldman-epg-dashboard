@@ -1,0 +1,37 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="images">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Real fixture images") }}</h2></div>
+    <div class="om-card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {% for name in ["atlas", "beacon", "cascade", "horizon"] %}
+      <figure class="overflow-hidden rounded border border-default-200 bg-default-50">
+        <div class="grid aspect-video place-items-center p-5"><img class="max-h-20 max-w-full" src="/static/examples/logos/{{ name }}.svg" alt="{{ name | title }} logo"></div>
+        <figcaption class="border-t border-default-200 bg-surface px-3 py-2 text-sm font-medium">{{ name | title }}</figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Aspect ratios") }}</h2></div>
+      <div class="om-card-body grid grid-cols-2 gap-4">
+        <figure><div class="grid aspect-square place-items-center overflow-hidden rounded bg-default-100"><img class="h-full w-full object-contain p-5" src="/static/examples/logos/lumen.svg" alt="Lumen logo"></div><figcaption class="mt-2 text-xs text-default-500">1:1 · contain</figcaption></figure>
+        <figure><div class="grid aspect-video place-items-center overflow-hidden rounded bg-default-100"><img class="h-full w-full object-cover" src="/static/examples/logos/mosaic.svg" alt="Mosaic logo"></div><figcaption class="mt-2 text-xs text-default-500">16:9 · cover</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Avatars and fallbacks") }}</h2></div>
+      <div class="om-card-body space-y-5">
+        <div class="flex items-center gap-3"><span class="om-avatar-xs overflow-hidden rounded-full bg-default-100"><img class="size-full object-cover" src="/static/examples/logos/ember.svg" alt="Ember"></span><span class="om-avatar-sm overflow-hidden rounded-full bg-default-100"><img class="size-full object-cover" src="/static/examples/logos/flux.svg" alt="Flux"></span><span class="om-avatar-md overflow-hidden rounded-full bg-default-100"><img class="size-full object-cover" src="/static/examples/logos/juniper.svg" alt="Juniper"></span></div>
+        <div class="flex items-center gap-3"><span class="om-avatar-sm overflow-hidden rounded-full bg-primary-50 text-primary"><span class="om-avatar-title font-semibold">AL</span></span><div><strong class="block text-sm">{{ _("Initial fallback") }}</strong><span class="text-xs text-default-500">{{ _("Use when no image is available.") }}</span></div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-alert-info" role="status">{{ _("Meaningful images need useful alternative text. Decorative images should use an empty alt attribute.") }}</section>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "pages/examples/base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block example_content %}
+  {% if redirected %}
+    <div class="om-alert om-alert-success" data-action-redirected>{{ _("Redirect Action completed a real navigation.") }}</div>
+  {% endif %}
+
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Ordered response Actions") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("These buttons use the global declarative Action client; the page adds only one private Action.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button type="button" class="om-button om-button-primary" data-example-action="feedback" data-om-action="get" data-om-url="/examples/modals/actions/feedback">{{ _("Feedback") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-action="replace_html" data-om-action="get" data-om-url="/examples/modals/actions/replace-html" data-om-target="#replace-action-result">{{ _("Replace HTML") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-action="reload_table" data-om-action="get" data-om-url="/examples/modals/actions/reload-table">{{ _("Reload Table") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-action="redirect" data-om-action="get" data-om-url="/examples/modals/actions/redirect">{{ _("Redirect") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-action="private" data-om-action="get" data-om-url="/examples/modals/actions/private">{{ _("Private Page Action") }}</button>
+      <button type="button" class="om-button om-button-light" data-om-modal-target="#action-close-modal">{{ _("Open close-Action Modal") }}</button>
+    </div>
+    <div class="om-card-body border-t border-default-200">
+      <p id="replace-action-result" class="mb-2 text-default-600">{{ _("Replace HTML target") }}</p>
+      <p id="private-action-result" class="mb-0 text-default-600">{{ _("Private Action target") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Visible failure paths") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("A missing target or unknown Action reports an error. A failed middle Action stops the remaining list.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button type="button" class="om-button om-button-soft-danger" data-example-action="missing_target" data-om-action="get" data-om-url="/examples/modals/actions/missing-target">{{ _("Missing target") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-action="unknown" data-om-action="get" data-om-url="/examples/modals/actions/unknown">{{ _("Unknown Action") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-action="chain_failure" data-om-action="get" data-om-url="/examples/modals/actions/chain-failure">{{ _("Fail in the middle") }}</button>
+    </div>
+    <div class="om-card-body border-t border-default-200">
+      <p id="action-chain-result" class="mb-0 text-default-600">{{ _("No chain has run yet.") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header">
+      <h2 class="om-card-title mb-0">{{ _("Reload Table Action") }}</h2>
+    </div>
+    <div class="om-card-body">
+      {{ table.render_shell(html_id="example-projects-table", show_search=false, data_format="json") }}
+    </div>
+  </section>
+
+  {% call modal(
+    "example-project-modal",
+    _("Example project"),
+    component="modal",
+    close_label=_("Close"),
+    dialog_scrollable=true,
+    inline_hidden_style=true,
+    remote_content=true
+  ) %}
+    <p class="text-default-500 mb-0">{{ _("Choose create, edit or delete to load the real database Form.") }}</p>
+  {% endcall %}
+
+  {% call modal(
+    "action-close-modal",
+    _("Close Modal Action"),
+    close_label=_("Close"),
+    footer_close_label=_("Cancel"),
+    inline_hidden_style=true
+  ) %}
+    <p>{{ _("The button below returns CloseModalAction without knowing this Modal's ID.") }}</p>
+    <button type="button" class="om-button om-button-primary" data-example-action="close_modal" data-om-action="get" data-om-url="/examples/modals/actions/close-modal">{{ _("Close through Action") }}</button>
+  {% endcall %}
+{% endblock %}

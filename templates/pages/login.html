@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="{{ dashboard_current_language(request) }}" data-layout="vertical" data-theme="light" data-sidenav-color="light" data-sidenav-size="default" data-topbar="light" data-sidebar-size="lg" data-preloader="enable">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="turbo-cache-control" content="no-cache">
+    <meta name="turbo-visit-control" content="reload">
+    <meta name="oldman-asset-base" content="{{ bundle_asset_base_url(app_main_bundle) }}">
+    <link rel="icon" href="data:,">
+    <title>{{ _("Sign In") }} · Oldman</title>
+    {% include "oldman/dashboard/partials/preloader_critical_css.html" %}
+    {{ bundle_client(app_main_bundle) }}
+    {{ bundle_modulepreload(app_main_bundle) }}
+    {{ bundle_styles(app_main_bundle) }}
+    {{ bundle_script(app_main_bundle) }}
+  </head>
+  <body data-om-page="login" class="min-h-screen bg-default-50 text-default-700">
+    {% include "oldman/dashboard/partials/preloader.html" %}
+    {% set language_switcher_classes = "om-dropdown absolute right-5 top-5 z-20" %}
+    {% set language_switcher_button_classes = "oldman-icon-button bg-white shadow-card" %}
+    {% set language_switcher_flag_id = "login-lang-img" %}
+    {% include "partials/language_switcher.html" %}
+
+    <main class="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(28rem,34rem)_1fr]">
+      <section class="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-10 lg:px-12">
+        <div class="w-full max-w-md">
+          <a href="/login" class="mb-10 inline-flex items-center gap-3">
+            <span class="oldman-brand-mark" aria-hidden="true"><span></span></span>
+            <span class="text-2xl font-semibold tracking-normal text-default-950">Oldman</span>
+          </a>
+
+          <div class="mb-8">
+            <p class="mb-2 text-sm font-medium text-primary">{{ _("Welcome Back") }}</p>
+            <h1 class="text-2xl font-semibold leading-8 text-default-950">{{ _("Sign in") }}</h1>
+            <p class="mt-2 max-w-sm text-sm leading-6 text-default-500">{{ _("Use your administrator account to continue to the EPG management dashboard.") }}</p>
+          </div>
+
+          {% if login_error %}
+            <div class="om-alert-danger mb-5">{{ login_error }}</div>
+          {% endif %}
+
+          {# 登录会建立新的 Session 状态，这里保留整页跳转以避免 Turbo 缓存旧的匿名页面外壳。 #}
+          <form action="/login" method="post" data-turbo="false" data-om-component="form" class="space-y-5">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="next" value="{{ next_url }}">
+
+            <div>
+              {{ login_form.render_field("username") }}
+            </div>
+
+            <div>
+              {{ login_form.render_field("password") }}
+            </div>
+
+            <button class="om-button om-button-primary w-full" type="submit">{{ _("Sign In") }}</button>
+          </form>
+
+          <p class="mt-8 text-xs text-default-500">&copy; {{ current_year }} Oldman.</p>
+        </div>
+      </section>
+
+      <section class="hidden min-h-screen bg-default-50 px-10 py-10 lg:flex lg:items-center">
+        <div class="mx-auto w-full max-w-3xl">
+          <div class="mb-8">
+            <p class="text-sm font-medium text-default-500">{{ _("EPG management dashboard") }}</p>
+            <h2 class="mt-3 max-w-xl text-3xl font-semibold leading-10 text-default-950">{{ _("Operational control for channels, schedules, logos, and matching decisions.") }}</h2>
+          </div>
+
+          <div class="grid grid-cols-2 gap-5">
+            <div class="om-analytics-tile bg-green-100">
+              <div class="om-card-body">
+                <span class="om-analytics-icon bg-green-500"><i class="ri-tv-2-line"></i></span>
+                <p class="text-2xl font-semibold text-default-900">EPG</p>
+                <p class="mt-1 text-sm text-default-600">{{ _("Channel and programme operations") }}</p>
+              </div>
+            </div>
+            <div class="om-analytics-tile bg-orange-100">
+              <div class="om-card-body">
+                <span class="om-analytics-icon bg-orange-500"><i class="ri-database-2-line"></i></span>
+                <p class="text-2xl font-semibold text-default-900">{{ _("Catalog") }}</p>
+                <p class="mt-1 text-sm text-default-600">{{ _("Feeds, names, and upstream records") }}</p>
+              </div>
+            </div>
+            <div class="om-card col-span-2">
+              <div class="om-card-body flex items-center justify-between gap-6">
+                <div>
+                  <h3 class="om-card-title">{{ _("Tailwind operations shell") }}</h3>
+                  <p class="mt-2 max-w-xl text-sm leading-6 text-default-500">{{ _("A restrained product interface with server-rendered pages, focused tables, and modal workflows.") }}</p>
+                </div>
+                <span class="grid size-12 shrink-0 place-items-center rounded bg-primary/10 text-2xl text-primary">
+                  <i class="ri-window-line"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

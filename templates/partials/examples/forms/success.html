@@ -1,0 +1,14 @@
+<section class="om-alert-success" data-example-form-success role="status">
+  <p class="mb-2">{{ message }}</p>
+  {% if results %}
+  <dl class="mb-3 grid gap-2 sm:grid-cols-2" data-example-form-results>
+    {% for result in results %}
+    <div class="rounded-lg border border-success-200 bg-white/70 px-3 py-2" data-example-form-result="{{ result.name }}">
+      <dt class="text-xs font-medium text-default-500">{{ result.label }}</dt>
+      <dd class="mt-1 break-all font-mono text-sm text-default-800">{{ result.value }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% endif %}
+  <a class="font-medium underline" href="{{ return_url }}">{{ _("Reload the example") }}</a>
+</section>

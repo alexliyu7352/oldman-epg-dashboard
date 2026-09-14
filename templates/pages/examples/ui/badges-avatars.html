@@ -1,0 +1,79 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+{% set avatar_url = bundle_asset_url(app_main_bundle, "theme/assets/images/users/avatar-1.jpg") %}
+<div class="space-y-5" data-example-ui-reference="badges-avatars">
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Soft badges") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <span class="om-badge om-badge-primary">{{ _("Running") }}</span>
+        <span class="om-badge om-badge-success">{{ _("Healthy") }}</span>
+        <span class="om-badge om-badge-info">{{ _("Queued") }}</span>
+        <span class="om-badge om-badge-warning">{{ _("Degraded") }}</span>
+        <span class="om-badge om-badge-danger">{{ _("Failed") }}</span>
+        <span class="om-badge om-badge-secondary">{{ _("Disabled") }}</span>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Outline badges") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <span class="om-badge om-badge-outline-primary">{{ _("Primary") }}</span>
+        <span class="om-badge om-badge-outline-success">{{ _("Success") }}</span>
+        <span class="om-badge om-badge-outline-info">{{ _("Info") }}</span>
+        <span class="om-badge om-badge-outline-warning">{{ _("Warning") }}</span>
+        <span class="om-badge om-badge-outline-danger">{{ _("Danger") }}</span>
+        <span class="om-badge om-badge-outline-secondary">{{ _("Secondary") }}</span>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Solid badges") }}</h2></div>
+      <div class="om-card-body flex flex-wrap gap-3">
+        <span class="om-badge om-badge-solid-primary">{{ _("Primary") }}</span>
+        <span class="om-badge om-badge-solid-success">{{ _("Success") }}</span>
+        <span class="om-badge om-badge-solid-info">{{ _("Info") }}</span>
+        <span class="om-badge om-badge-solid-warning">{{ _("Warning") }}</span>
+        <span class="om-badge om-badge-solid-danger">{{ _("Danger") }}</span>
+        <span class="om-badge om-badge-solid-secondary">{{ _("Secondary") }}</span>
+      </div>
+    </section>
+
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Badge details") }}</h2></div>
+      <div class="om-card-body flex flex-wrap items-center gap-3">
+        <span class="om-badge om-badge-primary om-badge-pill"><span class="om-status-dot"></span>{{ _("Live") }}</span>
+        <span class="om-badge om-badge-info"><i class="ri-time-line" aria-hidden="true"></i>{{ _("Scheduled") }}</span>
+        <span class="om-badge om-badge-secondary">v2.2.0<button type="button" class="om-badge-dismiss" aria-label="{{ _('Remove version filter') }}"><i class="ri-close-line" aria-hidden="true"></i></button></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title mb-1">{{ _("Avatar sizes and shapes") }}</h2><p class="text-sm text-default-500">{{ _("Use a text fallback so a broken image never leaves an empty identity control.") }}</p></div>
+    </div>
+    <div class="om-card-body space-y-5">
+      <div class="flex flex-wrap items-end gap-4">
+        {% for size, label in [("xs", "XS"), ("sm", "SM"), ("md", "MD"), ("lg", "LG"), ("xl", "XL")] %}
+        <span class="text-center">
+          <span class="om-avatar om-avatar-rounded om-avatar-{{ size }}"><img class="om-avatar-image" src="{{ avatar_url }}" alt="{{ _('Example user') }}"></span>
+          <span class="mt-2 block text-xs text-default-500">{{ label }}</span>
+        </span>
+        {% endfor %}
+      </div>
+      <div class="flex flex-wrap items-center gap-5">
+        <span class="om-avatar om-avatar-square om-avatar-lg"><img class="om-avatar-image" src="{{ avatar_url }}" alt="{{ _('Square avatar') }}"></span>
+        <span class="om-avatar om-avatar-rounded om-avatar-bordered om-avatar-lg"><img class="om-avatar-image" src="{{ avatar_url }}" alt="{{ _('Bordered avatar') }}"></span>
+        <span class="om-avatar-wrap"><span class="om-avatar om-avatar-rounded om-avatar-lg"><img class="om-avatar-image" src="{{ avatar_url }}" alt="{{ _('Online user') }}"></span><span class="om-avatar-status om-avatar-status-success" aria-label="{{ _('Online') }}"></span></span>
+        <span class="om-avatar om-avatar-rounded om-avatar-lg font-semibold text-primary">OM</span>
+        <span class="om-avatar om-avatar-rounded om-avatar-lg font-semibold text-primary" data-om-component="avatar">
+          <img class="om-avatar-image" data-om-avatar-image alt="{{ _('Missing image example') }}">
+          <span data-om-avatar-fallback hidden>AL</span>
+        </span>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

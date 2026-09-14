@@ -1,0 +1,5 @@
+{% if step == 1 %}
+  <button type="button" class="om-button om-button-primary" data-example-remote-next data-om-modal-target="#remote-example-modal" data-om-modal-url="/examples/modals/remote/parts/2">{{ _("Load expanded step") }}</button>
+{% else %}
+  <button type="button" class="om-button om-button-light" data-om-modal-close>{{ _("Close Modal") }}</button>
+{% endif %}

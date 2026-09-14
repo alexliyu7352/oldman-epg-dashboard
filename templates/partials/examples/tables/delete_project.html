@@ -1,0 +1,17 @@
+<p>{{ _("Delete this project and its fixture-owned tasks?") }}</p>
+<p class="font-medium text-default-900">{{ project.name }}</p>
+<form
+  method="post"
+  action="/examples/tables/projects/{{ project.id }}/delete"
+  data-om-component="form"
+  data-om-form
+  data-om-form-mode="json"
+>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <div data-om-form-message hidden></div>
+  <p data-om-form-status role="status" aria-live="polite" hidden></p>
+  <div class="flex justify-end gap-2">
+    <button type="button" class="om-button om-button-light" data-om-modal-close>{{ _("Cancel") }}</button>
+    <button type="submit" class="om-button om-button-danger">{{ _("Delete project") }}</button>
+  </div>
+</form>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "oldman/dashboard/components/modal.html" import modal %}
+
+{% block title %}{{ _("Catalog Channels") }} · Oldman{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="om-page-section">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+      <div class="md:col-span-12">
+        <div class="om-page-header">
+          <h1 class="om-page-title">{{ _("Catalog Channels") }}</h1>
+          <div class="page-title-right">
+            <a href="/catalog-channels/new" class="om-button om-button-primary om-button-sm">
+              <i class="ri-add-line align-bottom mr-1"></i>{{ _("New Catalog Channel") }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="om-card">
+      <div class="om-card-body">
+        {{ filter_form.render(method="get", submit_label="Filter", table_target="#catalog-channels-table") }}
+        <div class="mb-4">
+          <label class="om-form-label">{{ _("Confidence Range") }}</label>
+          <div
+            data-om-component="slider"
+            data-om-slider-min-input="confidence_min"
+            data-om-slider-max-input="confidence_max"
+            data-om-slider-form-selector='form[data-om-component="table-filter-form"][data-om-table-target="#catalog-channels-table"]'
+            data-om-slider-submit-on-change="true"
+            data-slider-color="primary"
+            data-om-slider-options='{"start":[0,100],"connect":true,"range":{"min":0,"max":100},"step":1,"tooltips":true}'
+          ></div>
+        </div>
+        <button type="button" class="om-button om-button-soft-secondary om-button-sm mb-3" data-om-modal-target="#catalog-channel-evidence-modal">
+          <i class="ri-file-search-line align-bottom mr-1"></i>{{ _("Evidence Preview") }}
+        </button>
+        {{ table.render_shell(html_id="catalog-channels-table", show_search=False) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call modal(
+  "catalog-channel-evidence-modal",
+  _("Evidence Preview"),
+  close_label=_("Close"),
+  managed=false,
+  footer_close_label=_("Close"),
+  hidden=false
+) %}
+  <p class="text-default-500 mb-0">{{ _("Use each row action menu to inspect the evidence JSON captured for that catalog channel.") }}</p>
+{% endcall %}
+{% endblock %}

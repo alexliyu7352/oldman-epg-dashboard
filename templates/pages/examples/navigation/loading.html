@@ -1,0 +1,28 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card" data-om-component="navigation-probe" data-example-navigation-loading>
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Scoped Loading") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Both buttons call the same real delayed endpoint. One covers this card; the other uses the current Page preloader.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body flex flex-wrap gap-3">
+      <button type="button" class="om-button om-button-primary" data-example-loading-scope="local">{{ _("Show local Loading") }}</button>
+      <button type="button" class="om-button om-button-secondary" data-example-loading-scope="page">{{ _("Show page Loading") }}</button>
+      <button type="button" class="om-button om-button-soft-danger" data-example-network-failure data-om-action="get" data-om-url="/examples/navigation/loading/wait">{{ _("Try request failure") }}</button>
+    </div>
+    <div class="om-card-body border-t border-default-200">
+      <p class="mb-0 text-default-600" data-example-loading-result>{{ _("No delayed request has run yet.") }}</p>
+    </div>
+  </section>
+
+  <section class="om-card mt-4">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Main-frame Loading") }}</h2></div>
+    <div class="om-card-body flex flex-wrap items-center gap-3">
+      <p class="mb-0 grow text-default-500">{{ _("The slow link lets the existing Turbo main-frame overlay remain visible until the server response arrives.") }}</p>
+      <a class="om-button om-button-secondary" href="/examples/navigation/loading?slow=1">{{ _("Reload slowly") }}</a>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card border border-red-200">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Revoke current-user Sessions") }}</h2></div>
+    <div class="om-card-body space-y-4">
+      <p class="text-default-500">{{ _("This uses Session.force_logout_user for the signed-in user. The shared user EventSource detects the removed Redis record, shows the Session-expired alert and returns the browser to login.") }}</p>
+      <form method="post" action="/examples/session/revoke/submit" data-om-action="submit" data-om-confirm="{{ _('Revoke all current-user Sessions?') }}" data-example-session-revoke>
+        {% csrf_token %}
+        <button type="submit" class="om-button om-button-danger">{{ _("Revoke my Sessions") }}</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

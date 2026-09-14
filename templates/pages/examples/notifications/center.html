@@ -1,0 +1,18 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card">
+    <div class="om-card-body">
+      <div class="flex flex-wrap items-center justify-between gap-5">
+        <div>
+          <h2 class="om-card-title mb-2">{{ _("Use the shared notification center") }}</h2>
+          <p class="mb-2 text-default-500">{{ _("The framework owns filtering, pagination, read state, deletion, topbar refresh and the open-link endpoint. This Demo does not duplicate that implementation.") }}</p>
+          <p class="mb-0 text-sm text-default-500">{{ _("Current unread count:") }} <strong data-example-notification-unread>{{ unread_count }}</strong></p>
+        </div>
+        <a class="om-button om-button-primary" href="/user-notifications" data-example-open-notification-center>
+          <i class="ri-notification-3-line mr-2" aria-hidden="true"></i>{{ _("Open user notification center") }}
+        </a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

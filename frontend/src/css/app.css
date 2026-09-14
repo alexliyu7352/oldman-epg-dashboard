@@ -1,0 +1,89 @@
+@import "@fontsource/dm-sans/latin-300.css";
+@import "@fontsource/dm-sans/latin-400.css";
+@import "@fontsource/dm-sans/latin-500.css";
+@import "@fontsource/dm-sans/latin-600.css";
+@import "@fontsource/dm-sans/latin-700.css";
+@import "tailwindcss";
+@import "oldman-web/styles/tailwind.css";
+@import "oldman-web/styles/icons.css";
+@import "./generated/icons.css";
+
+@source "../../../templates";
+@source "../**/*.ts";
+@source "../../../apps/**/*.py";
+
+@layer components {
+  .om-dashboard-banner {
+    @apply overflow-hidden rounded-surface bg-primary/10 text-primary shadow-card;
+  }
+
+  .om-dashboard-banner-inner {
+    @apply flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .om-stat-card {
+    @apply h-full;
+  }
+
+  .om-stat-card .om-card-body {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .om-stat-label {
+    @apply text-sm font-normal text-default-700;
+  }
+
+  .om-stat-value {
+    @apply mt-5 text-2xl font-semibold leading-tight text-default-800;
+  }
+
+  .om-stat-meta {
+    @apply mt-3 flex items-center gap-2 text-sm text-default-500;
+  }
+
+  .om-stat-icon {
+    @apply grid size-12 shrink-0 place-items-center rounded bg-primary text-xl text-white;
+  }
+
+  .om-analytics-tile {
+    @apply relative min-h-[10.4rem] overflow-hidden rounded-surface shadow-card;
+  }
+
+  .om-analytics-tile::before,
+  .om-analytics-tile::after {
+    content: "";
+    @apply absolute rounded-full bg-white/30;
+  }
+
+  .om-analytics-tile::before {
+    @apply right-12 top-5 h-20 w-3;
+  }
+
+  .om-analytics-tile::after {
+    @apply right-4 top-14 h-3 w-16;
+  }
+
+  .om-analytics-tile .om-card-body {
+    @apply relative z-10;
+  }
+
+  .om-analytics-icon {
+    @apply mb-7 grid size-12 place-items-center rounded text-2xl text-white;
+  }
+
+  [data-om-chart-summary]:not([hidden]) {
+    @apply mt-3 flex flex-wrap gap-3 border-t border-default-200 pt-3;
+  }
+
+  [data-om-chart-summary-item] {
+    @apply flex min-w-32 items-baseline justify-between gap-3 rounded bg-default-50 px-3 py-2;
+  }
+
+  [data-om-chart-summary-value] {
+    @apply font-semibold text-default-800;
+  }
+
+  [data-om-chart-meta]:not([hidden]) {
+    @apply mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-default-500;
+  }
+}

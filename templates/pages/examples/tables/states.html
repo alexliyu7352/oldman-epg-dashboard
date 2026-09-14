@@ -1,0 +1,29 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <section class="om-card" data-example-table-state="loading">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Loading") }}</h2></div>
+      <div class="om-card-body">{{ loading_fragment }}</div>
+    </section>
+    <section class="om-card" data-example-table-state="empty">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Empty") }}</h2></div>
+      <div class="om-card-body">{{ empty_fragment }}</div>
+    </section>
+    <section class="om-card" data-example-table-state="error">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Request error") }}</h2></div>
+      <div class="om-card-body">{{ error_fragment }}</div>
+    </section>
+    <section class="om-card" data-example-table-state="permission">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Permission denied") }}</h2></div>
+      <div class="om-card-body">{{ permission_fragment }}</div>
+    </section>
+  </div>
+
+  <section class="om-card mt-4" data-example-table-state="selection">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Selectable rows") }}</h2></div>
+    <div class="om-card-body">
+      {{ selectable_table.render_shell(html_id="example-project-state-selection", show_search=true, data_format="json") }}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Fixed-prefix Storage API sequence") }}</h2></div>
+    <div class="om-card-body">
+      <p class="text-default-500">{{ _("This operation uses only examples/storage-api/sample.txt. The browser cannot submit an arbitrary Storage path.") }}</p>
+      {{ api_form.render(action="/examples/storage/api/run", form_mode="json", submit_label=_("Run Storage API example")) }}
+    </div>
+  </section>
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+    <div class="om-card-body" id="storage-api-result">
+      {% include "pages/examples/storage/_api_result.html" %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="space-y-5" data-example-ui-reference="foundations">
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Color tokens") }}</h2></div>
+    <div class="om-card-body grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {% for name, classes in [
+        ("Primary", "bg-primary text-white"),
+        ("Surface", "border border-default-200 bg-surface text-default-800"),
+        ("Muted", "bg-default-100 text-default-700"),
+        ("Success", "bg-green-600 text-white"),
+        ("Warning", "bg-amber-500 text-default-950"),
+        ("Danger", "bg-red-600 text-white"),
+        ("Info", "bg-sky-600 text-white"),
+        ("Canvas", "bg-canvas text-default-800")
+      ] %}
+      <div class="overflow-hidden rounded-surface border border-default-200">
+        <div class="h-20 {{ classes }}"></div>
+        <div class="bg-surface px-3 py-2 text-sm font-medium">{{ _(name) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <section class="om-card">
+      <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Spacing, radius, and depth") }}</h2></div>
+      <div class="om-card-body space-y-5">
+        <div class="space-y-2" aria-label="{{ _('Spacing scale') }}">
+          {% for size, width in [("4", "w-4"), ("8", "w-8"), ("12", "w-12"), ("16", "w-16"), ("24", "w-24"), ("32", "w-32")] %}
+          <div class="flex items-center gap-3 text-sm"><code class="w-8 text-default-500">{{ size }}</code><span class="h-2 rounded bg-primary {{ width }}"></span></div>
+          {% endfor %}
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center text-xs text-default-600">
+          <div class="rounded border border-default-200 p-4">{{ _("Default radius") }}</div>
+          <div class="rounded-xl border border-default-200 p-4">{{ _("Large radius") }}</div>
+          <div class="rounded border border-default-100 p-4 shadow-card">{{ _("Card shadow") }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="om-card overflow-hidden" data-theme="dark">
+      <div class="border-b border-default-800 bg-default-950 px-5 py-4">
+        <h2 class="text-base font-semibold text-default-100">{{ _("Dark token reference") }}</h2>
+        <p class="mt-1 text-sm text-default-400">{{ _("The same semantic tokens adapt without a second component design.") }}</p>
+      </div>
+      <div class="grid gap-3 bg-canvas p-5 sm:grid-cols-2">
+        <div class="rounded-surface bg-surface p-4 text-default-100 shadow-card">{{ _("Dark surface") }}</div>
+        <div class="rounded border border-default-700 bg-default-900 p-4 text-default-300">{{ _("Muted surface") }}</div>
+        <button type="button" class="om-button om-button-primary">{{ _("Primary action") }}</button>
+        <button type="button" class="om-button om-button-light">{{ _("Secondary action") }}</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Motion preference") }}</h2></div>
+    <div class="om-card-body flex flex-wrap items-center gap-4">
+      <span class="size-8 animate-spin rounded-full border-4 border-default-200 border-t-primary motion-reduce:animate-none" aria-hidden="true"></span>
+      <p class="max-w-2xl text-sm text-default-600">{{ _("Animation is decorative. When the browser requests reduced motion, the indicator remains visible but stops rotating.") }}</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

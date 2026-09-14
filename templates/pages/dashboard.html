@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Dashboard") }} · Oldman{% endblock %}
+
+{% block content %}
+<section class="om-page-section" data-om-component="dashboard-overview">
+  <div class="om-page-heading">
+    <div>
+      <p class="om-page-kicker">Oldman</p>
+      <h1 class="om-page-title">{{ _("Dashboard") }}</h1>
+    </div>
+    <div class="om-page-actions">
+      <div class="om-dropdown">
+        <button class="om-button om-button-soft-secondary om-button-sm" type="button" data-om-dropdown-toggle aria-expanded="false">
+          <i class="ri-calendar-event-line"></i>{{ _("Range") }}
+        </button>
+        <div class="om-dropdown-menu om-dropdown-menu-end">
+          <button class="om-dropdown-item" type="button" data-om-dashboard-range="7d">7 {{ _("Days") }}</button>
+          <button class="om-dropdown-item active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+          <button class="om-dropdown-item" type="button" data-om-dashboard-range="90d">90 {{ _("Days") }}</button>
+        </div>
+      </div>
+      <button class="om-button om-button-soft-success om-button-sm" type="button" data-om-dashboard-refresh>
+        <i class="ri-refresh-line"></i>{{ _("Refresh") }}
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <div class="lg:col-span-1">
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2">
+        <div class="om-analytics-tile bg-green-500/15">
+          <div class="om-card-body">
+            <span class="om-analytics-icon bg-green-500"><i class="ri-tv-2-line" aria-hidden="true"></i></span>
+            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.channel_count }}">0</span></h2>
+            <p class="om-stat-label">{{ _("Total Channels") }}</p>
+          </div>
+        </div>
+        <div class="om-analytics-tile bg-orange-500/15">
+          <div class="om-card-body">
+            <span class="om-analytics-icon bg-orange-500"><i class="ri-calendar-event-line" aria-hidden="true"></i></span>
+            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.epg_count }}">0</span></h2>
+            <p class="om-stat-label">{{ _("Programmes") }}</p>
+          </div>
+        </div>
+        <div class="om-analytics-tile bg-violet-500/15">
+          <div class="om-card-body">
+            <span class="om-analytics-icon bg-violet-500"><i class="ri-image-line" aria-hidden="true"></i></span>
+            <h2 class="om-stat-value">{{ stats.logo_coverage_percent }}%</h2>
+            <p class="om-stat-label">{{ _("Logo Coverage") }}</p>
+          </div>
+        </div>
+        <div class="om-analytics-tile bg-sky-500/15">
+          <div class="om-card-body">
+            <span class="om-analytics-icon bg-sky-500"><i class="ri-cloud-line" aria-hidden="true"></i></span>
+            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.upstream_record_count }}">0</span></h2>
+            <p class="om-stat-label">{{ _("Upstream Records") }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2">
+      <div class="om-card h-full">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Platform Perspective") }}</h2>
+          <a href="/epg-list" class="om-button om-button-soft-primary om-button-sm">{{ _("Review programmes") }} <i class="ri-arrow-right-line"></i></a>
+        </div>
+        <div class="om-card-body min-h-[260px]" data-om-loading-initial="true">
+          {{ programme_trend_chart.render_shell(html_id="programme-trend-chart") }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
+    <div class="xl:col-span-6">
+      <div class="om-card om-card-height-100">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Recent Upstream Anomalies") }}</h2>
+          <a href="/upstream-records" class="om-button om-button-soft-primary om-button-sm">{{ _("View all") }}</a>
+        </div>
+        <div class="om-card-body">
+          <div class="om-table-scroll">
+            <table class="om-table min-w-[34rem]">
+              <thead>
+                <tr>
+                  <th>{{ _("Source") }}</th>
+                  <th>{{ _("Record") }}</th>
+                  <th>{{ _("Disappeared") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in stats.recent_anomaly_records %}
+                  <tr>
+                    <td><span class="om-badge bg-sky-500/10 text-sky-700">{{ record.source_code }}</span></td>
+                    <td class="font-medium text-default-800">{{ record.primary_name or record.source_record_key }}</td>
+                    <td>{{ record.disappeared_at or "-" }}</td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="3" class="py-6 text-center text-default-500">{{ _("No upstream anomalies found.") }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="xl:col-span-6">
+      <div class="om-card om-card-height-100">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Recent Decisions") }}</h2>
+          <a href="/match-decisions" class="om-button om-button-soft-primary om-button-sm">{{ _("View all") }}</a>
+        </div>
+        <div class="om-card-body">
+          <div class="om-table-scroll">
+            <table class="om-table min-w-[34rem]">
+              <thead>
+                <tr>
+                  <th>{{ _("Scope") }}</th>
+                  <th>{{ _("Decision") }}</th>
+                  <th>{{ _("Reason") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for decision in stats.recent_decisions %}
+                  <tr>
+                    <td>{{ decision.decision_scope }}</td>
+                    <td><span class="om-badge bg-red-500/10 text-red-700">{{ decision.decision }}</span></td>
+                    <td class="font-medium text-default-800">{{ decision.reason }}</td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="3" class="py-6 text-center text-default-500">{{ _("No pending decisions found.") }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="xl:col-span-4">
+      <div class="om-card">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Feed Status") }}</h2>
+        </div>
+        <div class="om-card-body min-h-[240px]" data-om-loading-initial="true">
+          {{ feed_status_chart.render_shell(html_id="feed-status-chart") }}
+        </div>
+      </div>
+    </div>
+    <div class="xl:col-span-4">
+      <div class="om-card">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Logo Quality") }}</h2>
+        </div>
+        <div class="om-card-body min-h-[240px]" data-om-loading-initial="true">
+          {{ logo_quality_chart.render_shell(html_id="logo-quality-chart") }}
+        </div>
+      </div>
+    </div>
+    <div class="xl:col-span-4">
+      <div class="om-card h-full">
+        <div class="om-card-header">
+          <h2 class="om-card-title">{{ _("Shared programme database") }}</h2>
+        </div>
+        <div class="om-card-body flex h-full flex-col justify-between gap-6">
+          <p class="text-sm text-default-500">{{ _("Manage channels, schedules and matching metadata from one backend dashboard.") }}</p>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="text-default-500">{{ _("Catalog Feeds") }}</p>
+              <p class="mt-1 text-xl font-semibold text-default-800">{{ stats.catalog_feed_count }}</p>
+            </div>
+            <div>
+              <p class="text-default-500">{{ _("Pending Decisions") }}</p>
+              <p class="mt-1 text-xl font-semibold text-default-800">{{ stats.pending_decision_count }}</p>
+            </div>
+          </div>
+          <a href="/channels-epg" class="om-button om-button-primary w-fit">{{ _("Manage Channels") }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="dashboard-feedback" data-om-component="feedback"></div>
+{% endblock %}

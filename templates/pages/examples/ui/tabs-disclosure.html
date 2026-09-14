@@ -1,0 +1,93 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+<div class="grid gap-5 xl:grid-cols-2" data-example-ui-reference="tabs-disclosure">
+  <section class="om-card xl:col-span-2" data-om-component="tabs" data-example-ui-tabs>
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title">{{ _("Workspace tabs") }}</h2>
+        <p class="mt-1 text-sm text-default-500">{{ _("Use Arrow Left, Arrow Right, Home, and End to move between available tabs.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <div class="om-tabs" role="tablist" aria-label="{{ _('Workspace sections') }}">
+        <button type="button" class="om-tab" id="workspace-overview-tab" role="tab" data-om-tab aria-controls="workspace-overview-panel" aria-selected="true">{{ _("Overview") }}</button>
+        <button type="button" class="om-tab" id="workspace-activity-tab" role="tab" data-om-tab aria-controls="workspace-activity-panel" aria-selected="false">{{ _("Activity") }}</button>
+        <button type="button" class="om-tab" id="workspace-billing-tab" role="tab" data-om-tab aria-controls="workspace-billing-panel" aria-selected="false" disabled>{{ _("Billing") }}</button>
+        <button type="button" class="om-tab" id="workspace-audit-tab" role="tab" data-om-tab aria-controls="workspace-audit-panel" aria-selected="false">{{ _("Audit log") }}</button>
+      </div>
+
+      <section class="om-tab-panel" id="workspace-overview-panel" role="tabpanel" aria-labelledby="workspace-overview-tab">
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div><p class="text-sm text-default-500">{{ _("Active services") }}</p><strong class="mt-1 block text-2xl text-default-900">18</strong></div>
+          <div><p class="text-sm text-default-500">{{ _("Requests today") }}</p><strong class="mt-1 block text-2xl text-default-900">84.2k</strong></div>
+          <div><p class="text-sm text-default-500">{{ _("Error rate") }}</p><strong class="mt-1 block text-2xl text-emerald-600">0.08%</strong></div>
+        </div>
+      </section>
+      <section class="om-tab-panel" id="workspace-activity-panel" role="tabpanel" aria-labelledby="workspace-activity-tab" hidden>
+        <ul class="om-list">
+          <li class="om-list-item"><div class="om-list-row"><span class="om-list-marker"></span><div class="om-list-content"><p class="om-list-title">{{ _("Configuration published") }}</p><p class="om-list-meta">{{ _("The production routing rules were updated five minutes ago.") }}</p></div></div></li>
+          <li class="om-list-item"><div class="om-list-row"><span class="om-list-marker"></span><div class="om-list-content"><p class="om-list-title">{{ _("Health check recovered") }}</p><p class="om-list-meta">{{ _("All edge nodes are responding normally.") }}</p></div></div></li>
+        </ul>
+      </section>
+      <section class="om-tab-panel" id="workspace-billing-panel" role="tabpanel" aria-labelledby="workspace-billing-tab" hidden>{{ _("Billing is unavailable in this environment.") }}</section>
+      <section class="om-tab-panel" id="workspace-audit-panel" role="tabpanel" aria-labelledby="workspace-audit-tab" hidden>
+        <p class="text-sm text-default-600">{{ _("Audit records remain available for ninety days and can be exported by authorized operators.") }}</p>
+      </section>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title">{{ _("Accordion") }}</h2><span class="om-badge om-badge-info">{{ _("Native HTML") }}</span></div>
+    <div class="om-card-body">
+      <div class="om-accordion" data-example-ui-accordion>
+        <details class="om-disclosure" name="deployment-help" open>
+          <summary class="om-disclosure-summary">{{ _("How is a deployment started?") }}</summary>
+          <div class="om-disclosure-content">{{ _("Create a release, review its checks, and promote it to the selected environment.") }}</div>
+        </details>
+        <details class="om-disclosure" name="deployment-help">
+          <summary class="om-disclosure-summary">{{ _("Can I stop a rollout?") }}</summary>
+          <div class="om-disclosure-content">{{ _("Pause the rollout before the final instance is promoted, then inspect the failed health checks.") }}</div>
+        </details>
+        <details class="om-disclosure" name="deployment-help">
+          <summary class="om-disclosure-summary">{{ _("Where are deployment logs stored?") }}</summary>
+          <div class="om-disclosure-content">{{ _("Open the activity page for live output or the audit log for retained events.") }}</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title">{{ _("Standalone collapse") }}</h2></div>
+    <div class="om-card-body">
+      <details class="om-disclosure om-collapse" data-example-ui-collapse>
+        <summary class="om-disclosure-summary">{{ _("Show advanced connection details") }}</summary>
+        <div class="om-disclosure-content grid gap-3 sm:grid-cols-2">
+          <div><p class="text-xs font-medium uppercase tracking-wide text-default-400">{{ _("Region") }}</p><p class="mt-1 text-default-800">us-west-2</p></div>
+          <div><p class="text-xs font-medium uppercase tracking-wide text-default-400">{{ _("Protocol") }}</p><p class="mt-1 text-default-800">HTTPS / HTTP/2</p></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="om-card xl:col-span-2">
+    <div class="om-card-header">
+      <div><h2 class="om-card-title">{{ _("Stepper states") }}</h2><p class="mt-1 text-sm text-default-500">{{ _("The shared visual states are reused by multi-step forms.") }}</p></div>
+    </div>
+    <div class="om-card-body space-y-6">
+      <ol class="om-stepper" aria-label="{{ _('Deployment progress') }}" data-example-ui-stepper>
+        <li class="om-step is-complete"><span class="om-step-marker"><i class="ri-check-line" aria-hidden="true"></i></span><span class="om-step-label">{{ _("Configure") }}</span></li>
+        <li class="om-step is-complete"><span class="om-step-marker"><i class="ri-check-line" aria-hidden="true"></i></span><span class="om-step-label">{{ _("Validate") }}</span></li>
+        <li class="om-step" aria-current="step"><span class="om-step-marker">3</span><span class="om-step-label">{{ _("Deploy") }}</span></li>
+        <li class="om-step" aria-disabled="true"><span class="om-step-marker">4</span><span class="om-step-label">{{ _("Verify") }}</span></li>
+      </ol>
+
+      <ol class="om-stepper" aria-label="{{ _('Failed import progress') }}">
+        <li class="om-step is-complete"><span class="om-step-marker"><i class="ri-check-line" aria-hidden="true"></i></span><span class="om-step-label">{{ _("Upload") }}</span></li>
+        <li class="om-step is-error" aria-current="step"><span class="om-step-marker"><i class="ri-close-line" aria-hidden="true"></i></span><span class="om-step-label">{{ _("Process") }}</span></li>
+        <li class="om-step" aria-disabled="true"><span class="om-step-marker">3</span><span class="om-step-label">{{ _("Review") }}</span></li>
+      </ol>
+    </div>
+  </section>
+</div>
+{% endblock %}

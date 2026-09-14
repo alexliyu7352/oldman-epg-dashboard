@@ -1,0 +1,226 @@
+{% macro example_menu_group(slug, title, icon, pages) -%}
+  {% set section_slug = slug | replace("-", "_") %}
+  {% set section_name = "examples_" ~ section_slug %}
+  {% set panel_id = "sidebarExamples-" ~ section_slug %}
+  <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == section_name else '' }}" data-om-menu-item>
+    <button class="menu-link oldman-menu-link {{ 'active' if active_section == section_name else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == section_name else 'false' }}" aria-controls="{{ panel_id }}">
+      <i class="menu-icon oldman-menu-icon {{ icon }}"></i>
+      <span class="menu-text">{{ title }}</span>
+      <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+    </button>
+    <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == section_name else 'hidden' }}" id="{{ panel_id }}" data-om-menu-panel {% if active_section != section_name %}hidden{% endif %}>
+      {% for href, page_slug, page_title in pages %}
+        {% set page_name = section_name ~ "_" ~ (page_slug | replace("-", "_")) %}
+        <li class="menu-item"><a href="{{ href }}" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == page_name else '' }}"><span class="menu-text">{{ page_title }}</span></a></li>
+      {% endfor %}
+    </ul>
+  </li>
+{%- endmacro %}
+
+      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'dashboard' else '' }}" data-om-menu-item>
+        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'dashboard' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'dashboard' else 'false' }}" aria-controls="sidebarDashboard">
+          <i class="menu-icon oldman-menu-icon ri-dashboard-2-line"></i>
+          <span class="menu-text">{{ _("Dashboard") }}</span>
+          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+        </button>
+        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'dashboard' else 'hidden' }}" id="sidebarDashboard" data-om-menu-panel {% if active_section != 'dashboard' %}hidden{% endif %}>
+          <li class="menu-item"><a href="/dashboard" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page in ['dashboard', 'dashboard_overview'] else '' }}"><span class="menu-text">{{ _("Overview") }}</span></a></li>
+          <li class="menu-item"><a href="/dashboard/analytics" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'dashboard_analytics' else '' }}"><span class="menu-text">{{ _("Analytics") }}</span></a></li>
+        </ul>
+      </li>
+
+      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'epg' else '' }}" data-om-menu-item>
+        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'epg' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'epg' else 'false' }}" aria-controls="sidebarEpg">
+          <i class="menu-icon oldman-menu-icon ri-tv-2-line"></i>
+          <span class="menu-text">{{ _("EPG Management") }}</span>
+          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+        </button>
+        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'epg' else 'hidden' }}" id="sidebarEpg" data-om-menu-panel {% if active_section != 'epg' %}hidden{% endif %}>
+          <li class="menu-item"><a href="/channels-epg" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'channels_epg' else '' }}"><span class="menu-text">{{ _("Channels") }}</span></a></li>
+          <li class="menu-item"><a href="/channel-names" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'channel_names' else '' }}"><span class="menu-text">{{ _("Channel Names") }}</span></a></li>
+          <li class="menu-item"><a href="/epg-list" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'epg_list' else '' }}"><span class="menu-text">{{ _("Programmes") }}</span></a></li>
+        </ul>
+      </li>
+
+      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'catalog' else '' }}" data-om-menu-item>
+        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'catalog' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'catalog' else 'false' }}" aria-controls="sidebarCatalog">
+          <i class="menu-icon oldman-menu-icon ri-database-2-line"></i>
+          <span class="menu-text">{{ _("Catalog") }}</span>
+          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+        </button>
+        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'catalog' else 'hidden' }}" id="sidebarCatalog" data-om-menu-panel {% if active_section != 'catalog' %}hidden{% endif %}>
+          <li class="menu-item"><a href="/catalog-channels" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'catalog_channels' else '' }}"><span class="menu-text">{{ _("Catalog Channels") }}</span></a></li>
+          <li class="menu-item"><a href="/catalog-feeds" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'catalog_feeds' else '' }}"><span class="menu-text">{{ _("Catalog Feeds") }}</span></a></li>
+          <li class="menu-item"><a href="/match-decisions" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'match_decisions' else '' }}"><span class="menu-text">{{ _("Match Decisions") }}</span></a></li>
+        </ul>
+      </li>
+
+      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'ingestion' else '' }}" data-om-menu-item>
+        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'ingestion' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'ingestion' else 'false' }}" aria-controls="sidebarIngestion">
+          <i class="menu-icon oldman-menu-icon ri-cloud-line"></i>
+          <span class="menu-text">{{ _("Ingestion") }}</span>
+          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+        </button>
+        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'ingestion' else 'hidden' }}" id="sidebarIngestion" data-om-menu-panel {% if active_section != 'ingestion' %}hidden{% endif %}>
+          <li class="menu-item"><a href="/upstream-records" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'upstream_records' else '' }}"><span class="menu-text">{{ _("Upstream Records") }}</span></a></li>
+          <li class="menu-item"><a href="/logo-assets" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'logo_assets' else '' }}"><span class="menu-text">{{ _("Logo Assets") }}</span></a></li>
+        </ul>
+      </li>
+
+      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'system' else '' }}" data-om-menu-item>
+        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'system' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'system' else 'false' }}" aria-controls="sidebarSystem">
+          <i class="menu-icon oldman-menu-icon ri-settings-3-line"></i>
+          <span class="menu-text">{{ _("System") }}</span>
+          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
+        </button>
+        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'system' else 'hidden' }}" id="sidebarSystem" data-om-menu-panel {% if active_section != 'system' %}hidden{% endif %}>
+          <li class="menu-item"><a href="/users" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'users' else '' }}"><span class="menu-text">{{ _("Users") }}</span></a></li>
+          <li class="menu-item"><a href="/user-session" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'user_session' else '' }}"><span class="menu-text">{{ _("User Session") }}</span></a></li>
+          <li class="menu-item"><a href="/notifications" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'notifications' else '' }}"><span class="menu-text">{{ _("Notifications") }}</span></a></li>
+        </ul>
+      </li>
+
+      <li class="menu-title"><span>{{ _("Examples") }}</span></li>
+
+      {{ example_menu_group("communication", _("Service communication"), "ri-cloud-line", [
+        ["/examples/communication/rpc", "rpc", _("Immediate RPC")],
+        ["/examples/communication/events", "events", _("Events and Broadcast")],
+        ["/examples/communication/failures", "failures", _("Communication Failures")]
+      ]) }}
+
+      {{ example_menu_group("tasks", _("Distributed Tasks"), "ri-cloud-line", [
+        ["/examples/tasks/results", "results", _("Submission and Results")],
+        ["/examples/tasks/schedules", "schedules", _("Schedules and Retry")],
+        ["/examples/tasks/queues", "queues", _("Queues and Broadcast")]
+      ]) }}
+
+      {{ example_menu_group("http", _("HTTP"), "ri-cloud-line", [
+        ["/examples/http/client", "client", _("Backend HTTP Client")]
+      ]) }}
+
+      {{ example_menu_group("cache", _("Cache"), "ri-database-2-line", [
+        ["/examples/cache/redis", "redis", _("Redis Cache")]
+      ]) }}
+
+      {{ example_menu_group("tables", _("Tables"), "ri-table-2", [
+        ["/examples/tables/static", "static", _("Static HTML")],
+        ["/examples/tables/responsive", "responsive", _("Responsive Table")],
+        ["/examples/tables/html", "html", _("HTML Data Table")],
+        ["/examples/tables/json", "json", _("JSON Data Table")],
+        ["/examples/tables/states", "states", _("Table States")],
+        ["/examples/tables/realtime", "realtime", _("Realtime Table")],
+        ["/examples/tables/advanced", "advanced", _("Advanced Tables")]
+      ]) }}
+
+      {{ example_menu_group("forms", _("Forms"), "ri-file-list-3-line", [
+        ["/examples/forms/basics", "basics", _("Basic Fields")],
+        ["/examples/forms/choices", "choices", _("Choice Fields")],
+        ["/examples/forms/layouts", "layouts", _("Form Layouts")],
+        ["/examples/forms/validation", "validation", _("Validation")],
+        ["/examples/forms/selects", "selects", _("Selects")],
+        ["/examples/forms/autocomplete", "autocomplete", _("Autocomplete")],
+        ["/examples/forms/date-time", "date-time", _("Date and Time")],
+        ["/examples/forms/masks", "masks", _("Input Masks")],
+        ["/examples/forms/sliders", "sliders", _("Sliders")],
+        ["/examples/forms/slug", "slug", _("Slug")],
+        ["/examples/forms/input-spinner", "input-spinner", _("Input Spinner")],
+        ["/examples/forms/tags", "tags", _("Tags")],
+        ["/examples/forms/color-picker", "color-picker", _("Color Picker")],
+        ["/examples/forms/rich-text", "rich-text", _("Rich Text Editor")],
+        ["/examples/forms/multi-step", "multi-step", _("Multi-step Form")],
+        ["/examples/forms/upload", "upload", _("File Upload")],
+        ["/examples/forms/json-list", "json-list", _("JSON Lists")],
+        ["/examples/forms/containers", "containers", _("Form Containers")]
+      ]) }}
+
+      {{ example_menu_group("modals", _("Modals"), "ri-window-line", [
+        ["/examples/modals/basics", "basics", _("Modal Basics")],
+        ["/examples/modals/remote", "remote", _("Remote Content")],
+        ["/examples/modals/workflows", "workflows", _("Modal Workflows")],
+        ["/examples/modals/actions", "actions", _("Response Actions")]
+      ]) }}
+
+      {{ example_menu_group("messages", _("Messages"), "ri-message-3-line", [
+        ["/examples/messages/page", "page", _("Page Messages")],
+        ["/examples/messages/feedback", "feedback", _("Feedback")]
+      ]) }}
+
+      {{ example_menu_group("notifications", _("Notifications"), "ri-notification-3-line", [
+        ["/examples/notifications/generator", "generator", _("Notification Generator")],
+        ["/examples/notifications/center", "center", _("Notification Center")],
+        ["/examples/notifications/realtime", "realtime", _("Realtime Notifications")]
+      ]) }}
+
+      {{ example_menu_group("storage", _("Storage"), "ri-folder-upload-line", [
+        ["/examples/storage/upload", "upload", _("Upload")],
+        ["/examples/storage/lifecycle", "lifecycle", _("File Lifecycle")],
+        ["/examples/storage/api", "api", _("Storage API")]
+      ]) }}
+
+      {{ example_menu_group("data-inputs", _("Data Inputs"), "ri-input-method-line", [
+        ["/examples/data-inputs/lists", "lists", _("Editable Lists")],
+        ["/examples/data-inputs/autocomplete", "autocomplete", _("Remote Autocomplete")],
+        ["/examples/data-inputs/providers", "providers", _("Data Providers")]
+      ]) }}
+
+      {{ example_menu_group("sortable", _("Sortable"), "ri-drag-move-2-line", [
+        ["/examples/sortable/workflow", "workflow", _("Review Workflow")]
+      ]) }}
+
+      {{ example_menu_group("charts", _("Charts"), "ri-bar-chart-box-line", [
+        ["/examples/charts/trends", "trends", _("Trends")],
+        ["/examples/charts/composition", "composition", _("Composition")],
+        ["/examples/charts/distribution", "distribution", _("Distribution")],
+        ["/examples/charts/states", "states", _("Chart States")],
+        ["/examples/charts/realtime", "realtime", _("Realtime Charts")]
+      ]) }}
+
+      {{ example_menu_group("navigation", _("Navigation"), "ri-route-line", [
+        ["/examples/navigation/lifecycle", "lifecycle", _("Page Lifecycle")],
+        ["/examples/navigation/actions", "actions", _("Navigation Actions")],
+        ["/examples/navigation/loading", "loading", _("Loading States")]
+      ]) }}
+
+      {{ example_menu_group("auth", _("Authentication"), "ri-shield-user-line", [
+        ["/examples/auth/login", "login", _("Login")],
+        ["/examples/auth/guards", "guards", _("Access Guards")],
+        ["/examples/auth/identity", "identity", _("Current Identity")]
+      ]) }}
+
+      {{ example_menu_group("session", _("Session"), "ri-time-line", [
+        ["/examples/session/lifecycle", "lifecycle", _("Session Lifecycle")],
+        ["/examples/session/revoke", "revoke", _("Session Revoke")],
+        ["/examples/session/expiry", "expiry", _("Session Expiry")]
+      ]) }}
+
+      {{ example_menu_group("i18n", _("Internationalization"), "ri-translate-2", [
+        ["/examples/i18n/server", "server", _("Server Translation")],
+        ["/examples/i18n/browser", "browser", _("Browser Translation")],
+        ["/examples/i18n/coverage", "coverage", _("Translation Coverage")]
+      ]) }}
+
+      {{ example_menu_group("ui", _("UI Reference"), "ri-palette-line", [
+        ["/examples/ui/foundations", "foundations", _("Foundations")],
+        ["/examples/ui/typography", "typography", _("Typography")],
+        ["/examples/ui/buttons", "buttons", _("Buttons")],
+        ["/examples/ui/badges-avatars", "badges-avatars", _("Badges and Avatars")],
+        ["/examples/ui/cards", "cards", _("Cards")],
+        ["/examples/ui/lists", "lists", _("Lists")],
+        ["/examples/ui/alerts", "alerts", _("Alerts")],
+        ["/examples/ui/progress-loading", "progress-loading", _("Progress and Loading")],
+        ["/examples/ui/carousel", "carousel", _("Horizontal Browsing")],
+        ["/examples/ui/timeline", "timeline", _("Timeline")],
+        ["/examples/ui/navigation-shell", "navigation-shell", _("Navigation Shell")],
+        ["/examples/ui/tabs-disclosure", "tabs-disclosure", _("Tabs and Disclosure")],
+        ["/examples/ui/dropdowns-overlays", "dropdowns-overlays", _("Dropdowns and Overlays")],
+        ["/examples/ui/countdown", "countdown", _("Countdown")],
+        ["/examples/ui/gallery", "gallery", _("Gallery")],
+        ["/examples/ui/video", "video", _("Video")],
+        ["/examples/ui/system-states", "system-states", _("System States")],
+        ["/examples/ui/images", "images", _("Images")],
+        ["/examples/ui/icons", "icons", _("Icons")]
+      ]) }}
+
+      {{ example_menu_group("plugins", _("Plugins"), "ri-plug-line", [
+        ["/examples/plugins", "index", _("Plugin Index")]
+      ]) }}

@@ -1,0 +1,6 @@
+{% if cleared %}
+  <p class="mb-0 font-medium" data-response-cache-cleared>{{ _("Response cache invalidated. The next read calculates a new snapshot.") }}</p>
+{% else %}
+  <p class="mb-2 font-medium">{{ _("Total projects: %(count)s", count=statistics.total) }}</p>
+  <p class="mb-0 text-sm text-default-500">{{ _("Calculated at (UTC)") }}: <time class="break-all" datetime="{{ statistics.calculated_at }}">{{ statistics.calculated_at }}</time></p>
+{% endif %}
