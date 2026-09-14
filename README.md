@@ -5,6 +5,9 @@
 ## 安装
 
 ```bash
+# 前置条件：bootstrap 会直接调用 uv 和 pnpm，先把两者装好
+#   uv：       curl -LsSf https://astral.sh/uv/install.sh | sh
+#   pnpm：     安装 Node.js 20 及以上后执行 corepack enable
 python3 scripts/bootstrap.py
 # 初次克隆时为所有已定义服务创建配置；已有文件绝不覆盖。
 for service in web task_worker task_scheduler nats_a nats_b; do
