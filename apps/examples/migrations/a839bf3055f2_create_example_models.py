@@ -9,9 +9,8 @@ Review upgrade() and downgrade() before applying this migration.
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision: str = 'a839bf3055f2'
 down_revision: str | Sequence[str] | None = None

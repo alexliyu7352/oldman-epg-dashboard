@@ -52,7 +52,7 @@ pnpm --dir frontend build
 python3 scripts/dev.py
 ```
 
-这个入口同时管理 Vite 和 Web 服务。修改 Dashboard 或同级 Oldman 的 Python/TypeScript 源码即可直接调试，不需要在“本地依赖”和“发布依赖”之间手工切换。打开 <http://127.0.0.1:17998/>。
+这个入口同时管理 Vite 和 Web 服务。修改 Dashboard 或同级 Oldman 的 Python/TypeScript 源码即可直接调试，不需要在“本地依赖”和“发布依赖”之间手工切换。打开 <http://127.0.0.1:17997/>。
 
 ## 产品模式
 
@@ -353,8 +353,9 @@ pnpm --dir frontend build
 ```
 
 Python、Jinja、CLI 和前端只维护这一套 `messages.po`。`pnpm --dir frontend build`
-会通过 `scripts/compile_js_messages.py` 从同一份 PO 生成浏览器 JSON；`.mo` 和 JSON
-只是同一翻译的两种运行产物，不再维护 `js_messages.po`。
+会通过框架 CLI `./run.sh i18n compile-frontend --service web` 从同一份 PO 生成浏览器
+JSON 和 `frontend/src/i18n/generated.ts`；`.mo` 和 JSON 只是同一翻译的两种运行产物，
+不再维护 `js_messages.po`。语言集合进了前端构建产物，所以新增语言后必须重新构建前端。
 
 ## 对照框架文档
 

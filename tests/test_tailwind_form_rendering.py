@@ -6,7 +6,6 @@ import asyncio
 import unittest
 from pathlib import Path
 
-from apps.epg_admin.forms import optional_int
 from wtforms import StringField
 
 from oldman.web.components.forms import TailwindForm, TailwindTableFilterForm
@@ -47,19 +46,12 @@ class TailwindFormRenderingTest(unittest.TestCase):
         self.assertIn('data-om-component="table-filter-form"', html)
         self.assertIn('data-om-table-target="#items-table"', html)
         self.assertIn('class="om-filter-toolbar"', html)
-        self.assertIn("om-form-grid", html)
-        self.assertIn("om-form-field", html)
-        self.assertIn('data-om-form-field-name="q"', html)
+        # The inline layout (default) renders the search box plus prefixed controls on one row.
+        self.assertIn('data-om-layout="inline"', html)
+        self.assertIn("om-filter-row", html)
+        self.assertIn('data-om-filter-field="q"', html)
+        self.assertIn("data-om-filter-reset", html)
         self.assertIn(">Filter</button>", html)
-
-    def test_optional_int_preserves_integer_protocol(self) -> None:
-        """迁移不能把 int() 支持的对象缩窄成只能解析字符串的值。"""
-
-        class IntegerLike:
-            def __int__(self) -> int:
-                return 17
-
-        self.assertEqual(optional_int(IntegerLike()), 17)
 
     def test_tailwind_entry_safelists_backend_layout_spans(self) -> None:
         css_entry = (PROJECT_ROOT / "frontend/src/css/app.css").read_text()

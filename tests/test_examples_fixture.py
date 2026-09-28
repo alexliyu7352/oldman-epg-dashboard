@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import tempfile
 import unittest
 from collections import Counter
 from pathlib import Path
+
+from oldman.testing import owned_redis_server
 
 from tests.test_epg_dashboard_migrations import (
     copy_epg_dashboard,
@@ -78,6 +81,8 @@ class ExampleFixtureTests(unittest.TestCase):
         self.assertEqual(12, counts["epg_admin.UpstreamSourceRecord"])
         self.assertEqual(12, counts["epg_admin.CatalogLogoAsset"])
         self.assertEqual(12, counts["epg_admin.CatalogMatchDecision"])
+        # One demo role: it grants the permission the example project table checks.
+        self.assertEqual(1, counts["roles.Role"])
 
         logo_paths = {
             record["fields"]["svg_path"]
@@ -91,8 +96,12 @@ class ExampleFixtureTests(unittest.TestCase):
             self.assertTrue(asset.is_file(), asset)
 
     def test_clean_database_load_is_idempotent_deterministic_and_atomic(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            project = copy_epg_dashboard(Path(temporary_directory))
+        # The copied project runs real commands; its Redis aliases point at this test's own server.
+        with (
+            tempfile.TemporaryDirectory() as temporary_directory,
+            owned_redis_server(Path(temporary_directory) / "redis", environment=os.environ) as redis_url,
+        ):
+            project = copy_epg_dashboard(Path(temporary_directory), redis_url=redis_url)
             synced = run_cli(project, "web", "settings", "sync")
             migrated = migrate_project(project)
             first_load = run_cli(project, "web", "loaddata", "demo")
@@ -136,6 +145,7 @@ class ExampleFixtureTests(unittest.TestCase):
                         "upstream_source_record",
                         "catalog_logo_asset",
                         "catalog_match_decision",
+                        "oldman_role",
                     )
                 }
                 team = connection.execute(
@@ -208,6 +218,7 @@ class ExampleFixtureTests(unittest.TestCase):
         self.assertEqual(12, counts["upstream_source_record"])
         self.assertEqual(12, counts["catalog_logo_asset"])
         self.assertEqual(12, counts["catalog_match_decision"])
+        self.assertEqual(1, counts["oldman_role"])
         self.assertEqual(9, generated_team_id)
         self.assertEqual(team[0], rolled_back_name)
         self.assertEqual(0, rejected_count)

@@ -14,12 +14,19 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
+from oldman.testing import owned_redis_server, use_owned_redis
+from oldman.testing.gates import ensure_gate_admin
+
 ROOT = Path(__file__).resolve().parents[1]
 EPG_DASHBOARD = ROOT
 
 
-def copy_epg_dashboard(destination: Path) -> Path:
-    """Copy the Python consumer sources needed by an isolated installation."""
+def copy_epg_dashboard(destination: Path, *, redis_url: str) -> Path:
+    """Copy the Python consumer sources needed by an isolated installation.
+
+    Every copied service's Redis aliases point at the test's own server: the steps below run
+    real processes, and the example settings name the developer's Redis.
+    """
     project = destination / "epg_dashboard"
     project.mkdir()
     for directory in ("apps", "config", "services"):
@@ -27,21 +34,17 @@ def copy_epg_dashboard(destination: Path) -> Path:
     (project / "data").mkdir()
     (project / "scripts").mkdir()
     shutil.copy2(EPG_DASHBOARD / "pyproject.toml", project / "pyproject.toml")
-    shutil.copy2(
-        EPG_DASHBOARD / "data" / "web_settings.example.yaml",
-        project / "data" / "web_settings.yaml",
-    )
-    shutil.copy2(
-        EPG_DASHBOARD / "scripts" / "create_admin.py",
-        project / "scripts" / "create_admin.py",
-    )
+    # 迁移要求每个已声明的服务都有自己的 settings 文件，只复制 web 的话命令在读配置前就退出了。
+    for example in sorted((EPG_DASHBOARD / "data").glob("*_settings.example.yaml")):
+        shutil.copy2(example, project / "data" / example.name.replace(".example", ""))
 
-    config_path = project / "data" / "web_settings.yaml"
-    payload = YAML(typ="safe", pure=True).load(config_path.read_text(encoding="utf-8"))
-    payload["i18n"]["use_i18n"] = False
-    yaml = YAML()
-    with config_path.open("w", encoding="utf-8") as file:
-        yaml.dump(payload, file)
+    for config_path in sorted((project / "data").glob("*_settings.yaml")):
+        payload = YAML(typ="safe", pure=True).load(config_path.read_text(encoding="utf-8"))
+        use_owned_redis(payload, redis_url)
+        if config_path.name == "web_settings.yaml":
+            payload["i18n"]["use_i18n"] = False
+        with config_path.open("w", encoding="utf-8") as file:
+            YAML().dump(payload, file)
     return project
 
 
@@ -98,6 +101,7 @@ class EpgDashboardMigrationTests(unittest.TestCase):
                 "oldman.auth",
                 "oldman.apps.admin",
                 "oldman.web.messages.notifications",
+                "oldman.apps.roles",
                 "apps.auth",
                 "apps.dashboard",
                 "apps.epg_admin",
@@ -117,16 +121,19 @@ class EpgDashboardMigrationTests(unittest.TestCase):
         )
         self.assertEqual(len(example_migrations), 1)
         service = (EPG_DASHBOARD / "services" / "web.py").read_text(encoding="utf-8")
-        create_admin = (EPG_DASHBOARD / "scripts" / "create_admin.py").read_text(encoding="utf-8")
-        for source in (service, create_admin):
-            self.assertNotIn("create_db_and_tables", source)
-            self.assertNotIn("configure_admin_database", source)
-            self.assertNotIn("scan_models", source)
+        self.assertNotIn("create_db_and_tables", service)
+        self.assertNotIn("configure_admin_database", service)
+        self.assertNotIn("scan_models", service)
+        # 建管理员用框架命令，项目不再自带一份脚本。
+        self.assertFalse((EPG_DASHBOARD / "scripts" / "create_admin.py").exists())
 
     def test_clean_copy_migrates_all_models_and_runtime_stays_lazy(self) -> None:
         """An empty database is migrated before scripts and Web startup use it."""
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            project = copy_epg_dashboard(Path(temporary_directory))
+        with (
+            tempfile.TemporaryDirectory() as temporary_directory,
+            owned_redis_server(Path(temporary_directory) / "redis", environment=os.environ) as redis_url,
+        ):
+            project = copy_epg_dashboard(Path(temporary_directory), redis_url=redis_url)
 
             settings_sync = run_cli(project, "web", "settings", "sync")
             history = run_cli(project, "db", "history")
@@ -157,6 +164,8 @@ class EpgDashboardMigrationTests(unittest.TestCase):
                 """,
             )
             migration_status = run_cli(project, "db", "status")
+            # The built-in Admin mounted at /admin serves collected assets and checks for them at startup.
+            collected = run_cli(project, "web", "static", "collect")
             runtime = run_python(
                 project,
                 """
@@ -191,28 +200,29 @@ class EpgDashboardMigrationTests(unittest.TestCase):
                     assert "/" in paths, paths
                     assert "/login" in paths, paths
                     assert "/catalog-feeds" in paths, paths
+                    assert "/admin" in paths, paths
 
                 asyncio.run(main())
                 """,
             )
-            create_admin = subprocess.run(
-                [
-                    sys.executable,
-                    "scripts/create_admin.py",
-                    "--username",
-                    "migration_admin",
-                    "--password",
-                    "MigrationAdmin123",
-                    "--email",
-                    "migration@example.com",
-                ],
-                cwd=project,
-                env=project_environment(project),
-                text=True,
-                capture_output=True,
-                timeout=30,
-                check=False,
-            )
+            # 建管理员走框架的公开路径（bootstrap + ensure_superuser），不启动服务的消息总线。
+            create_admin_failure: Exception | None = None
+            try:
+                ensure_gate_admin(
+                    project / "data" / "web_settings.yaml",
+                    environment=project_environment(project),
+                    project_root=project,
+                    username="migration_admin",
+                    password="MigrationAdmin123",
+                    email="migration@example.com",
+                )
+            except subprocess.CalledProcessError as exc:  # noqa: PERF203 - reported with the other step results below
+                # 裸 CalledProcessError 只说"退出码非 0"；把子进程的输出带上，失败才有诊断价值。
+                create_admin_failure = AssertionError(
+                    f"ensure_gate_admin failed ({exc.returncode}):\n{exc.stdout or ''}\n{exc.stderr or ''}"
+                )
+            except Exception as exc:  # noqa: BLE001 - reported with the other step results below
+                create_admin_failure = exc
 
             database = project / "data" / "epg_dashboard.db"
             with sqlite3.connect(database) as connection:
@@ -226,6 +236,7 @@ class EpgDashboardMigrationTests(unittest.TestCase):
         self.assertIn("epg_admin:", history.stdout)
         self.assertIn("examples:", history.stdout)
         self.assertEqual(migrated.returncode, 0, migrated.stdout + migrated.stderr)
+        self.assertEqual(collected.returncode, 0, collected.stdout + collected.stderr)
         self.assertEqual(
             migration_status.returncode,
             0,
@@ -233,11 +244,7 @@ class EpgDashboardMigrationTests(unittest.TestCase):
         )
         self.assertIn("examples:", migration_status.stdout)
         self.assertEqual(runtime.returncode, 0, runtime.stdout + runtime.stderr)
-        self.assertEqual(
-            create_admin.returncode,
-            0,
-            create_admin.stdout + create_admin.stderr,
-        )
+        self.assertIsNone(create_admin_failure)
         expected_epg_tables = {
             "epg_channelsepg",
             "epg_epglist",
@@ -263,6 +270,9 @@ class EpgDashboardMigrationTests(unittest.TestCase):
         self.assertTrue(expected_epg_tables.issubset(tables))
         self.assertTrue(expected_example_tables.issubset(tables))
         self.assertEqual(registry["oldman_user"], "auth")
+        # The roles App carries its own tables and migration.
+        self.assertEqual(registry["oldman_role"], "roles")
+        self.assertEqual(registry["oldman_user_role"], "roles")
         self.assertEqual(
             {registry[table] for table in expected_epg_tables},
             {"epg_admin"},

@@ -1,0 +1,32 @@
+<div data-config-file-operation="{{ operation }}">
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <span class="om-badge om-badge-primary" data-config-outside-changes="{{ state.outside_changes }}">{{ _("on_file_changed calls: %(count)s", count=state.outside_changes) }}</span>
+    <span class="text-sm text-default-500">
+      {% if operation in ("set_channel", "announce", "restore") %}{{ _("Saved by the store itself, so the hook was not called.") }}
+      {% elif operation == "edit_outside" %}{{ _("The file was replaced outside the store. Read again: within %(seconds)s seconds the store picks it up.", seconds=check_interval|int) }}
+      {% elif operation == "break_outside" %}{{ _("The file now holds a word where minutes belong. At its next check the store keeps the last valid value and logs an error.") }}
+      {% endif %}
+    </span>
+  </div>
+  <div class="grid gap-5 lg:grid-cols-2">
+    <div>
+      <h3 class="mb-3 text-base font-semibold">{{ _("Decoded value") }}</h3>
+      <p class="mb-3" data-config-announcement="{{ state.value.announcement }}">{{ _("Announcement") }}: {{ state.value.announcement or _("(none)") }}</p>
+      <div class="overflow-x-auto">
+        <table class="om-table mb-0">
+          <caption class="sr-only">{{ _("Channel overrides") }}</caption>
+          <thead><tr><th scope="col">{{ _("Channel ID") }}</th><th scope="col">{{ _("Display name") }}</th><th scope="col" class="text-end">{{ _("EPG offset in minutes") }}</th><th scope="col">{{ _("Enabled") }}</th></tr></thead>
+          <tbody>
+            {% for channel_id, override in state.value.channels.items() %}
+              <tr data-config-channel="{{ channel_id }}" data-config-offset="{{ override.epg_offset_minutes }}"><td>{{ channel_id }}</td><td>{{ override.display_name }}</td><td class="text-end">{{ override.epg_offset_minutes }}</td><td>{{ _("Yes") if override.enabled else _("No") }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h3 class="mb-3 text-base font-semibold">{{ _("The file on disk") }}</h3>
+      <pre class="mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm" data-config-file-text><code>{{ state.file_text }}</code></pre>
+    </div>
+  </div>
+</div>

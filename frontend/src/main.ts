@@ -1,5 +1,6 @@
 import "@app/css/app.css";
-import { createHttpClient, createI18n, createOldmanContext, setOldmanContext, startOldman, type HttpClientOptions, type LanguageDefinition, type OldmanApp } from "oldman-web/core";
+import { BasePage } from "@app/pages/base-page";
+import { createFetchCatalogLoader, createHttpClient, createI18n, createOldmanContext, readAssetBaseUrl, setOldmanContext, startOldman, type HttpClientOptions, type OldmanApp } from "oldman-web/core";
 import { defaultLanguage, languageAliases, languageDefinitions } from "./i18n/generated";
 
 const pageEntries = import.meta.glob([
@@ -24,7 +25,7 @@ export async function startOldmanApp(): Promise<OldmanApp> {
     const assetBaseUrl = readAssetBaseUrl();
     const i18n = createI18n({
       aliases: languageAliases,
-      catalogLoader: (language) => loadLanguageCatalog(language, assetBaseUrl),
+      catalogLoader: createFetchCatalogLoader({ assetBaseUrl }),
       defaultLanguage,
       document,
       http,
@@ -33,7 +34,8 @@ export async function startOldmanApp(): Promise<OldmanApp> {
     const context = createOldmanContext({ assetBaseUrl, document, http, httpOptions, i18n });
     setOldmanContext(context);
     await context.i18n.init();
-    const app = await startOldman({ context, pageLoader: loadPageEntry });
+    // Unknown entry names (a typo, a page without its own pages/<name>.ts) still get the dashboard base page.
+    const app = await startOldman({ context, pageLoader: loadPageEntry, fallbackPage: BasePage });
     document.documentElement.dataset.omReady = "true";
     return app;
   })();
@@ -72,25 +74,3 @@ async function loadPageEntry(pageName: string): Promise<void> {
   await loader();
 }
 
-function readAssetBaseUrl(): string {
-  const configured = document.querySelector<HTMLMetaElement>('meta[name="oldman-asset-base"]')?.content;
-  if (configured) return new URL(configured, window.location.href).toString();
-
-  return `${window.location.origin}/`;
-}
-
-async function loadLanguageCatalog(language: LanguageDefinition, assetBaseUrl: string) {
-  const url = new URL(language.catalogPath.replace(/^\/+/, ""), assetBaseUrl).toString();
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json"
-    }
-  });
-  if (!response.ok) {
-    return {
-      locale: language.locale,
-      messages: {}
-    };
-  }
-  return response.json();
-}

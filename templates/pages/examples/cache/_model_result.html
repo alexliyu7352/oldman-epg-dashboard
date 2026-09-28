@@ -1,0 +1,45 @@
+<div data-model-cache-operation="{{ operation }}">
+  {% if operation == "read" %}
+    {% set badges = {
+      "hits": ("om-badge-success", _("Cache hit")),
+      "misses": ("om-badge-primary", _("Cache miss: read from the database and stored")),
+      "bypassed": ("om-badge-warning", _("Bypassed: this process has just written example tasks")),
+      "fallbacks": ("om-badge-danger", _("Fallback: Redis or the cache pool was unavailable")),
+    } %}
+    {% set badge = badges.get(read.source, ("om-badge-secondary", _("Source unknown: another read ran at the same time"))) %}
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <span class="om-badge {{ badge[0] }}" data-model-cache-source="{{ read.source or '' }}">{{ badge[1] }}</span>
+      <span class="text-sm text-default-500">{{ _("%(ms)s ms", ms="%.2f"|format(read.elapsed_ms)) }}</span>
+    </div>
+    {% if read.tasks %}
+      <div class="overflow-x-auto">
+        <table class="om-table mb-4">
+          <caption class="sr-only">{{ _("Tasks of the chosen project") }}</caption>
+          <thead><tr><th scope="col">ID</th><th scope="col">{{ _("Title") }}</th><th scope="col">{{ _("Status") }}</th><th scope="col" class="text-end">{{ _("Position") }}</th></tr></thead>
+          <tbody>
+            {% for task in read.tasks %}
+              <tr data-model-cache-task="{{ task.id }}"><td>{{ task.id }}</td><td data-model-cache-title>{{ task.title }}</td><td>{{ task.status }}</td><td class="text-end">{{ task.position }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-4 text-default-500">{{ _("This project has no tasks.") }}</p>
+    {% endif %}
+    <p class="mb-0 text-sm text-default-500" data-model-cache-stats>{{ _("This process so far: %(hits)s hits, %(misses)s misses, %(bypassed)s bypassed, %(fallbacks)s fallbacks.", hits=read.stats.hits, misses=read.stats.misses, bypassed=read.stats.bypassed, fallbacks=read.stats.fallbacks) }}</p>
+  {% elif operation == "invalidate" %}
+    <p class="mb-0">{{ _("Every cached example task entry was invalidated; the next read is a miss.") }}</p>
+  {% elif operation == "restore" %}
+    <p class="mb-0" data-model-cache-restored="{{ restored }}">{{ _("Restored %(count)s rows through the ORM, so their caches were invalidated too.", count=restored) }}</p>
+  {% elif written is none %}
+    <p class="mb-0 text-default-500">{{ _("Nothing to change: no suitable project with tasks was found.") }}</p>
+  {% else %}
+    <p class="mb-2 font-medium" data-model-cache-written="{{ written.after }}">{{ written.project_name }}: “{{ written.before }}” → “{{ written.after }}”</p>
+    <p class="mb-0 text-sm text-default-500">
+      {% if operation == "rename" %}{{ _("Committed through the ORM. Read tasks again: the cached query of this project was invalidated.") }}
+      {% elif operation == "rename_other" %}{{ _("Committed through the ORM to another project's task. Read tasks again: this project's cached query is still a hit.") }}
+      {% elif operation == "rename_sql" %}{{ _("Committed with an UPDATE statement and nothing told the cache. Read tasks again: still a hit with the old title.") }}
+      {% else %}{{ _("Committed through the ORM. Read tasks again: every cached task query misses once.") }}{% endif %}
+    </p>
+  {% endif %}
+</div>

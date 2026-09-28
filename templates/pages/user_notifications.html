@@ -1,13 +1,12 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% block title %}{{ _("User notifications") }} · Oldman{% endblock %}
 
 {% block content %}
 <div class="page-content">
   <div class="om-page-section">
-    <div class="om-page-header">
-      <h1 class="om-page-title">{{ _("User notifications") }}</h1>
-    </div>
+    {{ page_head(_("User notifications")) }}
     {{ notification_center_content }}
   </div>
 </div>

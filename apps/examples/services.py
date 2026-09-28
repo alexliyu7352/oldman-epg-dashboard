@@ -5,15 +5,14 @@ from __future__ import annotations
 import datetime as dt
 from collections.abc import Sequence
 from decimal import Decimal
-from urllib.parse import quote
-
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from oldman.db import db_manager
 from oldman.serializers import MsgspecModel
-from oldman.storage import storages
+from oldman.storage import media_url, storages
+from oldman.utils.date import naive_utcnow
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from .models import (
     ExampleAsset,
@@ -83,7 +82,7 @@ async def asset_file_states(asset: ExampleAsset) -> dict[str, dict[str, object]]
             "exists": exists,
             "info": info,
             "path": path,
-            "url": f"/media/{quote(path, safe='/')}" if exists else None,
+            "url": media_url(path) if exists else None,
         }
     return states
 
@@ -310,7 +309,7 @@ async def create_server_metric(
         .limit(1)
     )
     latest = result.scalar_one_or_none()
-    sampled_at = dt.datetime.now(dt.UTC).replace(tzinfo=None)
+    sampled_at = naive_utcnow()
     if latest is not None:
         sampled_at = max(sampled_at, latest.sampled_at + dt.timedelta(minutes=1))
     step = (latest.id if latest is not None else server_id) % 7 + 1

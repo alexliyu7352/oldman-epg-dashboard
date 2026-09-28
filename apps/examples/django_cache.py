@@ -7,7 +7,6 @@ import pickle
 from uuid import uuid4
 
 import typer
-
 from oldman.cli import Command
 from oldman.compat.django.cache import get_django_cache, set_django_cache
 from oldman.conf import settings

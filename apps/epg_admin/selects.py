@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from oldman.web.components.selects import ModelSelectProvider, SelectChoice, select_registry
 from sqlalchemy import select
 
 from apps.epg_admin.models import CatalogChannel, CatalogFeed, ChannelName, ChannelsEpg, UpstreamSourceRecord
-from apps.epg_admin.tables import is_authenticated_request
-from oldman.web.components.selects import ModelSelectProvider, SelectChoice, select_registry
 
 
 @select_registry.register("channels")
@@ -20,10 +19,6 @@ class ChannelSelectProvider(ModelSelectProvider):
     label_field = "name"
     value_field = "id"
     page_size = 20
-
-    async def check_auth(self, request: Any, context) -> bool:
-        """检查当前请求是否允许访问频道选择器。"""
-        return is_authenticated_request(request)
 
     async def get_queryset(self, request: Any, context):
         """返回当前用户可搜索的频道查询。"""
@@ -40,10 +35,6 @@ class ChannelNameSelectProvider(ModelSelectProvider):
     value_field = "id"
     page_size = 20
 
-    async def check_auth(self, request: Any, context) -> bool:
-        """检查当前请求是否允许访问频道名称选择器。"""
-        return is_authenticated_request(request)
-
     async def get_queryset(self, request: Any, context):
         """返回当前用户可搜索的频道名称查询。"""
         return select(ChannelName).order_by(ChannelName.name.asc())
@@ -58,10 +49,6 @@ class CatalogChannelSelectProvider(ModelSelectProvider):
     label_field = "identity_name"
     value_field = "id"
     page_size = 20
-
-    async def check_auth(self, request: Any, context) -> bool:
-        """检查当前请求是否允许访问频道目录选择器。"""
-        return is_authenticated_request(request)
 
     async def get_queryset(self, request: Any, context):
         """返回当前用户可搜索的频道目录查询。"""
@@ -84,10 +71,6 @@ class CatalogFeedSelectProvider(ModelSelectProvider):
     value_field = "id"
     page_size = 20
 
-    async def check_auth(self, request: Any, context) -> bool:
-        """检查当前请求是否允许访问 feed 选择器。"""
-        return is_authenticated_request(request)
-
     async def get_queryset(self, request: Any, context):
         """返回当前用户可搜索的 feed 查询。"""
         return select(CatalogFeed).order_by(CatalogFeed.canonical_name.asc(), CatalogFeed.tvg_id.asc())
@@ -109,10 +92,6 @@ class UpstreamRecordSelectProvider(ModelSelectProvider):
     label_field = "source_record_key"
     value_field = "id"
     page_size = 20
-
-    async def check_auth(self, request: Any, context) -> bool:
-        """检查当前请求是否允许访问上游记录选择器。"""
-        return is_authenticated_request(request)
 
     async def get_queryset(self, request: Any, context):
         """返回当前用户可搜索的上游记录查询。"""

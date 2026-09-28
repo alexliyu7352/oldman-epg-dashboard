@@ -6,6 +6,7 @@
 /data/*.db-journal
 /data/*.db-shm
 /data/*.db-wal
+/data/example_channel_overrides.yaml
 /logs/
 /pids/
 /static/dist/

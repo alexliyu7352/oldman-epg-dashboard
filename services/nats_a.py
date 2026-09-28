@@ -2,7 +2,6 @@
 
 import asyncio
 
-from oldman.db import db_manager
 from oldman.runtime import SimpleApplication
 
 
@@ -16,9 +15,3 @@ class NatsAService(SimpleApplication):
         """Stay alive until the normal CLI stop or signal cancels the service."""
         await asyncio.Event().wait()
 
-    async def after_stop(self) -> None:
-        """Receivers have finished before their database dependency is closed."""
-        try:
-            await db_manager.close()
-        finally:
-            await super().after_stop()

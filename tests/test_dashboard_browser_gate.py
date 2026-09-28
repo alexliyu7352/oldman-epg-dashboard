@@ -59,7 +59,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 422,
-                    "url": "http://localhost:17998/channels-epg/new",
+                    "url": "http://localhost:17997/channels-epg/new",
                     "requestHeaders": {"method": "POST"},
                 }
             )
@@ -68,7 +68,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 400,
-                    "url": "http://localhost:17998/dashboard/charts/programme-trend?range=invalid",
+                    "url": "http://localhost:17997/dashboard/charts/programme-trend?range=invalid",
                     "requestHeaders": {"method": "GET"},
                 }
             )
@@ -77,7 +77,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 400,
-                    "url": "http://localhost:17998/dashboard/charts/feed-status?range=invalid",
+                    "url": "http://localhost:17997/dashboard/charts/feed-status?range=invalid",
                     "requestHeaders": {"method": "GET"},
                 }
             )
@@ -86,7 +86,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 400,
-                    "url": "http://localhost:17998/dashboard/charts/logo-quality?range=invalid",
+                    "url": "http://localhost:17997/dashboard/charts/logo-quality?range=invalid",
                     "requestHeaders": {"method": "GET"},
                 }
             )
@@ -95,7 +95,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 422,
-                    "url": "http://localhost:17998/admin/select/channels",
+                    "url": "http://localhost:17997/admin/select/channels",
                     "requestHeaders": {"method": "GET"},
                 }
             )
@@ -104,7 +104,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 500,
-                    "url": "http://localhost:17998/channels-epg/new",
+                    "url": "http://localhost:17997/channels-epg/new",
                     "requestHeaders": {"method": "POST"},
                 }
             )
@@ -113,7 +113,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
             self.module.is_expected_form_validation_response(
                 {
                     "status": 422,
-                    "url": "http://localhost:17998/channels-epg/new",
+                    "url": "http://localhost:17997/channels-epg/new",
                     "requestHeaders": {},
                 }
             )
@@ -325,7 +325,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
         ):
             self.module.assert_users_management_interactions(
                 UserClient(),
-                "http://localhost:17998",
+                "http://localhost:17997",
                 self.module.VerificationResult(),
             )
 
@@ -356,7 +356,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
         ):
             payload = self.module.perform_user_create_edit_delete_gate(
                 CrudClient(),
-                "http://localhost:17998",
+                "http://localhost:17997",
                 self.module.VerificationResult(),
             )
 
@@ -399,7 +399,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
         ):
             self.module.perform_user_create_edit_delete_gate(
                 CrudClient(),
-                "http://localhost:17998",
+                "http://localhost:17997",
                 self.module.VerificationResult(),
             )
 
@@ -427,7 +427,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
         ):
             self.module.login(
                 LoginClient(),
-                "http://localhost:17998",
+                "http://localhost:17997",
                 "oldman_admin",
                 "oldman_admin_123",
             )
@@ -1110,7 +1110,7 @@ class DashboardBrowserGateTest(unittest.TestCase):
                     "requestId": "form-1",
                     "response": {
                         "status": 422,
-                        "url": "http://localhost:17998/channels-epg/new",
+                        "url": "http://localhost:17997/channels-epg/new",
                     },
                 },
             }
@@ -1152,14 +1152,18 @@ class DashboardBrowserGateTest(unittest.TestCase):
         self.assertIn("hasFilterControl", source)
         self.assertIn("requestSubmit()", source)
 
-    def test_browser_gate_verifies_the_real_bold_font_resource(self) -> None:
-        """Computed weight alone must not hide a synthesized DM Sans 700 face."""
+    def test_browser_gate_verifies_the_real_font_resources(self) -> None:
+        """Computed weight alone would hide a synthesized face, so the gate reads FontFace."""
         source = VERIFY_TAILWIND_SCRIPT.read_text(encoding="utf-8")
 
         self.assertIn("font_loading_js", source)
         self.assertIn("document.fonts.ready", source)
-        self.assertIn("DM Sans 700 FontFace", source)
-        self.assertIn("700-normal", source)
+        # 设计用 400/500/600；300 和 700 在 6bd285a 里删掉了，门禁反过来要求它们不出现。
+        self.assertIn('const weights = ["400", "500", "600"];', source)
+        self.assertIn('for (const weight of ["300", "700"])', source)
+        self.assertIn("is registered but no token uses it", source)
+        # 只看 computed weight 会把合成字重也算通过，所以必须落到真实 woff2 资源上。
+        self.assertIn("normal[^/]*\\\\.woff2", source)
 
     def test_list_gate_checks_full_table_demo_capabilities(self) -> None:
         """列表页浏览器门禁必须覆盖 page size、排序、多选、badge 和 action 菜单。"""

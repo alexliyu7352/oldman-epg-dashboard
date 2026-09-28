@@ -7,12 +7,12 @@ import json
 from typing import Annotated
 
 import typer
-from sqlalchemy import func, select
-
 from oldman.cli import Command
 from oldman.db import db_manager
-from oldman.i18n import gettext, gettext_lazy as _
+from oldman.i18n import gettext
+from oldman.i18n import gettext_lazy as _
 from oldman.tasks import BackgroundTaskManager, TaskType
+from sqlalchemy import func, select
 
 from .models import ExampleProject, ExampleTeam
 

@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import datetime as dt
+import inspect
+import json
 import tempfile
 import unittest
+from unittest.mock import ANY, AsyncMock, patch
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -15,6 +18,7 @@ from sqlalchemy import Table, select
 
 from oldman.conf.schemas import DatabaseConfig
 from oldman.db import DatabaseManager
+from oldman.web.authentication import RequestUser
 from oldman.web.components.tables.views import TableValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,11 +51,12 @@ class AuthUserFormTest(unittest.TestCase):
                 "is_active": "y",
                 "is_staff": "y",
                 "is_superuser": "",
-            }
+            },
+            request=operator_request(is_superuser=True),
         )
 
         self.assertTrue(asyncio.run(form.validate()))
-        user = asyncio.run(form.save_user())
+        user = asyncio.run(form.save())
 
         self.assertNotEqual(user.password_hash, "Str0ngPass!2026")
         self.assertTrue(user.check_password("Str0ngPass!2026"))
@@ -72,6 +77,7 @@ class AuthUserFormTest(unittest.TestCase):
                 "is_staff": "y",
             },
             session=session,
+            request=operator_request(is_superuser=True),
         )
 
         self.assertFalse(asyncio.run(form.validate()))
@@ -94,6 +100,7 @@ class AuthUserFormTest(unittest.TestCase):
             },
             instance=user,
             session=FakeUserLookupSession({}),
+            request=operator_request(is_superuser=True, user_id=7),
         )
         form.current_user_id = 7
 
@@ -116,6 +123,7 @@ class AuthUserFormTest(unittest.TestCase):
             },
             instance=user,
             session=FakeUserLookupSession({}),
+            request=operator_request(is_superuser=True, user_id=7),
         )
         form.current_user_id = 7
 
@@ -138,6 +146,7 @@ class AuthUserFormTest(unittest.TestCase):
             },
             instance=user,
             session=FakeUserLookupSession({}),
+            request=operator_request(is_superuser=True, user_id=7),
         )
         form.current_user_id = 7
 
@@ -184,12 +193,13 @@ class AuthUserServiceTest(unittest.TestCase):
 
     def test_session_data_is_typed_and_contains_identity_permissions(self) -> None:
         """登录 session 必须保存完整身份字段并保持 MessagePack 类型。"""
-        from apps.auth.services import session_data
         from apps.auth.session import DashboardSessionData
+        from oldman.web.auth import session_data_for_user
 
         user = OldmanUser(id=3, username="alice", display_name="Alice", email="alice@example.test", password_hash="", is_active=True, is_staff=True, is_superuser=False)
 
-        value = session_data(user, "127.0.0.1")
+        # login_user() builds the session this way from the class the middleware attached to the request.
+        value = session_data_for_user(DashboardSessionData, user, expiry=600, login_ip="127.0.0.1")
         restored = DashboardSessionData.from_msgpack(value.to_msgpack())
 
         self.assertIsInstance(value, DashboardSessionData)
@@ -212,27 +222,16 @@ class AuthUserServiceTest(unittest.TestCase):
         async def run_case() -> None:
             user = OldmanUser(id=4, username="viewer", email="viewer@example.test", password_hash="", is_active=True, is_staff=False, is_superuser=False)
             user.set_password("Str0ngPass!2026")
-            original_get_user = services.get_user_by_username
 
-            async def fake_get_user(username: str):
+            async def fake_get_user(username: str, **_options: Any):
                 self.assertEqual(username, "viewer")
                 return user
 
-            services.get_user_by_username = fake_get_user
-            try:
-                self.assertIsNone(await services.authenticate_user("viewer", "Str0ngPass!2026"))
-            finally:
-                services.get_user_by_username = original_get_user
+            # The credential check is the framework's; the project only adds its staff policy on top.
+            with patch("oldman.auth.services.get_user_by_username", fake_get_user):
+                self.assertIsNone(await services.authenticate_user(cast(Any, SimpleNamespace()), "viewer", "Str0ngPass!2026"))
 
         asyncio.run(run_case())
-
-    def test_ensure_default_admin_sets_staff_and_superuser(self) -> None:
-        """默认管理员必须同时是 active、staff 和 superuser。"""
-        source = (ROOT / "apps" / "auth" / "services.py").read_text(encoding="utf-8")
-
-        self.assertIn("is_active=True", source)
-        self.assertIn("is_staff=True", source)
-        self.assertIn("is_superuser=True", source)
 
     def test_superuser_is_normalized_to_staff_on_real_db_flush(self) -> None:
         """项目实际 db_manager.get_session() flush 路径必须触发 SQLAlchemy before_flush 归一化。"""
@@ -263,7 +262,7 @@ class AuthUserServiceTest(unittest.TestCase):
 
     def test_set_user_active_rejects_disabling_current_user(self) -> None:
         """服务端必须拒绝禁用当前登录用户。"""
-        from apps.auth.services import UserManagementError, set_user_active
+        from oldman.auth import UserManagementError, set_user_active
 
         user = OldmanUser(id=7, username="alice", email="alice@example.test", password_hash="", is_active=True, is_superuser=False)
 
@@ -272,27 +271,12 @@ class AuthUserServiceTest(unittest.TestCase):
 
     def test_delete_user_rejects_superuser(self) -> None:
         """删除超级用户必须被服务端拒绝。"""
-        from apps.auth.services import UserManagementError, validate_user_delete
+        from oldman.auth import UserManagementError, validate_user_delete
 
         user = OldmanUser(id=8, username="root", email="root@example.test", password_hash="", is_active=True, is_superuser=True)
 
         with self.assertRaises(UserManagementError):
             validate_user_delete(user, current_user_id=1)
-
-    def test_change_user_password_replaces_existing_hash(self) -> None:
-        """修改密码后旧密码不能再通过校验，新密码必须可用。"""
-        from apps.auth.services import change_user_password
-
-        user = OldmanUser(id=9, username="bob", email="bob@example.test", password_hash="", is_active=True, is_superuser=False)
-        user.set_password("OldPass!2026")
-        old_hash = user.password_hash
-
-        change_user_password(user, "NewPass!2026")
-
-        self.assertNotEqual(user.password_hash, old_hash)
-        self.assertFalse(user.check_password("OldPass!2026"))
-        self.assertTrue(user.check_password("NewPass!2026"))
-
 
 class AuthUserTableTest(unittest.TestCase):
     """验证后台用户表格和操作入口。"""
@@ -301,20 +285,28 @@ class AuthUserTableTest(unittest.TestCase):
         """用户表格必须覆盖状态、staff、超级用户、最近登录和行级操作。"""
         from apps.auth.tables import UserTable
 
-        columns = [
-            (str(label), *definition)
-            for label, *definition in UserTable.columns
-        ]
+        table = UserTable(SimpleNamespace(args={}, ctx=SimpleNamespace()), initial_filters={}, initial_query="")
+        columns = {column.name: column for column in table.get_columns()}
+
         self.assertEqual(UserTable.route_path, "/users/table")
         self.assertTrue(UserTable.selectable)
-        self.assertIn("username", UserTable.search_fields)
-        self.assertIn("email", UserTable.search_fields)
-        self.assertIn("display_name", UserTable.search_fields)
-        self.assertIn(("Status", "is_active", "get_column_is_active_data"), columns)
-        self.assertIn(("Staff", "is_staff", "get_column_is_staff_data"), columns)
-        self.assertIn(("Superuser", "is_superuser", "get_column_is_superuser_data"), columns)
-        self.assertIn(("Last Login", "last_login_at", "get_column_last_login_at_data"), columns)
-        self.assertIn(("Action", None, "get_column_action_data"), columns)
+        self.assertEqual(["username", "email", "display_name"], UserTable.search_fields)
+        # 列名连同它的数据回调一起钉住：只查名字的话，回调改名或者丢掉都不会失败。
+        for name, data_callback in (
+            ("is_active", "get_column_is_active_data"),
+            ("is_staff", "get_column_is_staff_data"),
+            ("is_superuser", "get_column_is_superuser_data"),
+            ("last_login_at", "get_column_last_login_at_data"),
+            ("action", "get_column_action_data"),
+        ):
+            self.assertIn(name, columns)
+            self.assertEqual(data_callback, columns[name].callback)
+            self.assertTrue(callable(getattr(table, data_callback, None)), data_callback)
+        self.assertFalse(columns["action"].exportable)
+        # The project only contributes its routes; cells and the row menu are the framework's.
+        user = OldmanUser(id=7, username="ada", email="ada@example.test", password_hash="", is_active=True, is_staff=True, is_superuser=False)
+        self.assertEqual('<a class="link-primary font-medium" href="/users/7/edit">ada</a>', str(table.get_column_username_data(user)[0]))
+        self.assertIn('data-om-modal-url="/users/7/password-modal"', str(table.get_column_action_data(user)[0]))
 
     def test_user_table_boolean_filter_rejects_invalid_value(self) -> None:
         """用户布尔筛选非法值必须返回表格校验错误。"""
@@ -359,17 +351,101 @@ class AuthUserTableTest(unittest.TestCase):
 
         self.assertIn("from markupsafe import escape", source)
         self.assertIn("render_session_password_modal(", source)
-        for route_name in (
-            'name="users_password_modal"',
-            'name="users_status_modal"',
-            'name="users_delete_modal"',
-        ):
-            route_source = source.split(route_name, 1)[1].split("@app.", 1)[0]
-            self.assertIn("escape(user.username)", route_source)
+        # 改密弹窗的标题仍由本视图拼接，所以这里必须自己 escape。
+        password_route = source.split('name="users_password_modal"', 1)[1].split("@app.", 1)[0]
+        self.assertIn("escape(user.username)", password_route)
+        # 启停与删除弹窗改由框架的助手生成标题和片段，escape 在框架里做并由框架测试覆盖。
+        status_route = source.split('name="users_status_modal"', 1)[1].split("@app.", 1)[0]
+        delete_route = source.split('name="users_delete_modal"', 1)[1].split("@app.", 1)[0]
+        self.assertIn("user_status_modal_response(request, user, action=", status_route)
+        self.assertIn("user_delete_modal_response(request, user, action=", delete_route)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UserViewTest(unittest.TestCase):
+    """在真实 sqlite 上直接调用用户管理视图的函数体。"""
+
+    def run_view(self, name: str, form: dict[str, str], *, is_active: bool = True, is_superuser: bool = True) -> tuple[Any, AsyncMock, int]:
+        """在真实 sqlite 上跑一个视图的函数体，返回响应、撤销调用记录和目标用户 id。
+
+        CSRF 与 staff 守卫各有自己的测试，这里只看视图保存之后做了什么。
+        """
+        from apps.auth import views
+
+        async def run_case() -> tuple[Any, AsyncMock, int]:
+            with tempfile.TemporaryDirectory() as tmp:
+                manager = DatabaseManager(DatabaseConfig(url=f"sqlite+aiosqlite:///{Path(tmp) / 'users.db'}"))
+                try:
+                    await manager.create_db_and_tables()
+                    async with manager.get_session() as session:
+                        user = OldmanUser(username="alice", email="alice@example.test", display_name="Alice", password_hash="", is_active=is_active, is_staff=True, is_superuser=False)
+                        session.add(user)
+                        await session.flush()
+                        user_id = cast(int, user.id)
+                    operator = operator_request(is_superuser=is_superuser, user_id=user_id + 1).ctx
+                    request = SimpleNamespace(method="POST", form=form, files=None, args={}, headers={}, ctx=operator)
+                    with (
+                        patch.object(views, "db_manager", manager),
+                        patch.object(views, "revoke_user_logins", AsyncMock(return_value=False)) as revoke,
+                    ):
+                        view = inspect.unwrap(getattr(views, name))
+                        # 只有要比对"是不是自己"的视图才收 current_user_id(由 staff_required 注入)。
+                        extra = {"current_user_id": user_id + 1} if "current_user_id" in inspect.signature(view).parameters else {}
+                        response = await view(request, user_id, **extra)
+                    return response, revoke, user_id
+                finally:
+                    await manager.close()
+
+        return asyncio.run(run_case())
+
+
+class UserManagementEndsLoginsTest(UserViewTest):
+    """停用、删除、改权限标志之后，目标用户已有的 session 与访问令牌都要结束。"""
+
+    def test_disabling_ends_the_users_logins_and_enabling_does_not(self) -> None:
+        response, revoke, user_id = self.run_view("users_status_update", {"is_active": "false"})
+        self.assertEqual(200, response.status)
+        revoke.assert_awaited_once_with(ANY, user_id)
+
+        response, revoke, _user_id = self.run_view("users_status_update", {"is_active": "true"}, is_active=False)
+        self.assertEqual(200, response.status)
+        revoke.assert_not_awaited()
+
+    def test_deleting_ends_the_users_logins(self) -> None:
+        response, revoke, user_id = self.run_view("users_delete", {})
+        self.assertEqual(200, response.status)
+        revoke.assert_awaited_once_with(ANY, user_id)
+
+    def test_only_a_change_to_the_access_flags_ends_the_users_logins(self) -> None:
+        profile = {"username": "alice", "email": "alice@example.test", "display_name": "Alice Renamed"}
+        response, revoke, _user_id = self.run_view("users_update", {**profile, "is_active": "y", "is_staff": "y"})
+        self.assertEqual(200, response.status)
+        revoke.assert_not_awaited()
+
+        response, revoke, user_id = self.run_view("users_update", {**profile, "is_active": "y"})
+        self.assertEqual(200, response.status)
+        revoke.assert_awaited_once_with(ANY, user_id)
+
+
+class StaffOperatorTest(UserViewTest):
+    """staff 和超级用户账号只归超级用户管理;要改的 alice 本身就是 staff。"""
+
+    def test_staff_cannot_edit_delete_disable_or_reset_a_staff_account(self) -> None:
+        profile = {"username": "alice", "email": "alice@example.test", "display_name": "Alice", "is_active": "y", "is_staff": "y"}
+        for name, form in (
+            ("users_update", profile),
+            ("users_status_update", {"is_active": "false"}),
+            ("users_delete", {}),
+            ("users_password_update", {"password": "NewPass2026", "confirm_password": "NewPass2026"}),
+        ):
+            with self.subTest(name):
+                response, revoke, _user_id = self.run_view(name, form, is_superuser=False)
+                payload = json.loads(response.body)
+                self.assertEqual((1100, "Permission denied"), (payload["error_code"], payload["message"]))
+                revoke.assert_not_awaited()
 
 
 class FakeScalarResult:
@@ -397,6 +473,12 @@ class FakeUserLookupSession:
         if self.rows:
             return FakeScalarResult(self.rows.pop(0))
         return FakeScalarResult(None)
+
+
+def operator_request(*, is_superuser: bool, user_id: int = 1) -> Any:
+    """The request surface the user forms and views read the operator from."""
+    operator = RequestUser(id=user_id, username="operator", is_staff=True, is_superuser=is_superuser)
+    return SimpleNamespace(ctx=SimpleNamespace(user=operator))
 
 
 def make_request(*, args: dict[str, str] | None = None, headers: dict[str, str] | None = None):

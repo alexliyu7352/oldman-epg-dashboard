@@ -1,0 +1,55 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Project tasks through the model cache") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Example tasks are declared with partition_by=(\"project_id\",) and invalidate_on=(ExampleProject, ExampleTeam). Reading a project's tasks goes through the cache; each write below shows what invalidates it.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      {% if not projects %}
+        <div class="om-alert om-alert-info" role="note">
+          <p class="mb-0">{{ _("No example projects with tasks exist. Load the demo fixture first.") }}</p>
+        </div>
+      {% else %}
+        <form method="post" action="/examples/cache/models" data-om-component="form" data-om-form data-om-form-mode="json" data-model-cache-form novalidate>
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_for(request) }}">
+          <div class="om-form-message" data-om-form-message role="alert" hidden></div>
+          <div class="om-form-field mb-4" data-om-form-field data-om-form-field-name="project_id">
+            <label class="om-form-label" for="model-cache-project">{{ _("Project") }}</label>
+            <select class="om-select w-full max-w-md" id="model-cache-project" name="project_id" required>
+              {% for project_id, name in projects %}<option value="{{ project_id }}">{{ name }}</option>{% endfor %}
+            </select>
+            <div class="om-form-error" data-om-error-for="project_id" hidden></div>
+          </div>
+          <div class="mb-4 flex flex-wrap gap-3">
+            <button type="submit" name="operation" value="read" class="om-button om-button-primary">{{ _("Read tasks") }}</button>
+            <button type="submit" name="operation" value="rename" class="om-button om-button-secondary">{{ _("Rename its first task (ORM)") }}</button>
+            <button type="submit" name="operation" value="rename_other" class="om-button om-button-secondary">{{ _("Rename a task of another project (ORM)") }}</button>
+            <button type="submit" name="operation" value="rename_sql" class="om-button om-button-secondary">{{ _("Rename its first task with an UPDATE statement") }}</button>
+            <button type="submit" name="operation" value="rename_project" class="om-button om-button-secondary">{{ _("Rename the project (ORM)") }}</button>
+            <button type="submit" name="operation" value="invalidate" class="om-button om-button-light">{{ _("Invalidate the task cache") }}</button>
+            <button type="submit" name="operation" value="restore" class="om-button om-button-light">{{ _("Restore example data") }}</button>
+          </div>
+          <p data-om-form-status role="status" aria-live="polite" hidden></p>
+        </form>
+        <ul class="mb-0 list-disc space-y-2 pl-5 text-sm text-default-500">
+          <li>{{ _("Read twice: the first read is a miss that stores the result, the second a hit.") }}</li>
+          <li>{{ _("After an ORM write to one of this project's tasks, the next read is a miss and shows the new title.") }}</li>
+          <li>{{ _("A write to another project's task leaves this project's cached query a hit: its partition did not change.") }}</li>
+          <li>{{ _("An UPDATE statement fires no ORM event, so the next read is still a hit with the old title until the task cache is invalidated. Code that writes this way calls ExampleTask.invalidate_cache_on_commit(session).") }}</li>
+          <li>{{ _("Renaming the project makes every cached task query miss once: the database deletes a project's tasks by itself, so the cache listens to project writes.") }}</li>
+        </ul>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Observed result") }}</h2></div>
+    <div class="om-card-body" id="model-cache-result" aria-live="polite" aria-atomic="true">
+      <p class="mb-0 text-default-500">{{ _("Choose a project and read its tasks to begin.") }}</p>
+    </div>
+  </section>
+{% endblock %}

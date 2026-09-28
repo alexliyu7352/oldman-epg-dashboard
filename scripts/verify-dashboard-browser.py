@@ -31,7 +31,7 @@ while str(PROJECT_ROOT) in sys.path:
     sys.path.remove(str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT))
 
-DEFAULT_URL = "http://localhost:17998/"
+DEFAULT_URL = "http://localhost:17997/"
 SCREENSHOT_ROOT = Path(os.environ.get("OLDMAN_EPG_CHILD_SCREENSHOT_DIR", "/tmp")).expanduser().resolve()
 DESKTOP_SCREENSHOT = str(SCREENSHOT_ROOT / "oldman-dashboard-desktop.png")
 MOBILE_SCREENSHOT = str(SCREENSHOT_ROOT / "oldman-dashboard-mobile.png")
@@ -764,11 +764,12 @@ def js_assertions() -> str:
     }
   }
 
-  const paddedButton = Array.from(document.querySelectorAll(".om-button, .btn, button, a[role='button']")).find((button) => {
+  // 控件高度由 --om-control-height 决定，横向间距由 padding-inline 决定：竖向 padding 是 0，不是缺陷。
+  const sizedButton = Array.from(document.querySelectorAll(".om-button, .btn, button, a[role='button']")).find((button) => {
     const style = getComputedStyle(button);
-    return parseFloat(style.paddingLeft) > 0 && parseFloat(style.paddingRight) > 0 && parseFloat(style.paddingTop) > 0 && parseFloat(style.paddingBottom) > 0;
+    return parseFloat(style.paddingLeft) > 0 && parseFloat(style.paddingRight) > 0 && button.getBoundingClientRect().height >= 24;
   });
-  if (!paddedButton) failures.push("no button element has non-zero horizontal and vertical padding");
+  if (!sizedButton) failures.push("no button element has horizontal padding and a control height");
 
   const menuToggle =
     Array.from(document.querySelectorAll("[data-om-menu-toggle], .menu-link[data-bs-toggle='collapse']")).find((toggle) => {
@@ -935,7 +936,7 @@ def js_visual_health_assertions(label: str, *, mobile: bool = False) -> str:
     payload = json.dumps({"label": label, "mobile": mobile}, ensure_ascii=False)
     return (
         r"""
-(() => {
+(async () => {
   const config =
 """
         + payload
@@ -1032,8 +1033,20 @@ def js_visual_health_assertions(label: str, *, mobile: bool = False) -> str:
     }
   }
 
-  for (const image of document.querySelectorAll("img")) {
-    if (!visible(image)) continue;
+  // A lazy image far below the fold is not fetched until the user scrolls near it; that is not a failure.
+  // The others get a bounded wait: content rendered after the load event may still be decoding.
+  const inViewport = (element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
+  };
+  const images = Array.from(document.querySelectorAll("img"))
+    .filter(visible)
+    .filter((image) => image.loading !== "lazy" || inViewport(image));
+  await Promise.all(images.filter((image) => !image.complete).map((image) => Promise.race([
+    image.decode().catch(() => undefined),
+    new Promise((resolve) => setTimeout(resolve, 3000)),
+  ])));
+  for (const image of images) {
     if (!image.complete) failures.push(`${config.label}: visible image not loaded (${image.getAttribute("src") || ""})`);
     if (image.naturalWidth === 0 && !String(image.getAttribute("src") || "").startsWith("data:")) {
       failures.push(`${config.label}: visible image has zero natural width (${image.getAttribute("src") || ""})`);
@@ -1303,6 +1316,7 @@ def wait_for_turbo_path(client: CDPClient, expected_path: str, before: dict[str,
             and navigation_type == before_navigation_type
             and counts["beforeFetch"] > before_counts["beforeFetch"]
             and rendered
+            and counts["load"] > before_counts["load"]
             and ready is True
             and main_frame_state == "mounted"
             and main_frame_ready is True
@@ -2692,6 +2706,7 @@ def assert_catalog_channel_edit_cancel_returns_to_list(client: CDPClient, base_u
     wait_for_table_ready(client, "/catalog-channels/table", "catalog channels cancel return", result, timeout=15.0)
     assert_preloader_idle(client, "catalog channels list", result)
 
+    before_edit = install_turbo_probe(client)
     click_result = client.evaluate(
         r"""
 (() => {
@@ -2708,8 +2723,15 @@ def assert_catalog_channel_edit_cancel_returns_to_list(client: CDPClient, base_u
     )
     click_result_failures = assertion_failures(click_result)
     result.pageErrors.extend(f"catalog channels cancel return: {failure}" for failure in click_result_failures)
-    if not wait_for_path_pattern(client, r"^/catalog-channels/\d+/edit$", "catalog channels edit cancel", result):
+    if click_result_failures:
         return
+    edit_path = required_success_string(required_payload_object(click_result, "catalog channels edit click"), "href", "catalog channels edit click")
+    if not re.fullmatch(r"/catalog-channels/\d+/edit", edit_path):
+        result.pageErrors.append(f"catalog channels cancel return: edit link targets {edit_path!r}")
+        return
+    # Turbo pushes the edit URL before it renders the frame and promotes it to a page visit;
+    # going back before that visit starts lets it cancel the restore and leave the edit form on the list URL.
+    wait_for_turbo_path(client, edit_path, before_edit, "catalog channels edit cancel", result)
     assert_preloader_idle(client, "catalog channels edit", result)
 
     edit_result = client.evaluate(
@@ -3823,8 +3845,12 @@ def assert_users_management_interactions(client: CDPClient, base_url: str, resul
         wait_for_endpoint_request(client, action_path, {}, before, "cannot delete superuser", result, noun="cannot delete superuser 请求")
 
 
-def assert_user_session_interactions(client: CDPClient, result: VerificationResult) -> None:
-    """验证当前会话页的顶栏菜单、普通 modal、远程密码 Form 和反馈。"""
+def assert_user_session_interactions(client: CDPClient, base_url: str, result: VerificationResult) -> None:
+    """验证当前会话页的顶栏菜单、普通 modal、远程密码 Form 和反馈。
+
+    改自己的密码要先填当前密码，改完结束这个用户的全部会话（包括本浏览器），页面随后跳到登录页；
+    所以成功之后用同一个密码重新登录，后面的检查才能继续。
+    """
     component_result = client.evaluate(
         r"""
 (() => {
@@ -3849,7 +3875,7 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
     if component_result_failures:
         return
 
-    before = install_request_probe(client)
+    install_request_probe(client)
     clear_request_probe(client)
     valid_password = os.environ.get("OLDMAN_ADMIN_PASSWORD", DEFAULT_PASSWORD)
     interaction_result = client.evaluate(
@@ -3896,9 +3922,10 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
   if (!visible(modal)) failures.push("user session password modal is not visible");
   if (form?.getAttribute("data-om-component") !== "form") failures.push("user session password form is not form");
   if (!form?.querySelector("[data-om-component='form-validator']")) failures.push("user session password form validator is missing");
+  const current = form?.querySelector("[name='current_password']");
   const password = form?.querySelector("[name='password']");
   const confirm = form?.querySelector("[name='confirm_password']");
-  if (!password || !confirm) failures.push("user session password form missing fields");
+  if (!current || !password || !confirm) failures.push("user session password form missing fields");
   if (form && new URL(form.getAttribute("action") || "", location.href).pathname !== "/user-session/password") {{
     failures.push("user session password form action is not session endpoint");
   }}
@@ -3919,6 +3946,8 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
     }}
   }}).length;
 
+  current.value = {json.dumps(valid_password)};
+  current.dispatchEvent(new Event("input", {{ bubbles: true }}));
   const weakBefore = postCount();
   password.value = "abc";
   confirm.value = "abc";
@@ -3944,6 +3973,15 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
   if (!visible(modal)) failures.push("user session password modal closed after mismatch");
   if (failures.length) return {{ failures, modalPath, actionPath }};
 
+  const modalRequested = (window.__oldmanRequestLog || []).some((request) => {{
+    try {{
+      return new URL(request.url, location.href).pathname === modalPath;
+    }} catch {{
+      return false;
+    }}
+  }});
+  if (!modalRequested) failures.push("user session password modal was not loaded by a partial request");
+  const validBefore = postCount();
   password.value = {json.dumps(valid_password)};
   confirm.value = {json.dumps(valid_password)};
   password.dispatchEvent(new Event("input", {{ bubbles: true }}));
@@ -3959,6 +3997,8 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
   if (!Array.from(document.querySelectorAll(".toastify.om-toast.on")).some((toast) => toast.textContent.includes("Session password changed"))) {{
     failures.push("user session success toast missing");
   }}
+  // 这段脚本还在跑，说明提交是 ajax、页面没有整页刷新；改密成功 1.5 秒后框架才让页面跳去登录。
+  if (postCount() <= validBefore) failures.push("user session password valid submit sent no partial request");
   return {{ failures, modalPath, actionPath }};
 }})()
 """,
@@ -3973,8 +4013,17 @@ def assert_user_session_interactions(client: CDPClient, result: VerificationResu
         action_path = required_success_string(interaction_result, "actionPath", "user session password")
         if action_path != "/user-session/password":
             raise VerificationError("user session password success payload actionPath is not /user-session/password")
-        wait_for_endpoint_request(client, modal_path, {}, before, "user session password modal", result, noun="user session password modal 请求")
-        wait_for_endpoint_request(client, action_path, {}, before, "user session password valid submit", result, noun="user session password valid submit 请求")
+        # 改密结束了本浏览器的会话，页面随后跳到登录页（跳转会销毁上面那段脚本的执行环境，所以在这里等）。
+        # 请求探针随页面一起消失，所以两次局部请求已在上面那段脚本里、跳转之前核对过。
+        wait_for_path(client, "/login", "user session password sign-in again", result)
+    # 密码没变，用它重新登录，后面的检查才能继续。
+    if client.evaluate("location.pathname", timeout=5.0) == "/login":
+        login(
+            client,
+            base_url,
+            os.environ.get("OLDMAN_ADMIN_USERNAME", DEFAULT_USERNAME),
+            os.environ.get("OLDMAN_ADMIN_PASSWORD", DEFAULT_PASSWORD),
+        )
 
 
 def assert_notifications_center_interactions(client: CDPClient, result: VerificationResult) -> None:
@@ -4001,10 +4050,12 @@ def assert_notifications_center_interactions(client: CDPClient, result: Verifica
     const avatarRect = avatar.getBoundingClientRect();
     const iconRect = iconBox.getBoundingClientRect();
     const valueRect = value?.getBoundingClientRect();
-    if (avatarRect.width < 40 || avatarRect.width > 56 || avatarRect.height < 40 || avatarRect.height > 56) {
+    // 卡片用的是 .om-avatar-sm，也就是 size-8 = 32px 的那一级；旧主题里 .avatar-sm 是 40px。
+    const avatarSize = 32;
+    if (Math.abs(avatarRect.width - avatarSize) > 1 || Math.abs(avatarRect.height - avatarSize) > 1) {
       failures.push(`notification stat card ${label} avatar size is ${Math.round(avatarRect.width)}x${Math.round(avatarRect.height)}`);
     }
-    if (iconRect.width < 40 || iconRect.width > 56 || iconRect.height < 40 || iconRect.height > 56) {
+    if (iconRect.width > avatarRect.width + 1 || iconRect.height > avatarRect.height + 1) {
       failures.push(`notification stat card ${label} avatar-title expanded to ${Math.round(iconRect.width)}x${Math.round(iconRect.height)}`);
     }
     if (valueRect && iconRect.left < valueRect.right + 8) {
@@ -4695,8 +4746,14 @@ def submit_login_form(base_url: str, username: str, password: str) -> dict[str, 
                 "next": "/",
             }
         ).encode("utf-8")
+        # 框架的 CSRF 要求能证明同源（Origin 优先，Referer 回退）；浏览器会自动带，urllib 不会。
+        parsed_base = urllib.parse.urlsplit(base_url)
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": f"{parsed_base.scheme}://{parsed_base.netloc}",
+        }
         response = opener.open(
-            urllib.request.Request(login_url, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"}),
+            urllib.request.Request(login_url, data=body, headers=headers),
             timeout=10,
         )
         final_path = urllib.parse.urlparse(response.geturl()).path
@@ -5606,14 +5663,27 @@ def assert_visible_modal_fits(client: CDPClient, result: VerificationResult, lab
   const body = modal.querySelector(".om-modal-body, .modal-body") || content;
   const header = modal.querySelector(".om-modal-header");
   const footer = modal.querySelector(".om-modal-footer");
+  // 共享 modal 的间距由 padding 承担（header 24/24/0、body 16/24、footer 0/24/24），不再是 margin；
+  // 正文字号走 --om-font-size-body(0.875rem) × --om-line-height-body(1.5714) ≈ 14/22。
   const near = (actual, expected) => Math.abs(parseFloat(actual) - expected) <= 0.5;
-  if (!header) failures.push("modal is missing shared .om-modal-header");
-  else if (!near(getComputedStyle(header).marginBottom, 16)) failures.push(`modal header margin-bottom drifted: ${getComputedStyle(header).marginBottom}`);
+  if (!header) {
+    failures.push("modal is missing shared .om-modal-header");
+  } else {
+    const headerStyle = getComputedStyle(header);
+    if (!near(headerStyle.paddingTop, 24)) failures.push(`modal header padding-top drifted: ${headerStyle.paddingTop}`);
+    if (!near(headerStyle.paddingBottom, 0)) failures.push(`modal header padding-bottom drifted: ${headerStyle.paddingBottom}`);
+  }
   const bodyStyle = getComputedStyle(body);
   if (!near(bodyStyle.fontSize, 14)) failures.push(`modal body font-size drifted: ${bodyStyle.fontSize}`);
-  if (!near(bodyStyle.lineHeight, 24)) failures.push(`modal body line-height drifted: ${bodyStyle.lineHeight}`);
-  if (!footer) failures.push("modal is missing shared .om-modal-footer");
-  else if (!near(getComputedStyle(footer).marginTop, 24)) failures.push(`modal footer margin-top drifted: ${getComputedStyle(footer).marginTop}`);
+  if (!near(bodyStyle.lineHeight, 22)) failures.push(`modal body line-height drifted: ${bodyStyle.lineHeight}`);
+  if (!near(bodyStyle.paddingTop, 16)) failures.push(`modal body padding-top drifted: ${bodyStyle.paddingTop}`);
+  if (!footer) {
+    failures.push("modal is missing shared .om-modal-footer");
+  } else {
+    const footerStyle = getComputedStyle(footer);
+    if (!near(footerStyle.paddingBottom, 24)) failures.push(`modal footer padding-bottom drifted: ${footerStyle.paddingBottom}`);
+    if (!near(footerStyle.paddingTop, 0)) failures.push(`modal footer padding-top drifted: ${footerStyle.paddingTop}`);
+  }
   for (const element of Array.from(body.querySelectorAll("*"))) {
     if (!visible(element)) continue;
     const rect = element.getBoundingClientRect();
@@ -7314,7 +7384,7 @@ def verify_dashboard(url: str, result: VerificationResult) -> None:
             result,
         )
         capture_named_screenshot(client, result, "desktop-user-session", "/tmp/oldman-desktop-user-session.png")
-        assert_user_session_interactions(client, result)
+        assert_user_session_interactions(client, url, result)
 
         navigate(client, urllib.parse.urljoin(url, "/notifications"))
         assert_backend_page(

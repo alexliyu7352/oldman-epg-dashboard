@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-import datetime as dt
-
-from sqlalchemy import case, func, select
-
-from apps.epg_admin.models import CatalogFeed, CatalogLogoAsset, EpgList
-from apps.epg_admin.tables import is_authenticated_request
+from oldman.web import router
 from oldman.web.components.charts import (
     ChartResult,
     ChartSeries,
@@ -15,11 +10,9 @@ from oldman.web.components.charts import (
     SQLAlchemyChartView,
     TailwindChartRenderer,
 )
-from oldman.web.components.charts.views import ChartInvalidRequest
-from oldman.web.request import Request
-from oldman.web.routing import get_app
+from sqlalchemy import case, func, select
 
-app = get_app()
+from apps.epg_admin.models import CatalogFeed, CatalogLogoAsset, EpgList
 
 
 class DashboardProgrammeTrendChart(SQLAlchemyChartView):
@@ -35,14 +28,9 @@ class DashboardProgrammeTrendChart(SQLAlchemyChartView):
     allowed_metrics = ("programmes",)
     allowed_chart_types = ("line",)
 
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取首页图表。"""
-        return is_authenticated_request(request)
-
     async def get_result(self, chart_request):
         """按日期聚合节目数量，并返回 ApexCharts 配置。"""
-        days = parse_range_days(chart_request.range_key)
-        start_at = dt.datetime.now(dt.UTC).replace(tzinfo=None) - dt.timedelta(days=days - 1)
+        start_at = chart_request.range_start()
         date_expr = func.date(EpgList.start_date)
         result = await self.require_db_session().execute(
             select(date_expr.label("day"), func.count(EpgList.id).label("total"))
@@ -76,13 +64,9 @@ class DashboardFeedStatusChart(SQLAlchemyChartView):
     allowed_metrics = ("feed_status",)
     allowed_chart_types = ("bar",)
 
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取首页图表。"""
-        return is_authenticated_request(request)
-
     async def get_result(self, chart_request):
         """按 CatalogFeed.status 聚合 feed 数量。"""
-        start_at = range_start_at(chart_request.range_key)
+        start_at = chart_request.range_start()
         status_expr = func.coalesce(CatalogFeed.status, "unknown")
         result = await self.require_db_session().execute(
             select(status_expr.label("status"), func.count(CatalogFeed.id).label("total"))
@@ -115,13 +99,9 @@ class DashboardLogoQualityChart(SQLAlchemyChartView):
     allowed_metrics = ("logo_quality",)
     allowed_chart_types = ("bar",)
 
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取首页图表。"""
-        return is_authenticated_request(request)
-
     async def get_result(self, chart_request):
         """按质量分桶聚合当前 logo 资源。"""
-        start_at = range_start_at(chart_request.range_key)
+        start_at = chart_request.range_start()
         bucket_expr = case(
             (CatalogLogoAsset.quality_score < 40, "Low"),
             (CatalogLogoAsset.quality_score < 70, "Medium"),
@@ -150,21 +130,6 @@ class DashboardLogoQualityChart(SQLAlchemyChartView):
         )
 
 
-def parse_range_days(range_key: str) -> int:
-    """把图表时间范围转换为天数，非法值返回请求错误。"""
-    allowed = {"7d": 7, "30d": 30, "90d": 90}
-    try:
-        return allowed[range_key]
-    except KeyError:
-        raise ChartInvalidRequest(f"Unknown chart range: {range_key}") from None
-
-
-def range_start_at(range_key: str) -> dt.datetime:
-    """把 Dashboard range 转换为当前窗口起始时间。"""
-    days = parse_range_days(range_key)
-    return dt.datetime.now(dt.UTC).replace(tzinfo=None) - dt.timedelta(days=days - 1)
-
-
-app.add_route(DashboardProgrammeTrendChart.as_view(), DashboardProgrammeTrendChart.route_path, name=DashboardProgrammeTrendChart.route_name)
-app.add_route(DashboardFeedStatusChart.as_view(), DashboardFeedStatusChart.route_path, name=DashboardFeedStatusChart.route_name)
-app.add_route(DashboardLogoQualityChart.as_view(), DashboardLogoQualityChart.route_path, name=DashboardLogoQualityChart.route_name)
+router.add_route(DashboardProgrammeTrendChart.as_view(), DashboardProgrammeTrendChart.route_path, name=DashboardProgrammeTrendChart.route_name)
+router.add_route(DashboardFeedStatusChart.as_view(), DashboardFeedStatusChart.route_path, name=DashboardFeedStatusChart.route_name)
+router.add_route(DashboardLogoQualityChart.as_view(), DashboardLogoQualityChart.route_path, name=DashboardLogoQualityChart.route_name)

@@ -2,6 +2,7 @@ apps:
   - oldman.auth
   - oldman.apps.admin
   - oldman.web.messages.notifications
+  - oldman.apps.roles
   - apps.auth
   - apps.dashboard
   - apps.epg_admin
@@ -18,8 +19,7 @@ process:
   pid_dir: pids
 web:
   listen_host: 127.0.0.1
-  listen_port: 17998
-  debug: false
+  listen_port: 17997
   auto_reload: false
   workers: 1
   access_log: false
@@ -32,13 +32,16 @@ web:
   websocket_ping_timeout: 20
   security:
     secret_key:
-    token_expire_time: 86400
     csrf:
       ttl: 3600
       check_referer: true
       check_url: false
     fingerprint:
-      aes_secret_key:
+      # 示例页 /examples/security/fingerprint 用到；关掉它整站都不检查指纹。
+      enabled: true
+      # Demo 密钥：必须和前端构建期注入的那把一致（见 frontend/vite.config.ts）。
+      # 真实部署换成自己的，并用 OLDMAN_FINGERPRINT_KEY 传给前端构建。
+      aes_secret_key: b2xkbWFuLWVwZy1kZW1vLWZpbmdlcnByaW50LWtleSE=
       timestamp_max_diff: 300000
       rate_limits:
         default:
@@ -47,6 +50,11 @@ web:
           ip_max: 40
         /api/login:
           window: 300
+          fp_max: 5
+          ip_max: 10
+        # 示例页专用的小额度，点几下就能看到 429。
+        /examples/security/fingerprint/probe:
+          window: 60
           fp_max: 5
           ip_max: 10
       max_fingerprints_per_ip: 5
@@ -58,19 +66,28 @@ web:
     enabled: true
     redis_alias: SESSION
     expiry: 86400
-    prefix: "oldman_session:"
-    user_prefix: "oldman_user_session:"
     cookie_name: oldman_session_id
     cookie_domain:
     cookie_httponly: true
     cookie_secure: false
     cookie_samesite: Lax
+  # 「访问令牌」和「服务调用方」两个示例页要启用 jwt 与 api_key，形状如下。
+  # 这里不给密钥：拿到 jwt.secret 就能签出任意用户（包括超级用户）的令牌，而这个文件是公开的。
+  # 在自己的 data/web_settings.yaml 里取消注释，每个 secret 各用
+  #   .venv/bin/python -c "import secrets; print(secrets.token_urlsafe(48))"
+  # 生成一个。没有这段时两个示例页只显示启用方法。
+  # auth:
+  #   authenticators: [session, jwt, api_key]
+  #   jwt:
+  #     secret: <随机串，至少 32 个字符>
+  #   api_keys:
+  #     demo_script:
+  #       secret: <另一个随机串>
   messages:
     enabled: true
   sse:
     enabled: true
     redis_alias: SSE
-    channel_prefix: oldman_epg_dashboard
     heartbeat_interval: 15.0
     session_check_interval: 30.0
     queue_size: 100
@@ -129,7 +146,8 @@ i18n:
       flag: cn
     zh-Hant:
       flag: tw
-logging:
-  level: 20
 core:
   app_name: oldman
+  # Every Redis key and channel of this service starts with it; app_name "oldman" is too generic to share a Redis with.
+  namespace: oldman_epg_dashboard
+  debug: false

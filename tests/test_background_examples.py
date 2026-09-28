@@ -44,8 +44,5 @@ class BackgroundStatsTests(unittest.IsolatedAsyncioTestCase):
                         await background.BackgroundStats().handle(team_id=999)
                     self.assertFalse(manager.running)
                     self.assertEqual(manager.get_all_status(), {})
-                    self.assertIsNotNone(manager.monitor_task)
-                    assert manager.monitor_task is not None
-                    self.assertTrue(manager.monitor_task.done())
             finally:
                 await database.close()

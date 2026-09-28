@@ -1,0 +1,99 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  {% if not api_key_enabled %}
+    <section class="om-alert om-alert-warning mb-5" role="note" data-example-callers-disabled>
+      <div>
+        <p class="mb-1 font-medium">{{ _("API keys are not enabled on this service.") }}</p>
+        <p class="mb-3 text-sm">{{ _("List api_key in web.auth.authenticators and name at least one key under web.auth.api_keys in data/web_settings.yaml, then restart. Keys stay out of the example settings file, which is public.") }}</p>
+        <pre class="mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>web:
+  auth:
+    authenticators: [session, api_key]
+    api_keys:
+      demo_script:
+        secret: &lt;.venv/bin/python -c "import secrets; print(secrets.token_urlsafe(32))"&gt;</code></pre>
+      </div>
+    </section>
+  {% else %}
+    <section class="om-alert om-alert-info mb-5" role="note">
+      <div>
+        <p class="mb-1 font-medium">{{ _("A script or another service is a caller, not a user.") }}</p>
+        <p class="mb-0 text-sm">{{ _("The probe below accepts only API keys: request.ctx.user stays anonymous and request.ctx.auth.caller names the key. Being signed in does not open it.") }}</p>
+      </div>
+    </section>
+
+    <div data-om-component="api-key-probe" data-probe-endpoint="{{ service_probe_url }}" data-key-header="{{ api_key_header }}">
+      <section class="om-card mb-5">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("Keys this service accepts") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("Only the names are shown; the secrets stay in web.auth.api_keys. Paste one below to call the probe with it.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <p class="mb-4 flex flex-wrap gap-2" data-example-api-key-names>
+            {% for name in api_key_names %}<span class="om-badge">{{ name }}</span>{% endfor %}
+          </p>
+          <label class="om-form-group block sm:max-w-md">
+            <span class="om-form-label">{{ _("API key") }}</span>
+            <input type="password" class="om-field font-mono" autocomplete="off" spellcheck="false" data-api-key-input>
+          </label>
+        </div>
+      </section>
+
+      <div class="grid gap-5 lg:grid-cols-3">
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("Signed in, no key") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("This browser's session is recognized, but the probe takes keys only, so the answer is 403 rather than 401.") }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-secondary mb-4" data-caller-probe="session">{{ _("Call with the session") }}</button>
+            <div class="text-sm" data-caller-result="session" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("The key, no cookies") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("Sent in the %(header)s header with cookies left out: the key alone gets in.", header=api_key_header) }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-primary mb-4" data-caller-probe="key">{{ _("Call with the key") }}</button>
+            <div class="text-sm" data-caller-result="key" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("A wrong key") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("The pasted key with extra characters. Nothing recognizes the request, so the answer is 401.") }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-secondary mb-4" data-caller-probe="wrong">{{ _("Call with a wrong key") }}</button>
+            <div class="text-sm" data-caller-result="wrong" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="om-card mt-5">
+        <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("From a script") }}</h2></div>
+        <div class="om-card-body">
+          <pre class="mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>curl -H "{{ api_key_header }}: &lt;key&gt;" {{ service_probe_absolute_url }}</code></pre>
+        </div>
+      </section>
+    </div>
+  {% endif %}
+{% endblock %}

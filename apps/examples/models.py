@@ -5,6 +5,10 @@ from __future__ import annotations
 import datetime as dt
 from decimal import Decimal
 
+from oldman.db.models import DatabaseModel
+from oldman.db.sqlalchemy.cache import CacheableModel, cached_model
+from oldman.i18n import gettext_lazy as _
+from oldman.storage import file_column
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -22,15 +26,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from oldman.db.models import DatabaseModel
-from oldman.i18n import gettext_lazy as _
-from oldman.storage import file_column
-
 
 class ExampleTeam(DatabaseModel):
     """Team used to group projects in table and form examples."""
 
-    __tablename__ = "example_team"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_team"
     __table_args__ = (
         UniqueConstraint("slug", name="uq_example_team_slug"),
         Index("ix_example_team_region", "region"),
@@ -58,7 +58,7 @@ class ExampleTeam(DatabaseModel):
 class ExampleProject(DatabaseModel):
     """Project covering common fields, filters, relations and metadata text."""
 
-    __tablename__ = "example_project"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_project"
     __table_args__ = (
         UniqueConstraint("slug", name="uq_example_project_slug"),
         CheckConstraint("budget >= 0", name="ck_example_project_budget"),
@@ -100,10 +100,17 @@ class ExampleProject(DatabaseModel):
         verbose_name_plural = _("Example Projects")
 
 
-class ExampleTask(DatabaseModel):
-    """Sortable project task used by CRUD and drag-and-drop examples."""
+@cached_model(partition_by=("project_id",), invalidate_on=(ExampleProject, ExampleTeam))
+class ExampleTask(CacheableModel):
+    """Sortable project task used by CRUD and drag-and-drop examples.
 
-    __tablename__ = "example_task"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    Also the model cache example: a query that fixes ``project_id`` is invalidated only by
+    writes to that project's tasks. The database deletes a project's tasks with it, and a
+    team's projects with the team (``ON DELETE CASCADE`` twice), which the cache sees only
+    through writes to those tables - hence both in ``invalidate_on``.
+    """
+
+    __tablename__ = "example_task"
     __table_args__ = (
         CheckConstraint("position >= 0", name="ck_example_task_position"),
         CheckConstraint("estimated_hours IS NULL OR estimated_hours >= 0", name="ck_example_task_estimated_hours"),
@@ -137,7 +144,7 @@ class ExampleTask(DatabaseModel):
 class ExampleTag(DatabaseModel):
     """Reusable project tag for many-to-many examples."""
 
-    __tablename__ = "example_tag"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_tag"
     __table_args__ = (
         UniqueConstraint("name", name="uq_example_tag_name"),
         UniqueConstraint("slug", name="uq_example_tag_slug"),
@@ -159,7 +166,7 @@ class ExampleTag(DatabaseModel):
 class ExampleProjectTag(DatabaseModel):
     """Explicit project-to-tag association retained as a fixture model."""
 
-    __tablename__ = "example_project_tag"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_project_tag"
     __table_args__ = (
         UniqueConstraint("project_id", "tag_id", name="uq_example_project_tag_pair"),
         Index("ix_example_project_tag_tag_id", "tag_id"),
@@ -182,7 +189,7 @@ class ExampleProjectTag(DatabaseModel):
 class ExampleAsset(DatabaseModel):
     """Uploaded document and preview exercising multiple managed file fields."""
 
-    __tablename__ = "example_asset"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_asset"
     __table_args__ = (Index("ix_example_asset_project_id", "project_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -206,7 +213,7 @@ class ExampleAsset(DatabaseModel):
 class ExampleServer(DatabaseModel):
     """Stable server inventory paired with time-series display metrics."""
 
-    __tablename__ = "example_server"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_server"
     __table_args__ = (
         UniqueConstraint("name", name="uq_example_server_name"),
         CheckConstraint("cpu_cores > 0", name="ck_example_server_cpu_cores"),
@@ -237,7 +244,7 @@ class ExampleServer(DatabaseModel):
 class ExampleServerMetric(DatabaseModel):
     """Timestamped server values used by charts and SSE table updates."""
 
-    __tablename__ = "example_server_metric"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_server_metric"
     __table_args__ = (
         CheckConstraint("cpu_percent >= 0 AND cpu_percent <= 100", name="ck_example_metric_cpu"),
         CheckConstraint("memory_percent >= 0 AND memory_percent <= 100", name="ck_example_metric_memory"),
@@ -266,7 +273,7 @@ class ExampleServerMetric(DatabaseModel):
 class ExampleLogo(DatabaseModel):
     """Searchable committed SVG option for rich remote selects."""
 
-    __tablename__ = "example_logo"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_logo"
     __table_args__ = (
         UniqueConstraint("slug", name="uq_example_logo_slug"),
         Index("ix_example_logo_name", "name"),
@@ -292,7 +299,7 @@ class ExampleLogo(DatabaseModel):
 class ExampleStreamProfile(DatabaseModel):
     """Stream configuration whose variable sources are encoded as JSON text."""
 
-    __tablename__ = "example_stream_profile"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "example_stream_profile"
     __table_args__ = (
         UniqueConstraint("name", name="uq_example_stream_profile_name"),
         Index("ix_example_stream_profile_logo_id", "logo_id"),

@@ -3,24 +3,27 @@
 from __future__ import annotations
 
 import asyncio
-from contextlib import suppress
-from enum import StrEnum
 import json
-from pathlib import Path
 import sys
 import tempfile
+from contextlib import suppress
+from enum import StrEnum
+from pathlib import Path
 from typing import Annotated
 
 import typer
-from sqlalchemy import select
-
 from oldman.cli import Command
 from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.processes import (
-    AsyncProcessManager, CompletedSubprocess, SubprocessError, SubprocessTimeoutError,
-    create_subprocess_exec, run_subprocess_exec,
+    AsyncProcessManager,
+    CompletedSubprocess,
+    SubprocessError,
+    SubprocessTimeoutError,
+    create_subprocess_exec,
+    run_subprocess_exec,
 )
+from sqlalchemy import select
 
 from .models import ExampleProject
 from .process_jobs import inspect_projects

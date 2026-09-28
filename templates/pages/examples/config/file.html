@@ -1,0 +1,57 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("A YAML file read through YamlStore") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("ChannelOverrides declares the fields, their types and their defaults. The store keeps the decoded value in memory and looks at the file every %(seconds)s seconds.", seconds=check_interval|int) }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <form method="post" action="/examples/config/file" data-om-component="form" data-om-form data-om-form-mode="json" data-config-file-form novalidate>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_for(request) }}">
+        <div class="om-form-message" data-om-form-message role="alert" hidden></div>
+        <div class="mb-4 grid gap-4 md:grid-cols-3">
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="channel_id">
+            <label class="om-form-label" for="config-channel-id">{{ _("Channel ID") }}</label>
+            <input class="om-input w-full" id="config-channel-id" name="channel_id" value="cctv1" maxlength="40">
+            <div class="om-form-error" data-om-error-for="channel_id" hidden></div>
+          </div>
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="epg_offset_minutes">
+            <label class="om-form-label" for="config-offset">{{ _("EPG offset in minutes") }}</label>
+            <input class="om-input w-full" id="config-offset" name="epg_offset_minutes" type="number" min="-720" max="720" step="1" value="15">
+            <div class="om-form-error" data-om-error-for="epg_offset_minutes" hidden></div>
+          </div>
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="announcement">
+            <label class="om-form-label" for="config-announcement">{{ _("Announcement") }}</label>
+            <input class="om-input w-full" id="config-announcement" name="announcement" maxlength="200" value="{{ state.value.announcement }}">
+            <div class="om-form-error" data-om-error-for="announcement" hidden></div>
+          </div>
+        </div>
+        <div class="mb-4 flex flex-wrap gap-3">
+          <button type="submit" name="operation" value="read" class="om-button om-button-primary">{{ _("Read") }}</button>
+          <button type="submit" name="operation" value="set_channel" class="om-button om-button-secondary">{{ _("Change the channel (get, assign, save)") }}</button>
+          <button type="submit" name="operation" value="announce" class="om-button om-button-secondary">{{ _("Set the announcement (update)") }}</button>
+          <button type="submit" name="operation" value="edit_outside" class="om-button om-button-secondary">{{ _("Edit the announcement in the file, outside the store") }}</button>
+          <button type="submit" name="operation" value="break_outside" class="om-button om-button-light">{{ _("Write a wrong type into the file") }}</button>
+          <button type="submit" name="operation" value="restore" class="om-button om-button-light">{{ _("Restore the defaults") }}</button>
+        </div>
+        <p data-om-form-status role="status" aria-live="polite" hidden></p>
+      </form>
+      <ul class="mb-0 list-disc space-y-2 pl-5 text-sm text-default-500">
+        <li>{{ _("Changing the channel reads the value, assigns the field and saves it. The store's own saves never call on_file_changed.") }}</li>
+        <li>{{ _("update(announcement=...) reads, changes and saves in one call; a subclass that overrides save covers it too.") }}</li>
+        <li>{{ _("An edit outside the store replaces the file as an editor would. The store picks it up at its next check, at most %(seconds)s seconds later, and calls on_file_changed once.", seconds=check_interval|int) }}</li>
+        <li>{{ _("A wrong type written into the file is not taken: the store keeps serving the last valid value and logs one error.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("What the store serves") }}</h2></div>
+    <div class="om-card-body" id="config-file-result" aria-live="polite" aria-atomic="true">
+      {% with operation="page" %}{% include "pages/examples/config/_file_result.html" %}{% endwith %}
+    </div>
+  </section>
+{% endblock %}

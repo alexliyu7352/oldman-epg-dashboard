@@ -2,13 +2,39 @@
 
 from __future__ import annotations
 
-from markupsafe import escape
+from markupsafe import Markup, escape
+from oldman.db import db_manager
+from oldman.i18n import gettext as _
+from oldman.web import router
+from oldman.web.api import (
+    ApiErrorCode,
+    form_error_response,
+    form_invalid_response,
+    form_success_response,
+    modal_close_footer,
+    modal_not_found_response,
+    modal_response,
+    modal_success_response,
+)
+from oldman.web.auth import staff_required
+from oldman.web.components.charts import (
+    ChartResult,
+    ChartSeries,
+    ChartSummary,
+    SQLAlchemyChartView,
+    TailwindChartRenderer,
+)
+from oldman.web.components.selects import SelectProviderView
+from oldman.web.request import Request
+from oldman.web.response import json_response, redirect_response
+from oldman.web.security import WebSecurityPurpose, configured_web_security_key
+from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.template import render_fragment
+from oldman.web.template import render_template as render
 from sqlalchemy import case, func, select
 
-from apps.auth.decorators import admin_required
 from apps.epg_admin import selects as _epg_selects  # noqa: F401
 from apps.epg_admin import services
-from apps.epg_admin.form_responses import form_error_response, form_success_response
 from apps.epg_admin.forms import (
     CatalogChannelFilterForm,
     CatalogChannelForm,
@@ -37,33 +63,9 @@ from apps.epg_admin.tables import (
     MatchDecisionTable,
     NotificationTable,
     UpstreamRecordTable,
-    is_authenticated_request,
     logo_alt_text,
     resolve_logo_src,
 )
-from oldman.db import db_manager
-from oldman.i18n import gettext as _
-from oldman.web.api import (
-    ApiErrorCode,
-    CloseModalAction,
-    DefaultApiFormResponse,
-    FeedbackAction,
-    ReloadTableAction,
-)
-from oldman.web.components.charts import (
-    ChartResult,
-    ChartSeries,
-    ChartSummary,
-    SQLAlchemyChartView,
-    TailwindChartRenderer,
-)
-from oldman.web.components.selects import SelectProviderView
-from oldman.web.request import Request
-from oldman.web.response import json_response, redirect_response
-from oldman.web.routing import get_app
-from oldman.web.security import WebSecurityPurpose, configured_web_security_key
-from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.template import render_template as render
 
 SELECT_BINDING_SECRET = configured_web_security_key(
     WebSecurityPurpose.SELECT_BINDING
@@ -82,10 +84,6 @@ class LogoAssetQualityDistributionChart(SQLAlchemyChartView):
     allowed_ranges = ("all",)
     allowed_metrics = ("logo_quality",)
     allowed_chart_types = ("bar",)
-
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取 Logo 图表。"""
-        return is_authenticated_request(request)
 
     async def get_result(self, chart_request):
         """按质量分桶聚合 Logo 资产。"""
@@ -131,10 +129,6 @@ class LogoAssetMimeDistributionChart(SQLAlchemyChartView):
     allowed_metrics = ("logo_mime",)
     allowed_chart_types = ("bar",)
 
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取 Logo 图表。"""
-        return is_authenticated_request(request)
-
     async def get_result(self, chart_request):
         """按 MIME 类型聚合 Logo 资产。"""
         mime_expr = func.coalesce(CatalogLogoAsset.mime_type, "unknown")
@@ -169,10 +163,6 @@ class LogoAssetDimensionScatterChart(SQLAlchemyChartView):
     allowed_metrics = ("logo_dimensions",)
     allowed_chart_types = ("scatter",)
 
-    async def check_auth(self, request: Request) -> bool:
-        """检查当前请求是否允许读取 Logo 图表。"""
-        return is_authenticated_request(request)
-
     async def get_result(self, chart_request):
         """读取 Logo 宽高和质量分，返回尺寸散点图配置。"""
         rows = (
@@ -201,20 +191,19 @@ class LogoAssetDimensionScatterChart(SQLAlchemyChartView):
         )
 
 
-app = get_app()
-app.add_route(ChannelsEpgTable.as_view(), ChannelsEpgTable.route_path, name=ChannelsEpgTable.route_name)
-app.add_route(EpgListTable.as_view(), EpgListTable.route_path, name=EpgListTable.route_name)
-app.add_route(ChannelNameTable.as_view(), ChannelNameTable.route_path, name=ChannelNameTable.route_name)
-app.add_route(CatalogChannelTable.as_view(), CatalogChannelTable.route_path, name=CatalogChannelTable.route_name)
-app.add_route(CatalogFeedTable.as_view(), CatalogFeedTable.route_path, name=CatalogFeedTable.route_name)
-app.add_route(UpstreamRecordTable.as_view(), UpstreamRecordTable.route_path, name=UpstreamRecordTable.route_name)
-app.add_route(LogoAssetTable.as_view(), LogoAssetTable.route_path, name=LogoAssetTable.route_name)
-app.add_route(MatchDecisionTable.as_view(), MatchDecisionTable.route_path, name=MatchDecisionTable.route_name)
-app.add_route(NotificationTable.as_view(), NotificationTable.route_path, name=NotificationTable.route_name)
-app.add_route(LogoAssetQualityDistributionChart.as_view(), LogoAssetQualityDistributionChart.route_path, name=LogoAssetQualityDistributionChart.route_name)
-app.add_route(LogoAssetMimeDistributionChart.as_view(), LogoAssetMimeDistributionChart.route_path, name=LogoAssetMimeDistributionChart.route_name)
-app.add_route(LogoAssetDimensionScatterChart.as_view(), LogoAssetDimensionScatterChart.route_path, name=LogoAssetDimensionScatterChart.route_name)
-app.add_route(SelectProviderView.as_view(secret_key=SELECT_BINDING_SECRET), "/admin/select/<provider_name:str>", name="admin_select_provider")
+router.add_route(ChannelsEpgTable.as_view(), ChannelsEpgTable.route_path, name=ChannelsEpgTable.route_name)
+router.add_route(EpgListTable.as_view(), EpgListTable.route_path, name=EpgListTable.route_name)
+router.add_route(ChannelNameTable.as_view(), ChannelNameTable.route_path, name=ChannelNameTable.route_name)
+router.add_route(CatalogChannelTable.as_view(), CatalogChannelTable.route_path, name=CatalogChannelTable.route_name)
+router.add_route(CatalogFeedTable.as_view(), CatalogFeedTable.route_path, name=CatalogFeedTable.route_name)
+router.add_route(UpstreamRecordTable.as_view(), UpstreamRecordTable.route_path, name=UpstreamRecordTable.route_name)
+router.add_route(LogoAssetTable.as_view(), LogoAssetTable.route_path, name=LogoAssetTable.route_name)
+router.add_route(MatchDecisionTable.as_view(), MatchDecisionTable.route_path, name=MatchDecisionTable.route_name)
+router.add_route(NotificationTable.as_view(), NotificationTable.route_path, name=NotificationTable.route_name)
+router.add_route(LogoAssetQualityDistributionChart.as_view(), LogoAssetQualityDistributionChart.route_path, name=LogoAssetQualityDistributionChart.route_name)
+router.add_route(LogoAssetMimeDistributionChart.as_view(), LogoAssetMimeDistributionChart.route_path, name=LogoAssetMimeDistributionChart.route_name)
+router.add_route(LogoAssetDimensionScatterChart.as_view(), LogoAssetDimensionScatterChart.route_path, name=LogoAssetDimensionScatterChart.route_name)
+router.add_route(SelectProviderView.as_view(secret_key=SELECT_BINDING_SECRET), "/admin/select/<provider_name:str>", name="admin_select_provider")
 
 
 async def save_model_form(form) -> object:
@@ -251,8 +240,8 @@ def render_logo_compare_card(asset: CatalogLogoAsset, attr_name: str, label: str
     )
 
 
-@app.get("/channels-epg", name="channels_epg")
-@admin_required()
+@router.get("/channels-epg", name="channels_epg")
+@staff_required()
 async def channels_epg_index(request: Request):
     """渲染 ChannelsEpg 列表。"""
     table = ChannelsEpgTable(request=request, initial_query=request.args.get("q", "").strip())
@@ -267,36 +256,35 @@ async def channels_epg_index(request: Request):
     )
 
 
-@app.get("/channels-epg/new", name="channels_epg_new")
+@router.get("/channels-epg/new", name="channels_epg_new")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def channels_epg_new(request: Request):
     """渲染 ChannelsEpg 新建表单。"""
     form = ChannelsEpgForm(request=request)
     return await render("pages/channels_epg/form.html", context={"active_section": "epg", "active_page": "channels_epg", "channel": None, "form": form})
 
 
-@app.post("/channels-epg/new", name="channels_epg_create")
+@router.post("/channels-epg/new", name="channels_epg_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channels_epg_create(request: Request):
     """创建 ChannelsEpg。"""
     form = ChannelsEpgForm.from_request(request)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/channels_epg/form.html",
-            context={"active_section": "epg", "active_page": "channels_epg", "channel": None, "form": form},
-            cancel_url="/channels-epg",
+            fragment=lambda: form.render(cancel_url="/channels-epg"),
+            page=lambda: render("pages/channels_epg/form.html", context={"active_section": "epg", "active_page": "channels_epg", "channel": None, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/channels-epg")
 
 
-@app.get("/channels-epg/<channel_id:int>/edit", name="channels_epg_edit")
+@router.get("/channels-epg/<channel_id:int>/edit", name="channels_epg_edit")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def channels_epg_edit(request: Request, channel_id: int):
     """渲染 ChannelsEpg 编辑表单。"""
     channel = await services.get_channel(channel_id)
@@ -304,36 +292,35 @@ async def channels_epg_edit(request: Request, channel_id: int):
     return await render("pages/channels_epg/form.html", context={"active_section": "epg", "active_page": "channels_epg", "channel": channel, "form": form})
 
 
-@app.post("/channels-epg/<channel_id:int>/edit", name="channels_epg_update")
+@router.post("/channels-epg/<channel_id:int>/edit", name="channels_epg_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channels_epg_update(request: Request, channel_id: int):
     """更新 ChannelsEpg。"""
     channel = await services.get_channel(channel_id)
     form = ChannelsEpgForm.from_request(request, instance=channel)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/channels_epg/form.html",
-            context={"active_section": "epg", "active_page": "channels_epg", "channel": channel, "form": form},
-            cancel_url="/channels-epg",
+            fragment=lambda: form.render(cancel_url="/channels-epg"),
+            page=lambda: render("pages/channels_epg/form.html", context={"active_section": "epg", "active_page": "channels_epg", "channel": channel, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/channels-epg")
 
 
-@app.post("/channels-epg/<channel_id:int>/delete", name="channels_epg_delete")
+@router.post("/channels-epg/<channel_id:int>/delete", name="channels_epg_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channels_epg_delete(request: Request, channel_id: int):
     """删除 ChannelsEpg。"""
     await services.delete_channel(channel_id)
     return redirect_response("/channels-epg", status=303)
 
 
-@app.get("/channel-names", name="channel_names")
-@admin_required()
+@router.get("/channel-names", name="channel_names")
+@staff_required()
 async def channel_names_index(request: Request):
     """渲染 ChannelName 列表。"""
     published = request.args.get("published", "").strip()
@@ -361,9 +348,9 @@ async def channel_names_index(request: Request):
     )
 
 
-@app.get("/channel-names/new", name="channel_names_new")
+@router.get("/channel-names/new", name="channel_names_new")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def channel_names_new(request: Request):
     """渲染 ChannelName 新建表单。"""
     reference_ids = await services.channel_name_reference_defaults()
@@ -374,28 +361,27 @@ async def channel_names_new(request: Request):
     )
 
 
-@app.post("/channel-names/new", name="channel_names_create")
+@router.post("/channel-names/new", name="channel_names_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channel_names_create(request: Request):
     """创建 ChannelName。"""
     reference_ids = await services.channel_name_reference_defaults()
     form = ChannelNameForm.from_request(request, select_secret_key=SELECT_BINDING_SECRET, reference_ids=reference_ids)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/channel_names/form.html",
-            context={"active_section": "epg", "active_page": "channel_names", "channel_name": None, "form": form},
-            cancel_url="/channel-names",
+            fragment=lambda: form.render(cancel_url="/channel-names"),
+            page=lambda: render("pages/channel_names/form.html", context={"active_section": "epg", "active_page": "channel_names", "channel_name": None, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/channel-names")
 
 
-@app.get("/channel-names/<channel_name_id:int>/edit", name="channel_names_edit")
+@router.get("/channel-names/<channel_name_id:int>/edit", name="channel_names_edit")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def channel_names_edit(request: Request, channel_name_id: int):
     """渲染 ChannelName 编辑表单。"""
     channel_name = await services.get_channel_name(channel_name_id)
@@ -406,37 +392,36 @@ async def channel_names_edit(request: Request, channel_name_id: int):
     )
 
 
-@app.post("/channel-names/<channel_name_id:int>/edit", name="channel_names_update")
+@router.post("/channel-names/<channel_name_id:int>/edit", name="channel_names_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channel_names_update(request: Request, channel_name_id: int):
     """更新 ChannelName。"""
     channel_name = await services.get_channel_name(channel_name_id)
     reference_ids = await services.channel_name_reference_defaults()
     form = ChannelNameForm.from_request(request, instance=channel_name, select_secret_key=SELECT_BINDING_SECRET, reference_ids=reference_ids)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/channel_names/form.html",
-            context={"active_section": "epg", "active_page": "channel_names", "channel_name": channel_name, "form": form},
-            cancel_url="/channel-names",
+            fragment=lambda: form.render(cancel_url="/channel-names"),
+            page=lambda: render("pages/channel_names/form.html", context={"active_section": "epg", "active_page": "channel_names", "channel_name": channel_name, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/channel-names")
 
 
-@app.post("/channel-names/<channel_name_id:int>/delete", name="channel_names_delete")
+@router.post("/channel-names/<channel_name_id:int>/delete", name="channel_names_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def channel_names_delete(request: Request, channel_name_id: int):
     """删除 ChannelName。"""
     await services.delete_channel_name(channel_name_id)
     return redirect_response("/channel-names", status=303)
 
 
-@app.get("/catalog-channels", name="catalog_channels")
-@admin_required()
+@router.get("/catalog-channels", name="catalog_channels")
+@staff_required()
 async def catalog_channels_index(request: Request):
     """渲染 CatalogChannel 列表。"""
     status = request.args.get("status", "").strip()
@@ -464,9 +449,9 @@ async def catalog_channels_index(request: Request):
     )
 
 
-@app.get("/catalog-channels/new", name="catalog_channels_new")
+@router.get("/catalog-channels/new", name="catalog_channels_new")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def catalog_channels_new(request: Request):
     """渲染 CatalogChannel 新建表单。"""
     form = CatalogChannelForm(request=request)
@@ -481,32 +466,31 @@ async def catalog_channels_new(request: Request):
     )
 
 
-@app.post("/catalog-channels/new", name="catalog_channels_create")
+@router.post("/catalog-channels/new", name="catalog_channels_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_channels_create(request: Request):
     """创建 CatalogChannel。"""
     form = CatalogChannelForm.from_request(request)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/catalog_channels/form.html",
-            context={
+            fragment=lambda: form.render(cancel_url="/catalog-channels"),
+            page=lambda: render("pages/catalog_channels/form.html", context={
                 "active_section": "catalog",
                 "active_page": "catalog_channels",
                 "catalog_channel": None,
                 "form": form,
-            },
-            cancel_url="/catalog-channels",
+            }),
         )
     await save_model_form(form)
     return form_success_response(request, "/catalog-channels")
 
 
-@app.get("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_edit")
+@router.get("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_edit")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def catalog_channels_edit(request: Request, catalog_channel_id: int):
     """渲染 CatalogChannel 编辑表单。"""
     catalog_channel = await services.get_catalog_channel(catalog_channel_id)
@@ -522,41 +506,40 @@ async def catalog_channels_edit(request: Request, catalog_channel_id: int):
     )
 
 
-@app.post("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_update")
+@router.post("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_channels_update(request: Request, catalog_channel_id: int):
     """更新 CatalogChannel。"""
     catalog_channel = await services.get_catalog_channel(catalog_channel_id)
     form = CatalogChannelForm.from_request(request, instance=catalog_channel)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/catalog_channels/form.html",
-            context={
+            fragment=lambda: form.render(cancel_url="/catalog-channels"),
+            page=lambda: render("pages/catalog_channels/form.html", context={
                 "active_section": "catalog",
                 "active_page": "catalog_channels",
                 "catalog_channel": catalog_channel,
                 "form": form,
-            },
-            cancel_url="/catalog-channels",
+            }),
         )
     await save_model_form(form)
     return form_success_response(request, "/catalog-channels")
 
 
-@app.post("/catalog-channels/<catalog_channel_id:int>/delete", name="catalog_channels_delete")
+@router.post("/catalog-channels/<catalog_channel_id:int>/delete", name="catalog_channels_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_channels_delete(request: Request, catalog_channel_id: int):
     """删除 CatalogChannel。"""
     await services.delete_catalog_channel(catalog_channel_id)
     return redirect_response("/catalog-channels", status=303)
 
 
-@app.get("/catalog-feeds", name="catalog_feeds")
-@admin_required()
+@router.get("/catalog-feeds", name="catalog_feeds")
+@staff_required()
 async def catalog_feeds_index(request: Request):
     """渲染 CatalogFeed 列表。"""
     filter_names = (
@@ -586,9 +569,9 @@ async def catalog_feeds_index(request: Request):
     )
 
 
-@app.get("/catalog-feeds/new", name="catalog_feeds_new")
+@router.get("/catalog-feeds/new", name="catalog_feeds_new")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def catalog_feeds_new(request: Request):
     """渲染 CatalogFeed 新建表单。"""
     form = CatalogFeedForm(request=request, select_secret_key=SELECT_BINDING_SECRET)
@@ -598,27 +581,26 @@ async def catalog_feeds_new(request: Request):
     )
 
 
-@app.post("/catalog-feeds/new", name="catalog_feeds_create")
+@router.post("/catalog-feeds/new", name="catalog_feeds_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_feeds_create(request: Request):
     """创建 CatalogFeed。"""
     form = CatalogFeedForm.from_request(request, select_secret_key=SELECT_BINDING_SECRET)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/catalog_feeds/form.html",
-            context={"active_section": "catalog", "active_page": "catalog_feeds", "catalog_feed": None, "form": form},
-            cancel_url="/catalog-feeds",
+            fragment=lambda: form.render(cancel_url="/catalog-feeds"),
+            page=lambda: render("pages/catalog_feeds/form.html", context={"active_section": "catalog", "active_page": "catalog_feeds", "catalog_feed": None, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/catalog-feeds")
 
 
-@app.get("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_edit")
+@router.get("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_edit")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def catalog_feeds_edit(request: Request, catalog_feed_id: int):
     """渲染 CatalogFeed 编辑表单。"""
     catalog_feed = await services.get_catalog_feed(catalog_feed_id)
@@ -629,36 +611,35 @@ async def catalog_feeds_edit(request: Request, catalog_feed_id: int):
     )
 
 
-@app.post("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_update")
+@router.post("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_feeds_update(request: Request, catalog_feed_id: int):
     """更新 CatalogFeed。"""
     catalog_feed = await services.get_catalog_feed(catalog_feed_id)
     form = CatalogFeedForm.from_request(request, instance=catalog_feed, select_secret_key=SELECT_BINDING_SECRET)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/catalog_feeds/form.html",
-            context={"active_section": "catalog", "active_page": "catalog_feeds", "catalog_feed": catalog_feed, "form": form},
-            cancel_url="/catalog-feeds",
+            fragment=lambda: form.render(cancel_url="/catalog-feeds"),
+            page=lambda: render("pages/catalog_feeds/form.html", context={"active_section": "catalog", "active_page": "catalog_feeds", "catalog_feed": catalog_feed, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/catalog-feeds")
 
 
-@app.post("/catalog-feeds/<catalog_feed_id:int>/delete", name="catalog_feeds_delete")
+@router.post("/catalog-feeds/<catalog_feed_id:int>/delete", name="catalog_feeds_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def catalog_feeds_delete(request: Request, catalog_feed_id: int):
     """删除 CatalogFeed。"""
     await services.delete_catalog_feed(catalog_feed_id)
     return redirect_response("/catalog-feeds", status=303)
 
 
-@app.get("/upstream-records", name="upstream_records")
-@admin_required()
+@router.get("/upstream-records", name="upstream_records")
+@staff_required()
 async def upstream_records_index(request: Request):
     """渲染上游原始记录审计列表。"""
     filter_names = (
@@ -687,34 +668,25 @@ async def upstream_records_index(request: Request):
     )
 
 
-@app.get("/upstream-records/<record_id:int>/raw-modal", name="upstream_records_raw_modal")
-@admin_required()
+@router.get("/upstream-records/<record_id:int>/raw-modal", name="upstream_records_raw_modal")
+@staff_required()
 async def upstream_record_raw_modal(request: Request, record_id: int):
     """按需返回上游记录 raw payload 的 om-modal 片段，避免列表响应携带大字段。"""
     record = await services.get_upstream_record(record_id)
     if record is None:
-        return json_response(
-            {
-                "title": str(_("Raw Payload")),
-                "body": f'<p class="text-default-500 mb-0">{escape(_("Record not found."))}</p>',
-                "footer": f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>',
-            },
-            status=404,
-        )
+        return modal_not_found_response(_("Raw Payload"), _("Record not found."))
 
     key = escape(record.source_record_key or str(record.id))
     payload = escape(record.raw_payload or "")
-    return json_response(
-        {
-            "title": f'{_("Raw Payload")} · {key}',
-            "body": f'<pre class="mb-0 text-xs text-default-500 break-words" style="white-space: pre-wrap;">{payload}</pre>',
-            "footer": f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>',
-        }
+    return modal_response(
+        f'{_("Raw Payload")} · {key}',
+        body=f'<pre class="mb-0 text-xs text-default-500 break-words" style="white-space: pre-wrap;">{payload}</pre>',
+        close_label=_("Close"),
     )
 
 
-@app.get("/logo-assets", name="logo_assets")
-@admin_required()
+@router.get("/logo-assets", name="logo_assets")
+@staff_required()
 async def logo_assets_index(request: Request):
     """渲染 Logo 资产质量工作台。"""
     filter_names = (
@@ -743,20 +715,13 @@ async def logo_assets_index(request: Request):
     )
 
 
-@app.get("/logo-assets/<logo_asset_id:int>/compare-modal", name="logo_assets_compare_modal")
-@admin_required()
+@router.get("/logo-assets/<logo_asset_id:int>/compare-modal", name="logo_assets_compare_modal")
+@staff_required()
 async def logo_asset_compare_modal(request: Request, logo_asset_id: int):
     """按需返回 Logo 原图、归一化图和特征图对比 om-modal 片段。"""
     asset = await services.get_logo_asset(logo_asset_id)
     if asset is None:
-        return json_response(
-            {
-                "title": str(_("Logo Comparison")),
-                "body": f'<p class="text-default-500 mb-0">{escape(_("Logo asset not found."))}</p>',
-                "footer": f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>',
-            },
-            status=404,
-        )
+        return modal_not_found_response(_("Logo Comparison"), _("Logo asset not found."))
 
     feed = asset.catalog_feed
     title = escape(getattr(feed, "canonical_name", None) or getattr(feed, "tvg_id", None) or f"Logo #{asset.id}")
@@ -780,17 +745,11 @@ async def logo_asset_compare_modal(request: Request, logo_asset_id: int):
         f" · quality: {escape(str(asset.quality_score))}"
         "</div>"
     )
-    return json_response(
-        {
-            "title": f'{_("Logo Comparison")} · {title}',
-            "body": body,
-            "footer": f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>',
-        }
-    )
+    return modal_response(f'{_("Logo Comparison")} · {title}', body=body, close_label=_("Close"))
 
 
-@app.get("/match-decisions", name="match_decisions")
-@admin_required()
+@router.get("/match-decisions", name="match_decisions")
+@staff_required()
 async def match_decisions_index(request: Request):
     """渲染人工匹配决策审计列表。"""
     filter_names = (
@@ -817,37 +776,29 @@ async def match_decisions_index(request: Request):
     )
 
 
-@app.get("/match-decisions/<decision_id:int>/edit-modal", name="match_decisions_edit_modal")
+@router.get("/match-decisions/<decision_id:int>/edit-modal", name="match_decisions_edit_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def match_decisions_edit_modal(request: Request, decision_id: int):
     """返回人工匹配决策编辑弹窗的远程 JSON 片段。"""
     decision = await services.get_match_decision(decision_id)
     if decision is None:
-        return json_response(
-            {"title": str(_("Edit Decision")), "html": f'<p class="text-default-500 mb-0">{escape(_("Decision not found."))}</p>'},
-            status=404,
-        )
+        return modal_not_found_response(_("Edit Decision"), _("Decision not found."))
 
     form = MatchDecisionForm(request=request, instance=decision, csrf_token=request.ctx.csrf_token)
-    template = request.app.ext.environment.get_template("partials/match_decisions/edit_form.html")
-    html = await template.render_async(decision=decision, form=form)
-    return json_response({"title": f'{_("Edit Decision")} · {escape(match_decision_label(decision))}', "html": html})
+    html = await render_fragment(request, "partials/match_decisions/edit_form.html", decision=decision, form=form)
+    return modal_response(f'{_("Edit Decision")} · {escape(match_decision_label(decision))}', html=html)
 
 
-@app.post("/match-decisions/<decision_id:int>/edit", name="match_decisions_update")
+@router.post("/match-decisions/<decision_id:int>/edit", name="match_decisions_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def match_decisions_update(request: Request, decision_id: int):
     """处理人工匹配决策弹窗编辑提交。"""
     async with db_manager.get_session() as session:
         decision = await session.get(CatalogMatchDecision, decision_id)
         if decision is None:
-            payload = DefaultApiFormResponse(
-                error_code=ApiErrorCode.INVALID_REQUEST,
-                message=str(_("Decision not found")),
-            )
-            return json_response(payload.to_dict(), status=404)
+            return form_error_response(str(_("Decision not found")), error_code=ApiErrorCode.INVALID_REQUEST, status=404)
 
         form = MatchDecisionForm.from_request(request, instance=decision, session=session)
         if not await form.validate():
@@ -855,16 +806,7 @@ async def match_decisions_update(request: Request, decision_id: int):
 
         await form.save(commit=True, session=session)
 
-    payload = DefaultApiFormResponse(
-        error_code=ApiErrorCode.OK,
-        message=str(_("Saved")),
-        actions=[
-            FeedbackAction(target="#match-decisions-feedback", title=str(_("Decision saved")), icon="success"),
-            CloseModalAction(),
-            ReloadTableAction(target="#match-decisions-table"),
-        ],
-    )
-    return json_response(payload.to_dict())
+    return modal_success_response(str(_("Decision saved")), table_target="#match-decisions-table", feedback_target="#match-decisions-feedback")
 
 
 def match_decision_label(decision: CatalogMatchDecision) -> str:
@@ -881,8 +823,8 @@ def match_decision_label(decision: CatalogMatchDecision) -> str:
     return f"#{decision.id}"
 
 
-@app.get("/notifications", name="notifications")
-@admin_required()
+@router.get("/notifications", name="notifications")
+@staff_required()
 async def notifications_index(request: Request):
     """渲染通知中心列表页。"""
     filter_names = ("notification_type", "severity", "created_from", "created_to")
@@ -905,18 +847,16 @@ async def notifications_index(request: Request):
     )
 
 
-@app.get("/notifications/detail/<notification_id:path>", name="notification_detail_modal")
-@admin_required()
+@router.get("/notifications/detail/<notification_id:path>", name="notification_detail_modal")
+@staff_required()
 async def notification_detail_modal(request: Request, notification_id: str):
     """返回通知关联对象详情弹窗片段。"""
     item = await find_notification_item(notification_id)
     if item is None:
-        return json_response(
-            {
-                "title": str(_("Notification Detail")),
-                "body": f'<p class="text-default-500 mb-0">{escape(_("Notification is no longer available."))}</p>',
-                "footer": f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>',
-            },
+        # 通知可能刚被读掉或删掉：弹窗照常打开并显示这句话，关闭走弹窗自己的关闭按钮。
+        return modal_not_found_response(
+            _("Notification Detail"),
+            _("Notification is no longer available."),
         )
     tone_class_map = {
         "primary": "bg-primary-50 text-primary-700",
@@ -945,11 +885,8 @@ async def notification_detail_modal(request: Request, notification_id: str):
         "</div>"
         "</div>"
     )
-    footer = (
-        f'<button type="button" class="om-button om-button-light" data-om-modal-close>{escape(_("Close"))}</button>'
-        f'<a class="om-button om-button-primary" href="{escape(item.href)}">{escape(_("Open Source"))}</a>'
-    )
-    return json_response({"title": escape(item.title), "body": body, "footer": footer})
+    footer = modal_close_footer(_("Close")) + Markup('<a class="om-button om-button-primary" href="{}">{}</a>').format(item.href, _("Open Source"))
+    return modal_response(escape(item.title), body=body, footer=footer)
 
 
 async def find_notification_item(notification_id: str):
@@ -960,8 +897,8 @@ async def find_notification_item(notification_id: str):
     return None
 
 
-@app.get("/epg-list", name="epg_list")
-@admin_required()
+@router.get("/epg-list", name="epg_list")
+@staff_required()
 async def epg_list_index(request: Request):
     """渲染 EpgList 列表。"""
     channel_id = request.args.get("channel_id", "").strip()
@@ -988,9 +925,9 @@ async def epg_list_index(request: Request):
     )
 
 
-@app.get("/epg-list/new", name="epg_list_new")
+@router.get("/epg-list/new", name="epg_list_new")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def epg_list_new(request: Request):
     """渲染 EpgList 新建表单。"""
     form = EpgListForm(request=request, select_secret_key=SELECT_BINDING_SECRET)
@@ -1000,27 +937,26 @@ async def epg_list_new(request: Request):
     )
 
 
-@app.post("/epg-list/new", name="epg_list_create")
+@router.post("/epg-list/new", name="epg_list_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def epg_list_create(request: Request):
     """创建 EpgList。"""
     form = EpgListForm.from_request(request, select_secret_key=SELECT_BINDING_SECRET)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/epg_list/form.html",
-            context={"active_section": "epg", "active_page": "epg_list", "item": None, "form": form},
-            cancel_url="/epg-list",
+            fragment=lambda: form.render(cancel_url="/epg-list"),
+            page=lambda: render("pages/epg_list/form.html", context={"active_section": "epg", "active_page": "epg_list", "item": None, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/epg-list")
 
 
-@app.get("/epg-list/<item_id:int>/edit", name="epg_list_edit")
+@router.get("/epg-list/<item_id:int>/edit", name="epg_list_edit")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def epg_list_edit(request: Request, item_id: int):
     """渲染 EpgList 编辑表单。"""
     item = await services.get_epg_item(item_id)
@@ -1031,28 +967,27 @@ async def epg_list_edit(request: Request, item_id: int):
     )
 
 
-@app.post("/epg-list/<item_id:int>/edit", name="epg_list_update")
+@router.post("/epg-list/<item_id:int>/edit", name="epg_list_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def epg_list_update(request: Request, item_id: int):
     """更新 EpgList。"""
     item = await services.get_epg_item(item_id)
     form = EpgListForm.from_request(request, instance=item, select_secret_key=SELECT_BINDING_SECRET)
     if not await form.validate():
-        return await form_error_response(
+        return await form_invalid_response(
             request,
             form,
-            template="pages/epg_list/form.html",
-            context={"active_section": "epg", "active_page": "epg_list", "item": item, "form": form},
-            cancel_url="/epg-list",
+            fragment=lambda: form.render(cancel_url="/epg-list"),
+            page=lambda: render("pages/epg_list/form.html", context={"active_section": "epg", "active_page": "epg_list", "item": item, "form": form}),
         )
     await save_model_form(form)
     return form_success_response(request, "/epg-list")
 
 
-@app.post("/epg-list/<item_id:int>/delete", name="epg_list_delete")
+@router.post("/epg-list/<item_id:int>/delete", name="epg_list_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def epg_list_delete(request: Request, item_id: int):
     """删除 EpgList。"""
     await services.delete_epg_item(item_id)

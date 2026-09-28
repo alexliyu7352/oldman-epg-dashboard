@@ -1,4 +1,4 @@
-import { OldmanFeedback } from "@app/components/feedback";
+import { DashboardFeedback } from "oldman-web/dashboard/feedback";
 import { Component } from "oldman-web/core";
 
 /**
@@ -6,7 +6,7 @@ import { Component } from "oldman-web/core";
  */
 export class NotificationsCenter extends Component {
   static readonly componentName = "notifications-center";
-  private feedbackInstance: OldmanFeedback | null = null;
+  private feedbackInstance: DashboardFeedback | null = null;
 
   /**
    * 绑定批量清除按钮，保留 table 组件负责筛选、排序和分页。
@@ -21,10 +21,10 @@ export class NotificationsCenter extends Component {
   /**
    * 返回页面反馈组件实例，测试和运行时代码共用同一个入口。
    */
-  feedback(): OldmanFeedback {
+  feedback(): DashboardFeedback {
     if (this.feedbackInstance) return this.feedbackInstance;
     const target = this.root.querySelector<HTMLElement>("#notifications-feedback") ?? this.root;
-    this.feedbackInstance = new OldmanFeedback(target, { page: this.page, i18n: this.i18n });
+    this.feedbackInstance = new DashboardFeedback(target, { page: this.page, i18n: this.i18n });
     return this.feedbackInstance;
   }
 

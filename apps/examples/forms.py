@@ -4,6 +4,36 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from oldman.i18n import gettext_lazy as _
+from oldman.web.components.forms import (
+    Actions,
+    AjaxAutocompleteField,
+    AjaxSelectField,
+    AjaxSelectMultipleField,
+    CheckboxWidget,
+    ColorPickerField,
+    DateTimePickerWidget,
+    FieldGroup,
+    FieldLayout,
+    FileExtension,
+    FileSize,
+    FormLayout,
+    FormStep,
+    InputSpinnerWidget,
+    JSONListField,
+    ModelChoice,
+    ModelChoiceField,
+    RichTextField,
+    Row,
+    SlugField,
+    SwitchWidget,
+    TagsField,
+    TagsSelectWidget,
+    TailwindForm,
+    TailwindModelForm,
+    TailwindTableFilterForm,
+    UploadField,
+)
 from sqlalchemy import select
 from wtforms import (
     BooleanField,
@@ -19,38 +49,9 @@ from wtforms import (
     TimeField,
     ValidationError,
 )
-from wtforms.validators import DataRequired, InputRequired, Length, NumberRange, Optional, Regexp, URL
-
-from oldman.i18n import gettext_lazy as _
-from oldman.web.components.forms import (
-    Actions,
-    AjaxAutocompleteWidget,
-    AjaxSelectField,
-    AjaxSelectMultipleField,
-    ColorPickerField,
-    DateTimePickerWidget,
-    FieldLayout,
-    FormLayout,
-    FormStep,
-    InputSpinnerWidget,
-    JSONListField,
-    FileExtension,
-    FileSize,
-    ModelChoice,
-    ModelChoiceField,
-    Row,
-    RichTextField,
-    SlugField,
-    TagsField,
-    TagsSelectWidget,
-    TailwindForm,
-    TailwindModelForm,
-    TailwindTableFilterForm,
-    UploadField,
-)
+from wtforms.validators import URL, DataRequired, InputRequired, Length, NumberRange, Optional, Regexp
 
 from .models import ExampleAsset, ExampleLogo, ExampleProject, ExampleStreamProfile, ExampleTeam
-
 
 LOGO_COUNTRY_CHOICES = (
     ("", _("All countries")),
@@ -95,12 +96,13 @@ class ExampleProjectFilterForm(TailwindTableFilterForm):
         validators=[Optional()],
     )
 
-    field_layout = (
+    # Inline bar: search + team + status stay visible; priority and availability fold into "More filters".
+    layout = FormLayout(
         FieldLayout("q", "md:col-span-4"),
         FieldLayout("team_id", "md:col-span-2"),
         FieldLayout("status", "md:col-span-2"),
-        FieldLayout("priority", "md:col-span-2"),
-        FieldLayout("is_active", "md:col-span-2"),
+        FieldLayout("priority", "md:col-span-2", advanced=True),
+        FieldLayout("is_active", "md:col-span-2", advanced=True),
     )
 
 
@@ -226,6 +228,21 @@ class LayoutExampleForm(BasicFieldsForm):
         Row("age", "budget", "enabled", width="md:col-span-4"),
         FieldLayout("notes"),
         Actions(submit=_("Submit layout")),
+    )
+
+
+class BooleanWidgetsForm(TailwindForm):
+    """The same checkbox contract in its three presentations, plus a titled group."""
+
+    active = BooleanField(_("Active"), description=_("Can sign in"))
+    beta = BooleanField(_("Beta features"), description=_("Try features before release"), widget=SwitchWidget())
+    newsletter = BooleanField(_("Newsletter"), description=_("Product updates once a month"), widget=CheckboxWidget())
+    terms = BooleanField(_("Accept the terms"), validators=[DataRequired()], widget=CheckboxWidget())
+
+    layout = FormLayout(
+        Row("active", "beta", "newsletter", width="md:col-span-4"),
+        FieldGroup(_("Agreements"), FieldLayout("terms"), description=_("Required before the profile goes live")),
+        Actions(submit=_("Save booleans")),
     )
 
 
@@ -462,16 +479,6 @@ class ExampleAssetForm(TailwindModelForm):
         model = ExampleAsset
         fields = ("display_name", "document_path", "preview_path", "description")
 
-    async def validate(self, extra_validators: dict[str, Any] | None = None) -> bool:
-        """Require a document for new records while edits may keep the stored file."""
-        valid = await super().validate(extra_validators=extra_validators)
-        if self.is_bound and self.instance is None and self.document_path.data is None:
-            self.add_error("document_path", _("This field is required."))
-            self._validation_succeeded = False
-            return False
-        return valid
-
-
 class AssetRollbackForm(TailwindModelForm):
     """Upload one replacement preview whose database transaction is rolled back."""
 
@@ -558,8 +565,7 @@ class LogoSelectForm(TailwindModelForm):
         if self.is_bound or initial_logo is None:
             return
         self.country_code.data = initial_logo.country_code
-        self.logo_id.choices = [(initial_logo.id, f"{initial_logo.name} · {initial_logo.country_code}")]
-        self.logo_id.data = initial_logo.id
+        self.logo_id.initial_choice(initial_logo.id, f"{initial_logo.name} · {initial_logo.country_code}")
 
     async def clean_logo_id(self) -> int:
         """Reject forged, unavailable or country-mismatched submitted IDs."""
@@ -604,25 +610,21 @@ class LogoMultipleSelectForm(TailwindForm):
     def __init__(self, *args: Any, initial_logos: tuple[ExampleLogo, ...] = (), **kwargs: Any) -> None:
         """Seed selected options so the provider exercises ordered multi-value lookup."""
         super().__init__(*args, **kwargs)
-        if self.is_bound or not initial_logos:
-            return
-        self.logo_ids.choices = [(logo.id, f"{logo.name} · {logo.country_code}") for logo in initial_logos]
-        self.logo_ids.data = [logo.id for logo in initial_logos]
+        # initial_choices 自己会跳过已提交的表单（含用户清空多选的情况），这里不用再判一次。
+        self.logo_ids.initial_choices([(logo.id, f"{logo.name} · {logo.country_code}") for logo in initial_logos])
 
 
 class LogoAutocompleteForm(TailwindModelForm):
     """Edit the same Logo foreign key through text plus hidden ID autocomplete."""
 
     country_code = SelectField(_("Country"), choices=LOGO_COUNTRY_CHOICES, validators=[Optional()])
-    logo_id = StringField(
+    logo_id = AjaxAutocompleteField(
         _("Logo lookup"),
-        widget=AjaxAutocompleteWidget(
-            provider="example_logos",
-            route_name="example_select_provider",
-            page_size=8,
-            dependent_fields=("country_code",),
-            label_mode="html",
-        ),
+        provider="example_logos",
+        route_name="example_select_provider",
+        page_size=8,
+        dependent_fields=("country_code",),
+        label_mode="html",
         validators=[DataRequired()],
     )
 
@@ -638,10 +640,7 @@ class LogoAutocompleteForm(TailwindModelForm):
         if self.is_bound or initial_logo is None:
             return
         self.country_code.data = initial_logo.country_code
-        self.logo_id.data = str(initial_logo.id)
-        render_kw = dict(self.logo_id.render_kw or {})
-        render_kw["value"] = f"{initial_logo.name} · {initial_logo.country_code}"
-        self.logo_id.render_kw = render_kw
+        self.logo_id.initial_choice(initial_logo.id, f"{initial_logo.name} · {initial_logo.country_code}")
 
     async def clean_logo_id(self) -> int:
         """Apply the same server-side ID and dependency checks as the Select form."""
@@ -664,6 +663,7 @@ FORM_PAGE_FORMS = {
     "basics": BasicFieldsForm,
     "choices": ChoiceFieldsForm,
     "layouts": LayoutExampleForm,
+    "booleans": BooleanWidgetsForm,
     "validation": ValidationExampleForm,
     "date-time": DateTimeExampleForm,
     "masks": MaskExampleForm,
@@ -681,6 +681,7 @@ FORM_PAGE_FORMS = {
 __all__ = [
     "AssetRollbackForm",
     "BasicFieldsForm",
+    "BooleanWidgetsForm",
     "ChoiceFieldsForm",
     "ContainerExampleForm",
     "ColorPickerExampleForm",

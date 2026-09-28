@@ -2,42 +2,59 @@
 
 from __future__ import annotations
 
-from config.settings import settings
-
-from apps.auth.decorators import admin_required
-from apps.auth.session import dashboard_session
+from oldman.web import router
 from oldman.web.api import DefaultApiResponse
-from oldman.web.auth import session_profile
+from oldman.web.auth import authenticated_by, session_profile, staff_required
+from oldman.web.authentication import API_KEY_HEADER, API_KEY_METHOD, JWT_METHOD
 from oldman.web.request import Request
 from oldman.web.response import api_response
-from oldman.web.routing import get_app
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
 from oldman.web.session import Session
 from oldman.web.template import render_template
 
+from apps.auth.session import dashboard_session
+from config.settings import settings
+
 from . import EXAMPLE_SECTIONS, _render_example
 
-OWNED_AUTH_PAGES = frozenset({"login", "guards", "identity"})
+OWNED_AUTH_PAGES = frozenset({"login", "guards", "identity", "tokens", "callers"})
 OWNED_SESSION_PAGES = frozenset({"lifecycle", "revoke", "expiry"})
 OWNED_I18N_PAGES = frozenset({"server", "browser", "coverage"})
 
-app = get_app()
 
 
-@app.get("/examples/auth/probe", name="example_auth_probe")
-@admin_required()
+@router.get("/examples/auth/probe", name="example_auth_probe")
+@staff_required()
 async def example_auth_probe(request: Request):
-    """Return the identity admitted by the real Dashboard staff guard."""
-    session = dashboard_session(request)
+    """Return the user the staff guard admitted, and how the request authenticated."""
     return api_response(
         DefaultApiResponse(
-            data={"user_id": session.user_id, "username": session.username}
+            data={
+                "user_id": request.ctx.user.id,
+                "username": request.ctx.user.username,
+                "method": request.ctx.auth.method,
+            }
         )
     )
 
 
-@app.get("/examples/auth/<page:str>", name="example_auth_page")
-@admin_required()
+@router.get("/examples/auth/service-probe", name="example_service_probe")
+@authenticated_by(API_KEY_METHOD)
+async def example_service_probe(request: Request):
+    """Answer a program that sent an API key: which key it was, with no user signed in."""
+    return api_response(
+        DefaultApiResponse(
+            data={
+                "caller": request.ctx.auth.caller,
+                "method": request.ctx.auth.method,
+                "user_id": request.ctx.user.id,
+            }
+        )
+    )
+
+
+@router.get("/examples/auth/<page:str>", name="example_auth_page")
+@staff_required()
 async def example_auth_page(request: Request, page: str):
     """Render login, guard, or current-identity behavior without duplicating Auth."""
     if page not in OWNED_AUTH_PAGES:
@@ -49,13 +66,14 @@ async def example_auth_page(request: Request, page: str):
             **_page_context("auth", page),
             "session": session,
             "session_profile": session_profile(session),
+            **_caller_context(request, page),
         },
     )
 
 
-@app.get("/examples/session/<page:str>", name="example_session_page")
+@router.get("/examples/session/<page:str>", name="example_session_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_session_page(request: Request, page: str):
     """Render the current Redis-backed Session lifecycle."""
     if page not in OWNED_SESSION_PAGES:
@@ -79,9 +97,9 @@ async def example_session_page(request: Request, page: str):
     )
 
 
-@app.post("/examples/session/revoke/submit", name="example_session_revoke")
+@router.post("/examples/session/revoke/submit", name="example_session_revoke")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_session_revoke(request: Request):
     """Revoke every current-user Session and let the shared SSE guard report it."""
     session = dashboard_session(request)
@@ -91,9 +109,9 @@ async def example_session_revoke(request: Request):
     return api_response(DefaultApiResponse(data={"revoked": len(revoked)}))
 
 
-@app.post("/examples/session/expiry/submit", name="example_session_expire")
+@router.post("/examples/session/expiry/submit", name="example_session_expire")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_session_expire(request: Request):
     """Remove the current Redis record so the shared SSE expiry UI can be observed."""
     manager = Session.get_session_manager(request)
@@ -101,8 +119,8 @@ async def example_session_expire(request: Request):
     return api_response(DefaultApiResponse())
 
 
-@app.get("/examples/i18n/<page:str>", name="example_i18n_page")
-@admin_required()
+@router.get("/examples/i18n/<page:str>", name="example_i18n_page")
+@staff_required()
 async def example_i18n_page(request: Request, page: str):
     """Render the shared server and browser translation pipeline."""
     if page not in OWNED_I18N_PAGES:
@@ -111,6 +129,31 @@ async def example_i18n_page(request: Request, page: str):
         f"pages/examples/i18n/{page}.html",
         context=_page_context("i18n", page),
     )
+
+
+def _caller_context(request: Request, page: str) -> dict[str, object]:
+    """What the token and service-caller pages show: whether the method is on, and where to call.
+
+    Only key names reach the page, never a secret: the page sends the key the reader pastes in.
+    """
+    enabled = settings.web.auth.authenticators or ()
+    if page == "tokens":
+        return {
+            "jwt_enabled": JWT_METHOD in enabled,
+            "token_obtain_url": request.app.url_for("token_obtain"),
+            "token_refresh_url": request.app.url_for("token_refresh"),
+            "token_revoke_url": request.app.url_for("token_revoke"),
+            "probe_url": request.app.url_for("example_auth_probe"),
+        }
+    if page == "callers":
+        return {
+            "api_key_enabled": API_KEY_METHOD in enabled,
+            "api_key_names": sorted(settings.web.auth.api_keys),
+            "api_key_header": API_KEY_HEADER,
+            "service_probe_url": request.app.url_for("example_service_probe"),
+            "service_probe_absolute_url": settings.web.domain.rstrip("/") + request.app.url_for("example_service_probe"),
+        }
+    return {}
 
 
 def _page_context(category: str, page: str) -> dict[str, object]:
@@ -136,6 +179,7 @@ __all__ = [
     "example_auth_page",
     "example_auth_probe",
     "example_i18n_page",
+    "example_service_probe",
     "example_session_expire",
     "example_session_page",
     "example_session_revoke",

@@ -269,6 +269,9 @@ msgstr "Delete"
 msgid "Invalid username or password."
 msgstr "Invalid username or password."
 
+msgid "Too many sign-in attempts. Please try again later."
+msgstr "Too many sign-in attempts. Please try again later."
+
 #: apps/auth/views.py:145 apps/auth/views.py:414
 #: frontend/packages/oldman-web/src/dashboard/topbar.ts:192
 #: oldman/apps/admin/model_admin.py:410 oldman/apps/admin/site.py:354
@@ -327,10 +330,16 @@ msgstr "Password changed"
 msgid "%(username)s password was updated."
 msgstr "%(username)s password was updated."
 
+msgid "%(username)s was signed out and needs the new password."
+msgstr "%(username)s was signed out and needs the new password."
+
 #: apps/auth/views.py:399 oldman/apps/admin/site.py:339
 #: oldman/web/auth/user_session.py:135
 msgid "Session password changed"
 msgstr "Session password changed"
+
+msgid "Your password was updated. Please sign in again."
+msgstr "Your password was updated. Please sign in again."
 
 #: apps/auth/views.py:430 oldman/apps/admin/site.py:778
 #: oldman/apps/admin/templates/admin/model/list.html:49
@@ -9298,3 +9307,734 @@ msgstr "Underline"
 
 #~ msgid "Leave this empty to generate it from the page title on submit."
 #~ msgstr "Leave this empty to generate it from the page title on submit."
+
+msgid "Remember me"
+msgstr "Remember me"
+
+msgid "Can sign in"
+msgstr "Can sign in"
+
+msgid "Can open the dashboard"
+msgstr "Can open the dashboard"
+
+msgid "Has every permission"
+msgstr "Has every permission"
+
+msgid "More filters"
+msgstr "More filters"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Boolean Widgets"
+msgstr "Boolean Widgets"
+
+msgid "Beta features"
+msgstr "Beta features"
+
+msgid "Try features before release"
+msgstr "Try features before release"
+
+msgid "Newsletter"
+msgstr "Newsletter"
+
+msgid "Product updates once a month"
+msgstr "Product updates once a month"
+
+msgid "Accept the terms"
+msgstr "Accept the terms"
+
+msgid "Agreements"
+msgstr "Agreements"
+
+msgid "Required before the profile goes live"
+msgstr "Required before the profile goes live"
+
+msgid "Save booleans"
+msgstr "Save booleans"
+
+msgid "Sticky columns"
+msgstr "Sticky columns"
+
+msgid "Pin identifier columns while a wide table scrolls sideways."
+msgstr "Pin identifier columns while a wide table scrolls sideways."
+
+msgid "{count} selected"
+msgstr "{count} selected"
+
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+msgid "Reset your password"
+msgstr "Reset your password"
+
+msgid "Enter the email address of your account and we will send you a link to choose a new password."
+msgstr "Enter the email address of your account and we will send you a link to choose a new password."
+
+msgid "Too many requests. Please wait a while before trying again."
+msgstr "Too many requests. Please wait a while before trying again."
+
+msgid "Enter a valid email address"
+msgstr "Enter a valid email address"
+
+msgid "you@example.com"
+msgstr "you@example.com"
+
+msgid "Send reset link"
+msgstr "Send reset link"
+
+msgid "Back to sign in"
+msgstr "Back to sign in"
+
+msgid "Check your email"
+msgstr "Check your email"
+
+msgid "If an account uses that address, a link to choose a new password is on its way. It stays valid for %(hours)s hours; check the spam folder if it does not arrive."
+msgstr "If an account uses that address, a link to choose a new password is on its way. It stays valid for %(hours)s hours; check the spam folder if it does not arrive."
+
+msgid "Choose a new password"
+msgstr "Choose a new password"
+
+msgid "Set a new password for %(username)s."
+msgstr "Set a new password for %(username)s."
+
+msgid "Update password"
+msgstr "Update password"
+
+msgid "This link is no longer valid"
+msgstr "This link is no longer valid"
+
+msgid "The password reset link has expired or was already used. Request a new one to continue."
+msgstr "The password reset link has expired or was already used. Request a new one to continue."
+
+msgid "Request a new link"
+msgstr "Request a new link"
+
+msgid "Your password has been updated"
+msgstr "Your password has been updated"
+
+msgid "Sign in with your new password to continue."
+msgstr "Sign in with your new password to continue."
+
+msgid "Reset your %(site_name)s password"
+msgstr "Reset your %(site_name)s password"
+
+msgid "Hello %(username)s,"
+msgstr "Hello %(username)s,"
+
+msgid "Someone asked to reset the password of your %(site_name)s account. Open the link below to choose a new one:"
+msgstr "Someone asked to reset the password of your %(site_name)s account. Open the link below to choose a new one:"
+
+msgid "The link stays valid for %(hours)s hours. If you did not ask for this, ignore this message; your password stays as it is."
+msgstr "The link stays valid for %(hours)s hours. If you did not ask for this, ignore this message; your password stays as it is."
+
+msgid "View example projects"
+msgstr "View example projects"
+
+msgid "Change example projects"
+msgstr "Change example projects"
+
+msgid "Access Tokens"
+msgstr "Access Tokens"
+
+msgid "Service Callers"
+msgstr "Service Callers"
+
+msgid "Access tokens are not enabled on this service."
+msgstr "Access tokens are not enabled on this service."
+
+msgid "List jwt in web.auth.authenticators and give it a signing key of at least 32 characters in data/web_settings.yaml, then restart. The example settings file leaves the key out on purpose: whoever holds it can sign a token for any user, superusers included."
+msgstr "List jwt in web.auth.authenticators and give it a signing key of at least 32 characters in data/web_settings.yaml, then restart. The example settings file leaves the key out on purpose: whoever holds it can sign a token for any user, superusers included."
+
+msgid "A client that is not a browser page signs in with a token instead of a cookie."
+msgstr "A client that is not a browser page signs in with a token instead of a cookie."
+
+msgid "Every request below is sent without cookies, so the probe can only recognize you by the Authorization header. Open the browser's network panel to see it."
+msgstr "Every request below is sent without cookies, so the probe can only recognize you by the Authorization header. Open the browser's network panel to see it."
+
+msgid "Tokens held by this page"
+msgstr "Tokens held by this page"
+
+msgid "Only the last characters are shown. They live in this page's memory and are gone when it reloads."
+msgstr "Only the last characters are shown. They live in this page's memory and are gone when it reloads."
+
+msgid "Access token"
+msgstr "Access token"
+
+msgid "None"
+msgstr "None"
+
+msgid "Refresh token"
+msgstr "Refresh token"
+
+msgid "1. Get a token"
+msgstr "1. Get a token"
+
+#, python-format
+msgid "POST %(url)s with a username and password. Only staff accounts get tokens, as only staff can sign in here."
+msgstr "POST %(url)s with a username and password. Only staff accounts get tokens, as only staff can sign in here."
+
+msgid "Get tokens"
+msgstr "Get tokens"
+
+msgid "2. Call the probe with the access token"
+msgstr "2. Call the probe with the access token"
+
+msgid "The same staff-only probe the Access Guards page calls with the session; here it sees Authorization: Bearer and nothing else."
+msgstr "The same staff-only probe the Access Guards page calls with the session; here it sees Authorization: Bearer and nothing else."
+
+msgid "Call the probe"
+msgstr "Call the probe"
+
+msgid "3. Refresh"
+msgstr "3. Refresh"
+
+#, python-format
+msgid "POST %(url)s with the refresh token. Each refresh token works once: showing a spent one again ends the whole sign-in, since two parties then hold it."
+msgstr "POST %(url)s with the refresh token. Each refresh token works once: showing a spent one again ends the whole sign-in, since two parties then hold it."
+
+msgid "Refresh the tokens"
+msgstr "Refresh the tokens"
+
+msgid "4. Sign out"
+msgstr "4. Sign out"
+
+#, python-format
+msgid "POST %(url)s with the refresh token and the access token in the Authorization header: both stop working at once, and the probe is called again to show it."
+msgstr "POST %(url)s with the refresh token and the access token in the Authorization header: both stop working at once, and the probe is called again to show it."
+
+msgid "Sign out"
+msgstr "Sign out"
+
+msgid "Not run yet."
+msgstr "Not run yet."
+
+msgid "API keys are not enabled on this service."
+msgstr "API keys are not enabled on this service."
+
+msgid "List api_key in web.auth.authenticators and name at least one key under web.auth.api_keys in data/web_settings.yaml, then restart. Keys stay out of the example settings file, which is public."
+msgstr "List api_key in web.auth.authenticators and name at least one key under web.auth.api_keys in data/web_settings.yaml, then restart. Keys stay out of the example settings file, which is public."
+
+msgid "A script or another service is a caller, not a user."
+msgstr "A script or another service is a caller, not a user."
+
+msgid "The probe below accepts only API keys: request.ctx.user stays anonymous and request.ctx.auth.caller names the key. Being signed in does not open it."
+msgstr "The probe below accepts only API keys: request.ctx.user stays anonymous and request.ctx.auth.caller names the key. Being signed in does not open it."
+
+msgid "Keys this service accepts"
+msgstr "Keys this service accepts"
+
+msgid "Only the names are shown; the secrets stay in web.auth.api_keys. Paste one below to call the probe with it."
+msgstr "Only the names are shown; the secrets stay in web.auth.api_keys. Paste one below to call the probe with it."
+
+msgid "API key"
+msgstr "API key"
+
+msgid "Signed in, no key"
+msgstr "Signed in, no key"
+
+msgid "This browser's session is recognized, but the probe takes keys only, so the answer is 403 rather than 401."
+msgstr "This browser's session is recognized, but the probe takes keys only, so the answer is 403 rather than 401."
+
+msgid "Call with the session"
+msgstr "Call with the session"
+
+msgid "The key, no cookies"
+msgstr "The key, no cookies"
+
+#, python-format
+msgid "Sent in the %(header)s header with cookies left out: the key alone gets in."
+msgstr "Sent in the %(header)s header with cookies left out: the key alone gets in."
+
+msgid "Call with the key"
+msgstr "Call with the key"
+
+msgid "A wrong key"
+msgstr "A wrong key"
+
+msgid "The pasted key with extra characters. Nothing recognizes the request, so the answer is 401."
+msgstr "The pasted key with extra characters. Nothing recognizes the request, so the answer is 401."
+
+msgid "Call with a wrong key"
+msgstr "Call with a wrong key"
+
+msgid "From a script"
+msgstr "From a script"
+
+msgid "Sending…"
+msgstr "Sending…"
+
+msgid "Refused"
+msgstr "Refused"
+
+msgid "Get a token first."
+msgstr "Get a token first."
+
+msgid "Signed in. The page now holds an access token and a refresh token."
+msgstr "Signed in. The page now holds an access token and a refresh token."
+
+#, python-brace-format
+msgid "Recognized {username} by {method}."
+msgstr "Recognized {username} by {method}."
+
+msgid "No cookie was sent: the access token alone signed this request in."
+msgstr "No cookie was sent: the access token alone signed this request in."
+
+msgid "A new pair was issued. The refresh token it replaced no longer works."
+msgstr "A new pair was issued. The refresh token it replaced no longer works."
+
+#, python-brace-format
+msgid "Signed out. The probe, called again with the same access token, answered HTTP {status}."
+msgstr "Signed out. The probe, called again with the same access token, answered HTTP {status}."
+
+msgid "The token response carried no tokens."
+msgstr "The token response carried no tokens."
+
+#, python-brace-format
+msgid "The access token expires in {access} seconds; the refresh token in {refresh} seconds."
+msgstr "The access token expires in {access} seconds; the refresh token in {refresh} seconds."
+
+msgid "Paste a key from web.auth.api_keys first."
+msgstr "Paste a key from web.auth.api_keys first."
+
+#, python-brace-format
+msgid "Accepted as the caller {caller}. No user is signed in (user id: {user})."
+msgstr "Accepted as the caller {caller}. No user is signed in (user id: {user})."
+
+msgid "Security"
+msgstr "Security"
+
+msgid "Browser Fingerprint"
+msgstr "Browser Fingerprint"
+
+msgid "Fingerprint accepted"
+msgstr "Fingerprint accepted"
+
+msgid "This raises the cost of abuse. It does not prove who anyone is."
+msgstr "This raises the cost of abuse. It does not prove who anyone is."
+
+msgid "The AES key is shared with the browser so the page can encrypt its payload, which means anyone who opens devtools can read it and sign their own. Use it as friction against scripted clients; decide identity with the session."
+msgstr "The AES key is shared with the browser so the page can encrypt its payload, which means anyone who opens devtools can read it and sign their own. Use it as friction against scripted clients; decide identity with the session."
+
+msgid "This browser"
+msgstr "This browser"
+
+msgid "The visitor id is derived from device characteristics and kept in memory only. The encrypted payload is reused until it expires, then rebuilt."
+msgstr "The visitor id is derived from device characteristics and kept in memory only. The encrypted payload is reused until it expires, then rebuilt."
+
+msgid "Visitor id"
+msgstr "Visitor id"
+
+msgid "Not generated yet"
+msgstr "Not generated yet"
+
+msgid "Payload accepted within"
+msgstr "Payload accepted within"
+
+#, python-format
+msgid "%(seconds)s seconds of its timestamp"
+msgstr "%(seconds)s seconds of its timestamp"
+
+msgid "Limit for this probe"
+msgstr "Limit for this probe"
+
+#, python-format
+msgid "%(count)s requests per %(window)s seconds"
+msgstr "%(count)s requests per %(window)s seconds"
+
+msgid "A real payload passes"
+msgstr "A real payload passes"
+
+msgid "Proves the browser and the server agree on the key and the wire format."
+msgstr "Proves the browser and the server agree on the key and the wire format."
+
+msgid "Send with fingerprint"
+msgstr "Send with fingerprint"
+
+msgid "No header is refused"
+msgstr "No header is refused"
+
+msgid "A scripted client that skips the page's crypto gets 403, and the attempt is recorded against its IP."
+msgstr "A scripted client that skips the page's crypto gets 403, and the attempt is recorded against its IP."
+
+msgid "Send without fingerprint"
+msgstr "Send without fingerprint"
+
+msgid "An edited payload is refused"
+msgstr "An edited payload is refused"
+
+msgid "One byte is flipped before sending. AES-GCM authenticates, so the server rejects it rather than decrypting something else."
+msgstr "One byte is flipped before sending. AES-GCM authenticates, so the server rejects it rather than decrypting something else."
+
+msgid "Send an edited payload"
+msgstr "Send an edited payload"
+
+msgid "Too many requests are refused"
+msgstr "Too many requests are refused"
+
+msgid "The same visitor id keeps arriving, so the combined fingerprint/IP limiter stops it and says when to come back."
+msgstr "The same visitor id keeps arriving, so the combined fingerprint/IP limiter stops it and says when to come back."
+
+msgid "Send until refused"
+msgstr "Send until refused"
+
+msgid "Making it harder to defeat"
+msgstr "Making it harder to defeat"
+
+msgid "Everything below raises the cost further. None of it turns this into authentication."
+msgstr "Everything below raises the cost further. None of it turns this into authentication."
+
+msgid "Derive the visitor id from more signals."
+msgstr "Derive the visitor id from more signals."
+
+msgid "This page uses a small built-in hash of navigator and screen properties so the framework needs no extra dependency. A library such as FingerprintJS reads many more signals and survives more browser changes; pass it to createFingerprintSender as the visitorId provider."
+msgstr "This page uses a small built-in hash of navigator and screen properties so the framework needs no extra dependency. A library such as FingerprintJS reads many more signals and survives more browser changes; pass it to createFingerprintSender as the visitorId provider."
+
+msgid "Obfuscate the key in your bundle."
+msgstr "Obfuscate the key in your bundle."
+
+msgid "The key reaches the browser at build time, never from the page. Splitting it across arrays combined at runtime, and running a JavaScript obfuscator over the build, both mean a static search of the bundle no longer finds it."
+msgstr "The key reaches the browser at build time, never from the page. Splitting it across arrays combined at runtime, and running a JavaScript obfuscator over the build, both mean a static search of the bundle no longer finds it."
+
+msgid "Rotate the key."
+msgstr "Rotate the key."
+
+msgid "Deploy the frontend and the setting together. A key that has leaked stays useful until it changes."
+msgstr "Deploy the frontend and the setting together. A key that has leaked stays useful until it changes."
+
+msgid "Keep the accepted window narrow."
+msgstr "Keep the accepted window narrow."
+
+msgid "timestamp_max_diff bounds how long a captured payload can be replayed. Shorten it until clock skew between your users and your servers starts to hurt."
+msgstr "timestamp_max_diff bounds how long a captured payload can be replayed. Shorten it until clock skew between your users and your servers starts to hurt."
+
+msgid "Give each sensitive route its own bucket."
+msgstr "Give each sensitive route its own bucket."
+
+msgid "rate_limits is keyed by endpoint, so a login route can be far stricter than a catalog page without slowing browsing down."
+msgstr "rate_limits is keyed by endpoint, so a login route can be far stricter than a catalog page without slowing browsing down."
+
+msgid "Watch the anomalies."
+msgstr "Watch the anomalies."
+
+msgid "The limiter also reports one fingerprint arriving from many IPs, and one IP carrying many fingerprints. Those patterns identify automation that a per-request check cannot."
+msgstr "The limiter also reports one fingerprint arriving from many IPs, and one IP carrying many fingerprints. Those patterns identify automation that a per-request check cannot."
+
+#, python-brace-format
+msgid "Accepted. Seen {fp} times from this fingerprint and {ip} from this address in the current window."
+msgstr "Accepted. Seen {fp} times from this fingerprint and {ip} from this address in the current window."
+
+#, python-brace-format
+msgid "Refused on request {count}. {detail}"
+msgstr "Refused on request {count}. {detail}"
+
+#, python-brace-format
+msgid "Sent {count}, still accepted…"
+msgstr "Sent {count}, still accepted…"
+
+msgid "Still accepted after 40 requests; the limit for this probe is higher than expected."
+msgstr "Still accepted after 40 requests; the limit for this probe is higher than expected."
+
+#, python-brace-format
+msgid "{reason} Retry after {seconds} seconds."
+msgstr "{reason} Retry after {seconds} seconds."
+
+msgid "Model Cache"
+msgstr "Model Cache"
+
+msgid "The selected project no longer exists."
+msgstr "The selected project no longer exists."
+
+msgid "Cache hit"
+msgstr "Cache hit"
+
+msgid "Cache miss: read from the database and stored"
+msgstr "Cache miss: read from the database and stored"
+
+msgid "Bypassed: this process has just written example tasks"
+msgstr "Bypassed: this process has just written example tasks"
+
+msgid "Fallback: Redis or the cache pool was unavailable"
+msgstr "Fallback: Redis or the cache pool was unavailable"
+
+msgid "Source unknown: another read ran at the same time"
+msgstr "Source unknown: another read ran at the same time"
+
+#, python-format
+msgid "%(ms)s ms"
+msgstr "%(ms)s ms"
+
+msgid "Tasks of the chosen project"
+msgstr "Tasks of the chosen project"
+
+msgid "Position"
+msgstr "Position"
+
+msgid "This project has no tasks."
+msgstr "This project has no tasks."
+
+#, python-format
+msgid "This process so far: %(hits)s hits, %(misses)s misses, %(bypassed)s bypassed, %(fallbacks)s fallbacks."
+msgstr "This process so far: %(hits)s hits, %(misses)s misses, %(bypassed)s bypassed, %(fallbacks)s fallbacks."
+
+msgid "Every cached example task entry was invalidated; the next read is a miss."
+msgstr "Every cached example task entry was invalidated; the next read is a miss."
+
+#, python-format
+msgid "Restored %(count)s rows through the ORM, so their caches were invalidated too."
+msgstr "Restored %(count)s rows through the ORM, so their caches were invalidated too."
+
+msgid "Nothing to change: no suitable project with tasks was found."
+msgstr "Nothing to change: no suitable project with tasks was found."
+
+msgid "Committed through the ORM. Read tasks again: the cached query of this project was invalidated."
+msgstr "Committed through the ORM. Read tasks again: the cached query of this project was invalidated."
+
+msgid "Committed through the ORM to another project's task. Read tasks again: this project's cached query is still a hit."
+msgstr "Committed through the ORM to another project's task. Read tasks again: this project's cached query is still a hit."
+
+msgid "Committed with an UPDATE statement and nothing told the cache. Read tasks again: still a hit with the old title."
+msgstr "Committed with an UPDATE statement and nothing told the cache. Read tasks again: still a hit with the old title."
+
+msgid "Committed through the ORM. Read tasks again: every cached task query misses once."
+msgstr "Committed through the ORM. Read tasks again: every cached task query misses once."
+
+msgid "Project tasks through the model cache"
+msgstr "Project tasks through the model cache"
+
+msgid "Example tasks are declared with partition_by=(\"project_id\",) and invalidate_on=(ExampleProject, ExampleTeam). Reading a project's tasks goes through the cache; each write below shows what invalidates it."
+msgstr "Example tasks are declared with partition_by=(\"project_id\",) and invalidate_on=(ExampleProject, ExampleTeam). Reading a project's tasks goes through the cache; each write below shows what invalidates it."
+
+msgid "No example projects with tasks exist. Load the demo fixture first."
+msgstr "No example projects with tasks exist. Load the demo fixture first."
+
+msgid "Read tasks"
+msgstr "Read tasks"
+
+msgid "Rename its first task (ORM)"
+msgstr "Rename its first task (ORM)"
+
+msgid "Rename a task of another project (ORM)"
+msgstr "Rename a task of another project (ORM)"
+
+msgid "Rename its first task with an UPDATE statement"
+msgstr "Rename its first task with an UPDATE statement"
+
+msgid "Rename the project (ORM)"
+msgstr "Rename the project (ORM)"
+
+msgid "Invalidate the task cache"
+msgstr "Invalidate the task cache"
+
+msgid "Restore example data"
+msgstr "Restore example data"
+
+msgid "Read twice: the first read is a miss that stores the result, the second a hit."
+msgstr "Read twice: the first read is a miss that stores the result, the second a hit."
+
+msgid "After an ORM write to one of this project's tasks, the next read is a miss and shows the new title."
+msgstr "After an ORM write to one of this project's tasks, the next read is a miss and shows the new title."
+
+msgid "A write to another project's task leaves this project's cached query a hit: its partition did not change."
+msgstr "A write to another project's task leaves this project's cached query a hit: its partition did not change."
+
+msgid "An UPDATE statement fires no ORM event, so the next read is still a hit with the old title until the task cache is invalidated. Code that writes this way calls ExampleTask.invalidate_cache_on_commit(session)."
+msgstr "An UPDATE statement fires no ORM event, so the next read is still a hit with the old title until the task cache is invalidated. Code that writes this way calls ExampleTask.invalidate_cache_on_commit(session)."
+
+msgid "Renaming the project makes every cached task query miss once: the database deletes a project's tasks by itself, so the cache listens to project writes."
+msgstr "Renaming the project makes every cached task query miss once: the database deletes a project's tasks by itself, so the cache listens to project writes."
+
+msgid "Choose a project and read its tasks to begin."
+msgstr "Choose a project and read its tasks to begin."
+
+msgid "Dynamic Configuration"
+msgstr "Dynamic Configuration"
+
+msgid "File Configuration"
+msgstr "File Configuration"
+
+msgid "Redis Configuration"
+msgstr "Redis Configuration"
+
+msgid "Enter a channel ID of up to 40 characters."
+msgstr "Enter a channel ID of up to 40 characters."
+
+msgid "Enter whole minutes between -720 and 720."
+msgstr "Enter whole minutes between -720 and 720."
+
+msgid "Keep the announcement within 200 characters."
+msgstr "Keep the announcement within 200 characters."
+
+msgid "Keep the banner within 200 characters."
+msgstr "Keep the banner within 200 characters."
+
+msgid "Enter a whole number from 1 to 20."
+msgstr "Enter a whole number from 1 to 20."
+
+msgid "Enter a device ID of up to 40 characters."
+msgstr "Enter a device ID of up to 40 characters."
+
+#, python-format
+msgid "on_file_changed calls: %(count)s"
+msgstr "on_file_changed calls: %(count)s"
+
+msgid "Saved by the store itself, so the hook was not called."
+msgstr "Saved by the store itself, so the hook was not called."
+
+#, python-format
+msgid "The file was replaced outside the store. Read again: within %(seconds)s seconds the store picks it up."
+msgstr "The file was replaced outside the store. Read again: within %(seconds)s seconds the store picks it up."
+
+msgid "The file now holds a word where minutes belong. At its next check the store keeps the last valid value and logs an error."
+msgstr "The file now holds a word where minutes belong. At its next check the store keeps the last valid value and logs an error."
+
+msgid "Decoded value"
+msgstr "Decoded value"
+
+msgid "Announcement"
+msgstr "Announcement"
+
+msgid "(none)"
+msgstr "(none)"
+
+msgid "Channel overrides"
+msgstr "Channel overrides"
+
+msgid "EPG offset in minutes"
+msgstr "EPG offset in minutes"
+
+msgid "The file on disk"
+msgstr "The file on disk"
+
+msgid "Saved with update(): the value was checked against SiteFlags before it was written."
+msgstr "Saved with update(): the value was checked against SiteFlags before it was written."
+
+msgid "A second RedisStore instance wrote the banner, as another process would. Nothing is cached locally, so this read already shows it."
+msgstr "A second RedisStore instance wrote the banner, as another process would. Nothing is cached locally, so this read already shows it."
+
+#, python-format
+msgid "update() refused the value and wrote nothing: %(error)s"
+msgstr "update() refused the value and wrote nothing: %(error)s"
+
+msgid "The value was written, which should not happen."
+msgstr "The value was written, which should not happen."
+
+#, python-format
+msgid "Added %(device)s."
+msgstr "Added %(device)s."
+
+#, python-format
+msgid "%(device)s was already in the set."
+msgstr "%(device)s was already in the set."
+
+#, python-format
+msgid "Removed %(device)s."
+msgstr "Removed %(device)s."
+
+#, python-format
+msgid "%(device)s was not in the set."
+msgstr "%(device)s was not in the set."
+
+#, python-format
+msgid "%(device)s is allowed."
+msgstr "%(device)s is allowed."
+
+#, python-format
+msgid "%(device)s is not allowed."
+msgstr "%(device)s is not allowed."
+
+#, python-format
+msgid "Picked %(device)s at random."
+msgstr "Picked %(device)s at random."
+
+msgid "The set is empty."
+msgstr "The set is empty."
+
+msgid "Both keys are back to their defaults."
+msgstr "Both keys are back to their defaults."
+
+msgid "Banner"
+msgstr "Banner"
+
+msgid "Streams per user"
+msgstr "Streams per user"
+
+msgid "No devices are allowed yet."
+msgstr "No devices are allowed yet."
+
+msgid "A YAML file read through YamlStore"
+msgstr "A YAML file read through YamlStore"
+
+#, python-format
+msgid "ChannelOverrides declares the fields, their types and their defaults. The store keeps the decoded value in memory and looks at the file every %(seconds)s seconds."
+msgstr "ChannelOverrides declares the fields, their types and their defaults. The store keeps the decoded value in memory and looks at the file every %(seconds)s seconds."
+
+msgid "Change the channel (get, assign, save)"
+msgstr "Change the channel (get, assign, save)"
+
+msgid "Set the announcement (update)"
+msgstr "Set the announcement (update)"
+
+msgid "Edit the announcement in the file, outside the store"
+msgstr "Edit the announcement in the file, outside the store"
+
+msgid "Write a wrong type into the file"
+msgstr "Write a wrong type into the file"
+
+msgid "Restore the defaults"
+msgstr "Restore the defaults"
+
+msgid "Changing the channel reads the value, assigns the field and saves it. The store's own saves never call on_file_changed."
+msgstr "Changing the channel reads the value, assigns the field and saves it. The store's own saves never call on_file_changed."
+
+msgid "update(announcement=...) reads, changes and saves in one call; a subclass that overrides save covers it too."
+msgstr "update(announcement=...) reads, changes and saves in one call; a subclass that overrides save covers it too."
+
+#, python-format
+msgid "An edit outside the store replaces the file as an editor would. The store picks it up at its next check, at most %(seconds)s seconds later, and calls on_file_changed once."
+msgstr "An edit outside the store replaces the file as an editor would. The store picks it up at its next check, at most %(seconds)s seconds later, and calls on_file_changed once."
+
+msgid "A wrong type written into the file is not taken: the store keeps serving the last valid value and logs one error."
+msgstr "A wrong type written into the file is not taken: the store keeps serving the last valid value and logs one error."
+
+msgid "What the store serves"
+msgstr "What the store serves"
+
+msgid "Values in one Redis key through RedisStore"
+msgstr "Values in one Redis key through RedisStore"
+
+msgid "SiteFlags declares the fields, their types and their defaults. The whole value lives in one key; every read goes to Redis, so a write from another process shows at the next read."
+msgstr "SiteFlags declares the fields, their types and their defaults. The whole value lives in one key; every read goes to Redis, so a write from another process shows at the next read."
+
+msgid "Site under maintenance"
+msgstr "Site under maintenance"
+
+msgid "Save the three fields (update)"
+msgstr "Save the three fields (update)"
+
+msgid "Write the banner from another instance"
+msgstr "Write the banner from another instance"
+
+msgid "Try to save text into the number field"
+msgstr "Try to save text into the number field"
+
+msgid "A device allowlist in a Redis set through RedisSet"
+msgstr "A device allowlist in a Redis set through RedisSet"
+
+msgid "Each operation is one set command, so checking a device never reads the whole list."
+msgstr "Each operation is one set command, so checking a device never reads the whole list."
+
+msgid "Device ID"
+msgstr "Device ID"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Is it allowed?"
+msgstr "Is it allowed?"
+
+msgid "Pick one at random"
+msgstr "Pick one at random"
+
+msgid "What Redis holds"
+msgstr "What Redis holds"

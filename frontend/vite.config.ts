@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -20,11 +21,31 @@ const staticDistBase = "/static/dist/";
 const frameworkStaticUrlPrefix = "/static/oldman/";
 const previewLanguageDefinitions: readonly LanguageDefinition[] = languageDefinitions;
 
+/** The demo key. A real deployment passes its own and keeps it out of the repo. */
+const DEMO_FINGERPRINT_KEY = "b2xkbWFuLWVwZy1kZW1vLWZpbmdlcnByaW50LWtleSE=";
+
+/**
+ * 把指纹密钥在构建期拆成两段，运行时异或还原。
+ *
+ * 密钥在构建期进包，不从页面下发——每个部署一把，而框架的 bundle 是共用的。拆两段是
+ * 为了让静态 grep 在产物里找不到一段连续的密钥；这只提高成本，拿到 bundle 跑一遍就能
+ * 还原，页面上也是这么写的。拆分是确定性的（由密钥自身派生），构建保持可重现。
+ */
+function fingerprintKeyShares(): { s1: number[]; s2: number[] } {
+  const raw = Buffer.from(process.env.OLDMAN_FINGERPRINT_KEY?.trim() || DEMO_FINGERPRINT_KEY, "base64");
+  const mask = createHash("sha256").update(raw).update("oldman-fingerprint-split").digest();
+  return {
+    s1: Array.from(mask.subarray(0, raw.length)),
+    s2: Array.from(raw.map((byte, index) => byte ^ mask[index]!))
+  };
+}
+
 export default defineConfig(({ command }) => ({
   base: command === "build" ? staticDistBase : "/",
   plugins: [oldmanTemplatePreview(), tailwindcss()],
   define: {
-    global: "globalThis"
+    global: "globalThis",
+    __OLDMAN_FINGERPRINT_SHARES__: JSON.stringify(fingerprintKeyShares())
   },
   resolve: {
     alias: [

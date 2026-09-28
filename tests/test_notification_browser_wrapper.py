@@ -52,14 +52,11 @@ class EpgNotificationBrowserWrapperTest(unittest.TestCase):
             payload["database"]["url"],
             f"sqlite+aiosqlite:///{state_root / 'dashboard.sqlite3'}",
         )
-        self.assertEqual(
-            payload["redis"]["SESSION"]["redis_url"],
-            "redis://127.0.0.1:47339/0",
-        )
-        self.assertEqual(
-            payload["redis"]["SSE"]["redis_url"],
-            "redis://127.0.0.1:47339/1",
-        )
+        # 每个别名都要落到门禁自己那台 Redis 的一个独立 database：本项目还有 CACHE 和 TASKIQ，
+        # 漏掉任何一个，门禁就会读写开发机上的真实 Redis。
+        databases = [entry["redis_url"] for entry in payload["redis"].values()]
+        self.assertTrue(all(url.startswith("redis://127.0.0.1:47339/") for url in databases), databases)
+        self.assertEqual(len(payload["redis"]), len(set(databases)))
         self.assertTrue(payload["web"]["sse"]["enabled"])
         self.assertFalse(payload["taskiq"]["enabled"])
         self.assertFalse(payload["nats_bus"]["enabled"])
@@ -86,7 +83,7 @@ class EpgNotificationBrowserWrapperTest(unittest.TestCase):
                 events.append("redis:stop")
 
         @contextmanager
-        def service(_environment: dict[str, str], _config_file: Path):
+        def service(_config_file: Path, **_options: object):
             events.append("service:start")
             try:
                 yield object()

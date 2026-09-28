@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 {% from "oldman/dashboard/components/modal.html" import modal %}
 
 {% block title %}{{ _("Catalog Channels") }} · Oldman{% endblock %}
@@ -6,22 +7,15 @@
 {% block content %}
 <div class="page-content">
   <div class="om-page-section">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
-      <div class="md:col-span-12">
-        <div class="om-page-header">
-          <h1 class="om-page-title">{{ _("Catalog Channels") }}</h1>
-          <div class="page-title-right">
-            <a href="/catalog-channels/new" class="om-button om-button-primary om-button-sm">
-              <i class="ri-add-line align-bottom mr-1"></i>{{ _("New Catalog Channel") }}
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% call page_head(_("Catalog Channels")) %}
+      <a href="/catalog-channels/new" class="om-button om-button-primary">
+      <i class="ri-add-line"></i>{{ _("New Catalog Channel") }}
+      </a>
+    {% endcall %}
 
+    {{ filter_form.render(method="get", table_target="#catalog-channels-table") }}
     <div class="om-card">
       <div class="om-card-body">
-        {{ filter_form.render(method="get", submit_label="Filter", table_target="#catalog-channels-table") }}
         <div class="mb-4">
           <label class="om-form-label">{{ _("Confidence Range") }}</label>
           <div
@@ -34,9 +28,13 @@
             data-om-slider-options='{"start":[0,100],"connect":true,"range":{"min":0,"max":100},"step":1,"tooltips":true}'
           ></div>
         </div>
-        <button type="button" class="om-button om-button-soft-secondary om-button-sm mb-3" data-om-modal-target="#catalog-channel-evidence-modal">
-          <i class="ri-file-search-line align-bottom mr-1"></i>{{ _("Evidence Preview") }}
+        <button type="button" class="om-button om-button-secondary om-button-sm" data-om-modal-target="#catalog-channel-evidence-modal">
+          <i class="ri-file-search-line"></i>{{ _("Evidence Preview") }}
         </button>
+      </div>
+    </div>
+    <div class="om-card om-table-card">
+      <div class="om-card-body">
         {{ table.render_shell(html_id="catalog-channels-table", show_search=False) }}
       </div>
     </div>

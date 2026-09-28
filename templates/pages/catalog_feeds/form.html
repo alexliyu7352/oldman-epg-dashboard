@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% set is_edit = catalog_feed is not none %}
 {% block title %}{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }} · Oldman{% endblock %}
@@ -6,16 +7,9 @@
 {% block content %}
 <div class="page-content">
   <div class="om-page-section">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
-      <div class="md:col-span-12">
-        <div class="om-page-header">
-          <h1 class="om-page-title">{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }}</h1>
-          <div class="page-title-right">
-            <a href="/catalog-feeds" class="om-button om-button-soft-secondary om-button-sm">{{ _("Back") }}</a>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% call page_head(_("Edit Catalog Feed") if is_edit else _("New Catalog Feed")) %}
+      <a href="/catalog-feeds" class="om-button om-button-secondary">{{ _("Back") }}</a>
+    {% endcall %}
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
       <div class="md:col-span-12 xl:col-span-8">

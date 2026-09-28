@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from apps.auth.decorators import admin_required
+from oldman.web import router
+from oldman.web.auth import staff_required
 from oldman.web.request import Request
-from oldman.web.routing import get_app
 from oldman.web.template import render_template
 
 from .chart_views import DashboardFeedStatusChart, DashboardLogoQualityChart, DashboardProgrammeTrendChart
 from .services import dashboard_notifications, dashboard_stats
-
-app = get_app()
 
 
 def dashboard_chart_context(request: Request) -> dict[str, object]:
@@ -33,16 +31,16 @@ async def dashboard_page_context(request: Request, active_page: str) -> dict[str
     }
 
 
-@app.get("/", name="dashboard")
-@app.get("/dashboard", name="dashboard_alias")
-@admin_required()
+@router.get("/", name="dashboard")
+@router.get("/dashboard", name="dashboard_alias")
+@staff_required()
 async def dashboard(request: Request):
     """渲染真实业务统计首页。"""
     return await render_template("pages/dashboard.html", context=await dashboard_page_context(request, "dashboard_overview"))
 
 
-@app.get("/dashboard/analytics", name="dashboard_analytics")
-@admin_required()
+@router.get("/dashboard/analytics", name="dashboard_analytics")
+@staff_required()
 async def dashboard_analytics(request: Request):
     """渲染 Dashboard 分析图表页。"""
     return await render_template("pages/dashboard_analytics.html", context=await dashboard_page_context(request, "dashboard_analytics"))

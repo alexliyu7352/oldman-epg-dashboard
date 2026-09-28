@@ -1,0 +1,39 @@
+<div data-config-redis-operation="{{ operation }}">
+  {% if operation != "page" %}
+    <p class="mb-4 font-medium">
+      {% if operation == "update_flags" %}{{ _("Saved with update(): the value was checked against SiteFlags before it was written.") }}
+      {% elif operation == "write_elsewhere" %}{{ _("A second RedisStore instance wrote the banner, as another process would. Nothing is cached locally, so this read already shows it.") }}
+      {% elif operation == "wrong_type" %}
+        {% if refusal %}<span data-config-refusal>{{ _("update() refused the value and wrote nothing: %(error)s", error=refusal) }}</span>
+        {% else %}{{ _("The value was written, which should not happen.") }}{% endif %}
+      {% elif operation == "add_device" %}{{ _("Added %(device)s.", device=device) if answer else _("%(device)s was already in the set.", device=device) }}
+      {% elif operation == "remove_device" %}{{ _("Removed %(device)s.", device=device) if answer else _("%(device)s was not in the set.", device=device) }}
+      {% elif operation == "check_device" %}<span data-config-device-answer="{{ 'yes' if answer else 'no' }}">{{ _("%(device)s is allowed.", device=device) if answer else _("%(device)s is not allowed.", device=device) }}</span>
+      {% elif operation == "random_device" %}<span data-config-random-device="{{ device or '' }}">{{ _("Picked %(device)s at random.", device=device) if device else _("The set is empty.") }}</span>
+      {% elif operation == "restore" %}{{ _("Both keys are back to their defaults.") }}
+      {% endif %}
+    </p>
+  {% endif %}
+  <div class="grid gap-5 lg:grid-cols-2">
+    <div>
+      <h3 class="mb-1 text-base font-semibold">RedisStore</h3>
+      <p class="mb-3 text-sm text-default-500"><code>{{ state.flags_key }}</code></p>
+      <dl class="mb-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2" data-config-flags data-config-maintenance="{{ 'yes' if state.flags.maintenance else 'no' }}" data-config-banner="{{ state.flags.banner }}" data-config-max-streams="{{ state.flags.max_streams_per_user }}">
+        <dt>{{ _("Maintenance") }}</dt><dd>{{ _("Yes") if state.flags.maintenance else _("No") }}</dd>
+        <dt>{{ _("Banner") }}</dt><dd>{{ state.flags.banner or _("(none)") }}</dd>
+        <dt>{{ _("Streams per user") }}</dt><dd>{{ state.flags.max_streams_per_user }}</dd>
+      </dl>
+    </div>
+    <div>
+      <h3 class="mb-1 text-base font-semibold">RedisSet</h3>
+      <p class="mb-3 text-sm text-default-500"><code>{{ state.devices_key }}</code></p>
+      {% if state.devices %}
+        <ul class="mb-0 list-disc pl-5" data-config-devices="{{ state.devices|join(',') }}">
+          {% for device in state.devices %}<li>{{ device }}</li>{% endfor %}
+        </ul>
+      {% else %}
+        <p class="mb-0 text-default-500" data-config-devices="">{{ _("No devices are allowed yet.") }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>

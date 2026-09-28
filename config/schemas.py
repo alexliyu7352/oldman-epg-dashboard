@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import Field
-
 from oldman.conf.schemas import (
     DatabaseConfig,
     DefaultSettings,
@@ -18,6 +16,7 @@ from oldman.conf.schemas import (
     TemplateConfig,
     WebConfig,
 )
+from pydantic import Field
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 
@@ -54,8 +53,6 @@ def default_session_config() -> SessionConfig:
     return SessionConfig(
         enabled=True,
         expiry=86400,
-        prefix="oldman_session:",
-        user_prefix="oldman_user_session:",
         cookie_name="oldman_session_id",
     )
 

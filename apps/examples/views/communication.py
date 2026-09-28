@@ -5,29 +5,27 @@ from __future__ import annotations
 import logging
 
 from nats.errors import ConnectionClosedError, NoRespondersError, OutboundBufferLimitError
-from sqlalchemy import select
-
-from apps.auth.decorators import admin_required
-from apps.examples.forms import CommunicationProjectForm
-from apps.examples.models import ExampleProject
-from apps.examples.nats_example import PEERS, query_and_publish_status, query_observations, query_project_status, send_example_events
-from apps.examples.nats_messages import ExampleEvent
 from oldman.conf import settings
 from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.providers.nats import bus
-from oldman.web import NotFound
-from oldman.web.api import ApiErrorCode, DefaultApiFormResponse, ReplaceHtmlAction
+from oldman.web import NotFound, router
+from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_response
+from oldman.web.auth import staff_required
 from oldman.web.components.forms import TailwindForm
 from oldman.web.request import Request
 from oldman.web.response import api_response
-from oldman.web.routing import get_app
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.template import render_template
+from oldman.web.template import render_fragment, render_template
+from sqlalchemy import select
+
+from apps.examples.forms import CommunicationProjectForm
+from apps.examples.models import ExampleProject
+from apps.examples.nats_example import PEERS, query_and_publish_status, query_observations, query_project_status, send_example_events
+from apps.examples.nats_messages import ExampleEvent
 
 from . import EXAMPLE_SECTIONS
 
-app = get_app()
 logger = logging.getLogger(__name__)
 OPERATIONS = {"query", "publish", "compete", "broadcast", "observe", "missing", "slow", "raise"}
 COMMUNICATION_ERRORS = (NoRespondersError, TimeoutError, ConnectionClosedError, OutboundBufferLimitError)
@@ -49,9 +47,9 @@ async def project_choices() -> list[tuple[int, str]]:
         return [(row.id, row.name) for row in rows]
 
 
-@app.get("/examples/communication/<page:str>", name="example_communication_page")
+@router.get("/examples/communication/<page:str>", name="example_communication_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_communication_page(request: Request, page: str):
     """Opening a page reads only its choices/configuration, never contacts peers."""
     if page not in {"rpc", "events", "failures"}:
@@ -75,17 +73,17 @@ async def example_communication_page(request: Request, page: str):
 
 async def communication_result(request: Request, *, error=None, **context):
     """Keep all response rendering in one place, including partial node results."""
-    template = request.app.ext.environment.get_template("pages/examples/communication/_result.html")
-    html = await template.render_async(error=error, **context)
-    return api_response(DefaultApiFormResponse(
+    html = await render_fragment(request, "pages/examples/communication/_result.html", error=error, **context)
+    return form_response(
+        error or "",
         error_code=ApiErrorCode.INVALID_REQUEST if error else ApiErrorCode.OK,
-        message=error or "", actions=[ReplaceHtmlAction(html=html, target="#communication-result")],
-    ))
+        actions=[ReplaceHtmlAction(html=html, target="#communication-result")],
+    )
 
 
-@app.post("/examples/communication/run/<operation:str>", name="example_communication_run")
+@router.post("/examples/communication/run/<operation:str>", name="example_communication_run")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_communication_run(request: Request, operation: str):
     """Only fixed operations are accepted; shared HTTP/Form loading needs no patch."""
     if operation not in OPERATIONS:

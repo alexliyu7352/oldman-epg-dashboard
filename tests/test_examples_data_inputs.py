@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from markupsafe import Markup
-
-from apps.examples.models import ExampleLogo
+from oldman.conf.schemas import DatabaseConfig
+from oldman.db import DatabaseManager
 from oldman.web.components.selects import SelectContext
+from sqlalchemy import insert
+
+from apps.examples.models import ExampleLogo, ExampleTag
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class ExampleDataInputTests(unittest.TestCase):
@@ -89,9 +97,11 @@ class ExampleDataInputTests(unittest.TestCase):
         self.assertIn("logo_id", form.errors)
 
     def test_tag_provider_searches_and_paginates_fixture_rows(self) -> None:
-        """标签 Provider 直接读取现有 ExampleTag fixture 并遵守六条分页。"""
+        """标签 Provider 读取 demo fixture 里的 ExampleTag 并遵守六条分页。"""
         from apps.examples.providers import ExampleTagProvider
 
+        fixture = json.loads((ROOT / "apps/examples/fixtures/demo.json").read_text(encoding="utf-8"))
+        tags = [{"id": item["pk"], **item["fields"]} for item in fixture if item["model"] == "examples.ExampleTag"]
         provider = ExampleTagProvider()
         context = SelectContext(
             provider="example_tags",
@@ -110,8 +120,20 @@ class ExampleDataInputTests(unittest.TestCase):
                 context=context,
             )
 
-        first_page = asyncio.run(query({"page": "1", "page_size": "6"}))
-        search = asyncio.run(query({"q": "stream"}))
+        async def query_fixture_tags():
+            # The suite's database is empty; the provider reads this one, holding only the fixture's tags.
+            with tempfile.TemporaryDirectory(prefix="oldman-tag-provider-") as directory:
+                database = DatabaseManager(DatabaseConfig(url=f"sqlite+aiosqlite:///{Path(directory) / 'test.db'}"))
+                try:
+                    await database.create_db_and_tables()
+                    async with database.get_session() as db_session:
+                        await db_session.execute(insert(ExampleTag), tags)
+                    provider.database_manager = database
+                    return await query({"page": "1", "page_size": "6"}), await query({"q": "stream"})
+                finally:
+                    await database.close()
+
+        first_page, search = asyncio.run(query_fixture_tags())
 
         self.assertEqual(6, len(first_page["results"]))
         self.assertTrue(first_page["more"])

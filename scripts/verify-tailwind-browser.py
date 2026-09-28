@@ -246,7 +246,12 @@ def assertions(label: str, payload: object) -> list[str]:
 
 
 def font_loading_js(client: CDPClient) -> dict[str, object]:
-    """Verify the shared shell uses a real loaded DM Sans 700 webfont."""
+    """Verify the shared shell really loads the DM Sans weights the design uses.
+
+    设计的字重是 400/500/600（`--om-font-weight-regular/medium/semibold`）；300 和 700 既没有 token
+    也没有人用，所以不再发它们的字体文件，门禁也不该要求它们加载。`status` 只有在页面真的用到那个
+    字重时才会变成 loaded，所以"注册"和"真的取到了 woff2"要分开看。
+    """
     return client.evaluate(
         r"""
 (async () => {
@@ -254,14 +259,19 @@ def font_loading_js(client: CDPClient) -> dict[str, object]:
   await document.fonts.ready;
   const normalizeFamily = (value) => String(value || "").replace(/["']/g, "").trim().toLowerCase();
   const faces = Array.from(document.fonts).filter((face) => normalizeFamily(face.family) === "dm sans");
-  const weight700 = faces.find((face) => String(face.weight) === "700");
-  if (!weight700) failures.push("DM Sans 700 FontFace is not registered");
-  else if (weight700.status !== "loaded") failures.push(`DM Sans 700 FontFace status is ${weight700.status}`);
-  if (!document.fonts.check('700 16px "DM Sans"')) failures.push("Font Loading API rejected DM Sans 700");
-  const fontResources = performance.getEntriesByType("resource").map((entry) => decodeURIComponent(entry.name));
-  if (!fontResources.some((name) => /dm-sans[^/]*700-normal[^/]*\.woff2(?:\?|$)/.test(name))) {
-    failures.push("DM Sans 700 woff2 was not fetched by the real page");
+  const weights = ["400", "500", "600"];
+  for (const weight of weights) {
+    if (!faces.some((face) => String(face.weight) === weight)) failures.push(`DM Sans ${weight} FontFace is not registered`);
   }
+  for (const weight of ["300", "700"]) {
+    if (faces.some((face) => String(face.weight) === weight)) failures.push(`DM Sans ${weight} is registered but no token uses it`);
+  }
+  const loaded = faces.filter((face) => face.status === "loaded").map((face) => String(face.weight));
+  if (!loaded.length) failures.push(`no DM Sans FontFace reached status=loaded: ${JSON.stringify(faces.map((face) => [face.weight, face.status]))}`);
+  if (!document.fonts.check('400 16px "DM Sans"')) failures.push("Font Loading API rejected DM Sans 400");
+  const fontResources = performance.getEntriesByType("resource").map((entry) => decodeURIComponent(entry.name));
+  const fetched = loaded.filter((weight) => fontResources.some((name) => new RegExp(`dm-sans[^/]*${weight}-normal[^/]*\\.woff2(?:\\?|$)`).test(name)));
+  if (loaded.length && !fetched.length) failures.push(`no loaded DM Sans weight was fetched as woff2: ${JSON.stringify(loaded)}`);
   return { failures, faces: faces.map((face) => ({ weight: face.weight, status: face.status })) };
 })()
         """,
@@ -571,7 +581,9 @@ def route_structure_js(client: CDPClient, expected_path: str, viewport: str) -> 
       const style = getComputedStyle(element);
       if (rect.width < 1 || rect.height < 1) failures.push(`${{selector}} has invalid dimensions`);
       if (viewport !== "mobile" && selector === ".om-card" && rect.width < 220) failures.push(`${{selector}} is too narrow for desktop/tablet layout: ${{Math.round(rect.width)}}px`);
-      if ([".om-card", ".om-table", ".om-field", ".om-dropdown-menu", ".om-modal"].includes(selector) && transparent(style.backgroundColor)) {{
+      // .om-filter-control 和 .om-field-range 里的输入框是刻意透明的：外层容器提供表面和边框。
+      const surfaceFromWrapper = selector === ".om-field" && element.closest(".om-filter-control, .om-field-range");
+      if (!surfaceFromWrapper && transparent(style.backgroundColor)) {{
         failures.push(`${{selector}} has transparent background while visible`);
       }}
       if (rect.left < -2 || rect.right > window.innerWidth + 2) {{
@@ -678,7 +690,10 @@ def login_page_js(client: CDPClient) -> dict[str, object]:
   if (!visible(document.querySelector("#username"))) failures.push("username field is not visible");
   if (!visible(document.querySelector("#password-input"))) failures.push("password field is not visible");
   if (!visible(document.querySelector(".oldman-brand-mark"))) failures.push("login brand mark is not visible");
-  if (!visible(document.querySelector("#login-lang-img"))) failures.push("login language selector is not visible");
+  // 认证页的语言切换器现在是共享组件（旧的 #login-lang-img 在 2026-09-16 的视觉改版里就没了）。
+  const loginLanguage = document.querySelector('[data-om-component="language-switcher"]');
+  if (!visible(loginLanguage)) failures.push("login language switcher is not visible");
+  if (!visible(loginLanguage?.querySelector("[data-om-language-current]"))) failures.push("login language switcher has no visible trigger");
   if (document.querySelector(".auth-page-wrapper, .auth-one-bg, .bg-overlay, .shape")) failures.push("legacy auth background nodes remain");
   if (document.querySelector('script[src*="bootstrap"], link[href*="bootstrap"]')) failures.push("bootstrap asset is loaded on login");
   if (document.documentElement.scrollWidth > window.innerWidth + 2) failures.push(`login has horizontal overflow ${document.documentElement.scrollWidth} > ${window.innerWidth}`);
@@ -760,7 +775,8 @@ def desktop_dashboard_js(client: CDPClient) -> dict[str, object]:
     const content = document.querySelector(".oldman-page-content");
     const hamburger = document.querySelector("#topnav-hamburger-icon");
     const themeToggle = document.querySelector(".light-dark-mode");
-    const languageButton = document.querySelector("#header-lang-img")?.closest("button");
+    // 顶栏语言切换器也是共享组件了；#header-lang-img 和登录页那个 id 一样，在视觉改版里就没了。
+    const languageButton = document.querySelector('[data-om-component="language-switcher"] [data-om-language-current]');
     const notificationToggle = document.querySelector("#page-header-notifications-dropdown");
     const notificationMenu = document.querySelector("#notificationDropdown [data-om-dropdown-menu]");
     const background = (element) => element ? getComputedStyle(element).backgroundColor.replace(/\s+/g, "") : "";
@@ -817,31 +833,27 @@ def desktop_dashboard_js(client: CDPClient) -> dict[str, object]:
     if (!languageButton) {
       items.push("missing language switcher button");
     } else {
+      // 这里只验顶栏外壳：切换器可见、当前语言有名字、下拉能打开、选项齐全。
+      // 真的点一个语言会导航到服务端地址（切换器的 data-om-language-url），那条链路由
+      // verify-examples-browser.py 的 i18n 专项验证，它在门禁侧跨导航等待。
       document.body.click();
-      const flag = document.querySelector("#header-lang-img");
-      const flagRect = flag?.getBoundingClientRect();
-      if (!flagRect || flagRect.width < 20 || flagRect.height < 14) items.push("language flag is too small or not visible");
-      const languageMenu = languageButton.closest(".om-dropdown")?.querySelector("[data-om-dropdown-menu]");
+      const currentName = languageButton.querySelector("[data-om-language-current-name]")?.textContent?.trim() || "";
+      if (!currentName) items.push("language switcher shows no current language name");
+      const triggerRect = languageButton.getBoundingClientRect();
+      if (triggerRect.width < 20 || triggerRect.height < 14) items.push(`language switcher trigger is too small: ${Math.round(triggerRect.width)}x${Math.round(triggerRect.height)}`);
+      const languageMenu = languageButton.closest(".om-dropdown, [data-om-component='dropdown']")?.querySelector("[data-om-dropdown-menu]");
       languageButton.click();
       await sleep(120);
       if (!visible(languageMenu) || languageMenu.hidden || languageMenu.classList.contains("hidden")) items.push("language dropdown did not open");
-      const beforeFlag = flag?.getAttribute("src") || "";
-      const option = Array.from(languageMenu?.querySelectorAll("[data-lang]") || []).find((item) => item.getAttribute("data-lang") === "zh-Hans");
-      option?.click();
-      await sleep(250);
-      const afterFlag = flag?.getAttribute("src") || "";
-      if (!option) items.push("missing explicit zh-Hans language option");
-      if (option && beforeFlag === afterFlag) items.push("language selection did not update current flag");
-      if (option && option.getAttribute("aria-pressed") !== "true") items.push("language selection did not update aria-pressed state");
-      document.body.click();
+      const codes = Array.from(languageMenu?.querySelectorAll("[data-lang]") || []).map((item) => item.getAttribute("data-lang"));
+      for (const expected of ["en", "zh-Hans"]) {
+        if (!codes.includes(expected)) items.push(`language dropdown is missing the ${expected} option`);
+      }
+      const active = Array.from(languageMenu?.querySelectorAll("[data-lang]") || []).filter((item) => item.getAttribute("aria-pressed") === "true");
+      if (active.length !== 1) items.push(`expected exactly one language marked as current, got ${active.length}`);
       languageButton.click();
       await sleep(120);
-      const restoreOption = Array.from(languageMenu?.querySelectorAll("[data-lang]") || []).find((item) => item.getAttribute("data-lang") === "en");
-      restoreOption?.click();
-      await sleep(250);
-      if (!restoreOption) items.push("missing explicit en language restore option");
-      if (restoreOption && restoreOption.getAttribute("aria-pressed") !== "true") items.push("language selection did not restore en state");
-      if (restoreOption && (flag?.getAttribute("src") || "") !== beforeFlag) items.push("language selection did not restore current flag");
+      if (visible(languageMenu) && !languageMenu.hidden && !languageMenu.classList.contains("hidden")) items.push("language dropdown did not close again");
       document.body.click();
     }
 
@@ -895,8 +907,14 @@ def desktop_dashboard_js(client: CDPClient) -> dict[str, object]:
       const openToggle = openItems[0].querySelector("[data-om-menu-toggle]");
       if (openToggle?.getAttribute("aria-expanded") !== "true") sidebarFailures.push("open sidebar group is not aria-expanded=true");
     }
-    if (activeRouteLink && !transparent(bg(activeRouteLink))) {
-      sidebarFailures.push("closed route-active sidebar parent still has active block background");
+    // 当前设计：收起的 active 分组保留 bg-primary-soft（关着也要看出自己在哪一组），
+    // 展开或 .open 的那个则是透明的（高亮交给里面的子项）。旧断言要求收起时也透明，正好相反。
+    if (activeRouteLink && transparent(bg(activeRouteLink))) {
+      sidebarFailures.push("closed route-active sidebar parent lost its active background");
+    }
+    const expandedActive = document.querySelector("[data-om-sidebar] .oldman-menu-link.active[aria-expanded='true'], [data-om-sidebar] .oldman-menu-item.open > .oldman-menu-link");
+    if (expandedActive && !transparent(bg(expandedActive))) {
+      sidebarFailures.push("expanded sidebar group still paints the active block background");
     }
     const activeSubmenuLinks = Array.from(document.querySelectorAll("[data-om-sidebar] .oldman-submenu-link.active")).filter(visible);
     for (const link of activeSubmenuLinks) {

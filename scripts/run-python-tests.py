@@ -13,6 +13,9 @@ from pathlib import Path
 from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.demo_auth import demo_auth_settings  # noqa: E402
 
 
 def main() -> int:
@@ -26,6 +29,7 @@ def main() -> int:
         )
         payload = YAML(typ="safe", pure=True).load(settings_file.read_text(encoding="utf-8"))
         payload["database"]["url"] = f"sqlite+aiosqlite:///{state_root / 'epg-tests.db'}"
+        payload["web"]["auth"] = demo_auth_settings()
         yaml = YAML()
         with settings_file.open("w", encoding="utf-8") as file:
             yaml.dump(payload, file)

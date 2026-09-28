@@ -1,4 +1,7 @@
 # Copy to task_worker_settings.yaml; match Web's database, namespace and aliases.
+core:
+  # Web's namespace: the task cache this worker invalidates lives under it.
+  namespace: oldman_epg_dashboard
 apps:
   - oldman.auth
   - apps.auth

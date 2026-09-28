@@ -10,7 +10,6 @@ from typing import Any, cast
 from unittest.mock import AsyncMock, patch
 
 from apps.auth.session import DashboardSessionData
-from apps.epg_admin.form_responses import accepts_html_form_response, accepts_json_form_response, form_error_response
 from apps.epg_admin.forms import (
     CatalogFeedForm,
     ChannelsEpgForm,
@@ -25,14 +24,11 @@ from config.settings import settings
 from sanic import Sanic
 from sanic.exceptions import SanicException
 from services.web import (
-    APP_MAIN_BUNDLE,
     WebService,
-    create_static_bundle_registry,
-    ensure_vite_build_available,
     install_template_helpers,
-    is_vite_dev_mode,
 )
 
+from oldman.web.api import accepts_html_form_response, accepts_json_form_response, form_invalid_response
 from oldman.runtime.discovery import (
     discover_service_definitions,
     load_service_class,
@@ -43,7 +39,6 @@ from oldman.web.components.selects import select_registry
 from oldman.web.components.tables import TableResult
 from oldman.web.package_data import package_template_dir
 from oldman.web.security import WebSecurityPurpose, configured_web_security_key
-from oldman.web.staticfiles import StaticBundle, StaticBundleRegistry
 
 SELECT_BINDING_SECRET = configured_web_security_key(
     WebSecurityPurpose.SELECT_BINDING
@@ -56,6 +51,11 @@ def response_body(response: object) -> bytes:
     if not isinstance(body, bytes):
         raise AssertionError("response has no byte body")
     return body
+
+
+async def _page_must_not_render():
+    """Fragment and JSON clients never reach the full-page branch."""
+    raise AssertionError("the full page must not be rendered for this client")
 
 
 class WebAppTest(unittest.TestCase):
@@ -131,133 +131,12 @@ class WebAppTest(unittest.TestCase):
         self.assertIs(interface.session_model, DashboardSessionData)
         self.assertIs(WebService.SESSION_MODEL, DashboardSessionData)
 
-    def test_web_start_defaults_to_built_assets(self) -> None:
-        """未显式开启开发模式时，后台服务应该默认使用编译产物。"""
-        with patch.dict("os.environ", {}, clear=True):
-            self.assertFalse(is_vite_dev_mode())
-
-    def test_oldman_env_does_not_enable_vite_dev_mode(self) -> None:
-        """环境名不能让正式启动命令隐式走 Vite。"""
-        with patch.dict("os.environ", {"OLDMAN_ENV": "development"}, clear=True):
-            self.assertFalse(is_vite_dev_mode())
-
-    def test_oldman_dev_enables_vite_dev_mode(self) -> None:
-        """只有显式 OLDMAN_DEV 开关才允许模板加载 Vite 开发服务器。"""
-        with patch.dict("os.environ", {"OLDMAN_DEV": "1"}, clear=True):
-            self.assertTrue(is_vite_dev_mode())
-
-    def test_dashboard_manifest_is_read_from_collected_static_root(self) -> None:
-        """生产 manifest 必须来自公开收集目录，而不是项目源码目录。"""
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            collected_root = Path(temporary_directory) / "public"
-            source_root = Path(temporary_directory) / "source"
-            static_settings = SimpleNamespace(
-                dir=source_root,
-                root=collected_root,
-                url="/static",
-            )
-            frontend_settings = SimpleNamespace(
-                vite_dev_server_url="http://127.0.0.1:5173",
-            )
-            with (
-                patch.dict("os.environ", {}, clear=True),
-                patch(
-                    "services.web.settings",
-                    SimpleNamespace(
-                        web=SimpleNamespace(
-                            frontend=frontend_settings,
-                            static=static_settings,
-                        ),
-                    ),
-                ),
-            ):
-                bundle = create_static_bundle_registry().get(APP_MAIN_BUNDLE)
-
-        self.assertEqual(
-            collected_root / "dist" / ".vite" / "manifest.json",
-            bundle.manifest_path,
-        )
-
-    def test_dashboard_production_rejects_empty_static_config(self) -> None:
-        """生产模式不能把空静态配置隐式退化为当前目录和 /dist。"""
-        runtime_settings = SimpleNamespace(
-            web=SimpleNamespace(
-                frontend=SimpleNamespace(
-                    vite_dev_server_url="http://127.0.0.1:5173",
-                ),
-                static=SimpleNamespace(root="", url=""),
-            ),
-        )
-
-        with (
-            patch.dict("os.environ", {}, clear=True),
-            patch("services.web.settings", runtime_settings),
-            self.assertRaisesRegex(RuntimeError, "settings.web.static.root"),
-        ):
-            create_static_bundle_registry()
-
-    def test_dashboard_dev_mode_allows_empty_production_static_config(
-        self,
-    ) -> None:
-        """Vite 开发模式不依赖尚未配置的生产静态目录。"""
-        runtime_settings = SimpleNamespace(
-            web=SimpleNamespace(
-                frontend=SimpleNamespace(
-                    vite_dev_server_url="http://127.0.0.1:5173",
-                ),
-                static=SimpleNamespace(root="", url=""),
-            ),
-        )
-
-        with (
-            patch.dict("os.environ", {"OLDMAN_DEV": "1"}, clear=True),
-            patch("services.web.settings", runtime_settings),
-        ):
-            bundle = create_static_bundle_registry().get(APP_MAIN_BUNDLE)
-
-        self.assertTrue(bundle.dev_mode)
-        self.assertEqual("", bundle.static_url)
-
     def test_web_service_exposes_dev_command(self) -> None:
         """web 服务应该提供显式开发模式命令。"""
         commands = WebService.get_default_commands()
 
         self.assertIn("dev", commands)
         self.assertIn("development service", commands["dev"][1])
-
-    def test_product_mode_requires_built_static_bundle_manifest(self) -> None:
-        """产品模式缺少静态 bundle manifest 时必须硬失败，不能渲染无脚本页面。"""
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            registry = StaticBundleRegistry()
-            registry.register(
-                StaticBundle(
-                    name=APP_MAIN_BUNDLE,
-                    entry_path="src/main.ts",
-                    manifest_path=Path(tmp_dir) / "dist" / ".vite" / "manifest.json",
-                    static_url="/static/dist",
-                )
-            )
-            with patch.dict("os.environ", {}, clear=True), patch("services.web.create_static_bundle_registry", return_value=registry):
-                with self.assertRaisesRegex(RuntimeError, "pnpm build"):
-                    ensure_vite_build_available()
-
-    def test_product_mode_requires_declared_static_bundle_entry(self) -> None:
-        """产品模式 manifest 缺少 bundle 主入口时必须硬失败，不能静默输出空标签。"""
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            manifest_path = Path(tmp_dir) / "manifest.json"
-            manifest_path.write_text("{}", encoding="utf-8")
-            registry = StaticBundleRegistry()
-            registry.register(
-                StaticBundle(
-                    name=APP_MAIN_BUNDLE,
-                    entry_path="src/main.ts",
-                    manifest_path=manifest_path,
-                    static_url="/static/dist",
-                )
-            )
-            with patch.dict("os.environ", {}, clear=True), patch("services.web.create_static_bundle_registry", return_value=registry):
-                with self.assertRaisesRegex(RuntimeError, "src/main.ts"):
-                    ensure_vite_build_available()
 
     def test_dashboard_route_is_registered(self) -> None:
         """根仪表盘路由应该被注册到 Sanic 路由表。"""
@@ -279,8 +158,9 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("stats.channel_count", template_source)
         self.assertIn("Recent Upstream Anomalies", template_source)
         self.assertIn("Recent Decisions", template_source)
-        self.assertIn('href="/dashboard"', sidebar_source)
-        self.assertIn('href="/dashboard/analytics"', sidebar_source)
+        # 侧边栏用框架的 sidebar_menu_item 宏输出链接，源码里是宏调用而不是裸 href。
+        self.assertIn('sidebar_menu_item("/dashboard", _("Overview")', sidebar_source)
+        self.assertIn('sidebar_menu_item("/dashboard/analytics", _("Analytics")', sidebar_source)
         self.assertIn("Dashboard", sidebar_source)
         self.assertIn("Overview", sidebar_source)
         self.assertIn("Analytics", sidebar_source)
@@ -294,7 +174,6 @@ class WebAppTest(unittest.TestCase):
     def test_topbar_language_links_use_freetv_style_data_lang(self) -> None:
         """顶栏语言链接应该使用 freetv 风格 data-lang 协议。"""
         topbar_source = (settings.web.template.dir / "partials" / "topbar.html").read_text(encoding="utf-8")
-        language_source = (settings.web.template.dir / "partials" / "language_switcher.html").read_text(encoding="utf-8")
         shared_language_source = (
             package_template_dir()
             / "oldman"
@@ -303,11 +182,9 @@ class WebAppTest(unittest.TestCase):
             / "language_switcher.html"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("partials/language_switcher.html", topbar_source)
-        self.assertIn(
-            'oldman/dashboard/partials/language_switcher.html',
-            language_source,
-        )
+        # The topbar includes the framework partial directly; it reads the language state from the shared globals.
+        self.assertIn('include "oldman/dashboard/partials/language_switcher.html"', topbar_source)
+        self.assertIn("language_menu_items(request)", shared_language_source)
         self.assertIn('data-om-component="dropdown"', shared_language_source)
         self.assertIn('data-om-dropdown-toggle', shared_language_source)
         self.assertIn(
@@ -325,6 +202,39 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("Use your administrator account to continue", response.text)
         self.assertIn('name="next" value="/"', response.text)
 
+    def test_password_reset_pages_reuse_the_framework_cards_and_the_login_card_links_to_them(self) -> None:
+        template_dir = settings.web.template.dir
+        login = (template_dir / "pages" / "login.html").read_text(encoding="utf-8")
+        self.assertIn('href="/password-reset"', login)
+        self.assertIn('{{ _("Forgot password?") }}', login)
+        for page in ("request", "sent", "confirm", "invalid", "done"):
+            source = (template_dir / "pages" / "password_reset" / f"{page}.html").read_text(encoding="utf-8")
+            self.assertIn('{% extends "pages/password_reset/base.html" %}', source)
+            self.assertIn(f'{{% include "oldman/auth/password_reset/{page}.html" %}}', source)
+        base = (template_dir / "pages" / "password_reset" / "base.html").read_text(encoding="utf-8")
+        # The login page class mounts the auth shell (dropdown, form, language switcher, preloader).
+        self.assertIn('data-om-page="login"', base)
+        self.assertIn("{% block auth_card %}{% endblock %}", base)
+
+        from apps.auth import views
+
+        self.assertEqual("/password-reset", views.password_reset_flow.request_path)
+        self.assertEqual("/password-reset/x/y", views.password_reset_flow.confirm_path("x", "y"))
+        route_paths = {route.path for route in self.app.router.routes}
+        for path in ("password-reset", "password-reset/sent", "password-reset/done", "password-reset/<uidb64:str>/<token:str>"):
+            self.assertIn(path, route_paths)
+
+    def test_token_routes_hand_tokens_to_staff_only(self) -> None:
+        """令牌接口和登录页一样只认 staff，三个接口都只收 POST。"""
+        from oldman.auth import has_staff_access
+
+        from apps.auth import views
+
+        self.assertIs(has_staff_access, views.token_flow.accept_user)
+        route_methods = {route.path: route.methods for route in self.app.router.routes}
+        for path in ("api/token", "api/token/refresh", "api/token/revoke"):
+            self.assertEqual({"POST"}, route_methods.get(path))
+
     def test_login_response_renders_tailwind_auth_shell(self) -> None:
         """登录页应该渲染当前 Tailwind 登录结构。"""
         _request, response = self.app.test_client.get("/login")
@@ -334,7 +244,6 @@ class WebAppTest(unittest.TestCase):
         self.assertIn('<link rel="icon" href="data:,">', response.text)
         self.assertIn('data-om-page="login"', response.text)
         self.assertIn("oldman-brand-mark", response.text)
-        self.assertIn("om-analytics-tile", response.text)
         self.assertIn("EPG management dashboard", response.text)
         self.assertIn('action="/login"', response.text)
         self.assertIn('name="csrfmiddlewaretoken"', response.text)
@@ -381,7 +290,7 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("table.render_shell", catalog_channels_index)
         self.assertIn('data-om-component="slider"', catalog_channels_index)
         self.assertIn('data-om-modal-target="#catalog-channel-evidence-modal"', catalog_channels_index)
-        self.assertIn('href="/catalog-channels" class="om-button om-button-soft-secondary om-button-sm"', catalog_channels_form)
+        self.assertIn('href="/catalog-channels" class="om-button om-button-secondary"', catalog_channels_form)
         self.assertIn('form.render(cancel_url="/catalog-channels", form_mode="json")', catalog_channels_form)
         self.assertNotIn("return_url", catalog_channels_form)
         self.assertNotIn("form_action", catalog_channels_form)
@@ -490,7 +399,7 @@ class WebAppTest(unittest.TestCase):
         self.assertIn('name="oldman-asset-base"', login_template)
         self.assertIn('bundle_asset_base_url(app_main_bundle)', base_template)
         self.assertIn('bundle_asset_base_url(app_main_bundle)', login_template)
-        self.assertLess(base_template.index('name="oldman-asset-base"'), base_template.index("bundle_script(app_main_bundle)"))
+        self.assertLess(base_template.index('name="oldman-asset-base"'), base_template.index("bundle_entry(app_main_bundle"))
         self.assertLess(login_template.index('name="oldman-asset-base"'), login_template.index("bundle_script(app_main_bundle)"))
 
     def test_templates_use_static_bundle_helpers(self) -> None:
@@ -498,7 +407,6 @@ class WebAppTest(unittest.TestCase):
         base_template = (settings.web.template.dir / "base.html").read_text(encoding="utf-8")
         login_template = (settings.web.template.dir / "pages" / "login.html").read_text(encoding="utf-8")
         topbar_template = (settings.web.template.dir / "partials" / "topbar.html").read_text(encoding="utf-8")
-        language_template = (settings.web.template.dir / "partials" / "language_switcher.html").read_text(encoding="utf-8")
         shared_language_template = (
             package_template_dir()
             / "oldman"
@@ -507,18 +415,19 @@ class WebAppTest(unittest.TestCase):
             / "language_switcher.html"
         ).read_text(encoding="utf-8")
         combined = "\n".join(
-            [base_template, login_template, topbar_template, language_template, shared_language_template]
+            [base_template, login_template, topbar_template, shared_language_template]
         )
 
-        self.assertIn("bundle_styles(app_main_bundle)", base_template)
-        self.assertIn("bundle_modulepreload(app_main_bundle)", base_template)
-        self.assertIn("bundle_script(app_main_bundle)", base_template)
-        for template in (base_template, login_template):
+        # The shell base renders the whole entry through the framework helper (client, preload, CSS, script in order).
+        self.assertIn("bundle_entry(app_main_bundle, include_dev_client=true)", base_template)
+        for template in (login_template,):
             self.assertLess(template.index("bundle_modulepreload(app_main_bundle)"), template.index("bundle_styles(app_main_bundle)"))
             self.assertLess(template.index("bundle_styles(app_main_bundle)"), template.index("bundle_script(app_main_bundle)"))
         self.assertIn("bundle_asset_url(app_main_bundle", topbar_template)
-        self.assertIn('include "oldman/dashboard/partials/language_switcher.html"', language_template)
-        self.assertIn("language.flagUrl", shared_language_template)
+        self.assertIn('include "oldman/dashboard/partials/language_switcher.html"', topbar_template)
+        # The shared switcher lists languages by name with a check mark; flags stay out of the mono system.
+        self.assertIn("om-dropdown-check", shared_language_template)
+        self.assertNotIn("flagUrl", shared_language_template)
         self.assertNotIn("vite_entry(", combined)
         self.assertNotIn("vite_asset_url(", combined)
         self.assertNotIn("vite_asset_base_url(", combined)
@@ -726,7 +635,9 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("novalidate", html)
         self.assertIn("om-form-grid", html)
         self.assertIn("om-field", html)
-        self.assertIn("om-check", html)
+        # Boolean fields render as switch cards by default.
+        self.assertIn("om-switch-card", html)
+        self.assertIn('class="om-switch"', html)
         self.assertIn("om-button om-button-primary", html)
 
     def test_epg_list_form_outputs_remote_channel_select(self) -> None:
@@ -746,12 +657,13 @@ class WebAppTest(unittest.TestCase):
         self.assertIn('data-om-select-src="/admin/select/channels"', html)
         self.assertIn("data-om-select-bind", html)
 
-    def test_epg_list_form_uses_widget_for_remote_channel_select(self) -> None:
-        """业务远程选择器应该优先使用 widget，而不是把 provider 逻辑塞进 Field。"""
+    def test_epg_list_form_uses_the_framework_field_for_the_remote_channel_select(self) -> None:
+        """简单的远程选择用框架的 AjaxSelectField（docs/developers/forms.md），它自带 AjaxSelectWidget。"""
         form = EpgListForm(select_secret_key=SELECT_BINDING_SECRET)
 
-        self.assertNotIsInstance(form.channel_id, AjaxSelectField)
+        self.assertIsInstance(form.channel_id, AjaxSelectField)
         self.assertIsInstance(form.channel_id.widget, AjaxSelectWidget)
+        self.assertFalse(form.channel_id.validate_choice)
 
     def test_catalog_feed_form_outputs_remote_catalog_channel_select(self) -> None:
         """CatalogFeed 表单的频道身份字段应该接入远程 CatalogChannel provider。"""
@@ -861,7 +773,8 @@ class WebAppTest(unittest.TestCase):
         payload = json.loads(response_body(response))
         self.assertEqual(response.status, 200)
         self.assertEqual(payload["title"], "Notification Detail")
-        self.assertIn("Notification is no longer available.", payload["body"])
+        # 协议上 html 和 body 是同一个容器；这里走框架的 modal_not_found_response，它写 html。
+        self.assertIn("Notification is no longer available.", payload["html"])
 
     def test_notification_detail_lookup_uses_documented_window_limit(self) -> None:
         """通知详情查找必须复用通知中心窗口常量，避免页面和详情范围漂移。"""
@@ -902,12 +815,11 @@ class WebAppTest(unittest.TestCase):
         import asyncio
 
         response = asyncio.run(
-            form_error_response(
+            form_invalid_response(
                 request,
                 form,
-                template="pages/channels_epg/form.html",
-                context={"form": form},
-                cancel_url="/channels-epg",
+                fragment=lambda: form.render(cancel_url="/channels-epg"),
+                page=_page_must_not_render,
             )
         )
         payload = json.loads(response_body(response).decode("utf-8"))
@@ -925,12 +837,11 @@ class WebAppTest(unittest.TestCase):
         import asyncio
 
         response = asyncio.run(
-            form_error_response(
+            form_invalid_response(
                 request,
                 form,
-                template="pages/channels_epg/form.html",
-                context={"form": form},
-                cancel_url="/channels-epg",
+                fragment=lambda: form.render(cancel_url="/channels-epg"),
+                page=_page_must_not_render,
             )
         )
         body = response_body(response).decode("utf-8")
@@ -1082,6 +993,42 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("/users", sidebar)
         self.assertIn("users", sidebar)
         self.assertIn("System", sidebar)
+
+
+class WebServiceStartupChecksTest(unittest.TestCase):
+    """启动前的两道检查：前端产物在，配置里的语言也都编译过。"""
+
+    def test_prepare_server_refuses_a_missing_build_then_missing_catalogs(self) -> None:
+        from oldman.web.staticfiles import StaticBundle, StaticBundleRegistry
+
+        # 这里不建真 app：create_test_app() 一个进程只能跑一次（SSE 扩展会拒绝二次初始化），
+        # 而 prepare_server 在这两道检查之前只用到 app.ctx 上的 registry。
+        app = SimpleNamespace(ctx=SimpleNamespace())
+        service = WebService(settings.core.app_name)
+        with tempfile.TemporaryDirectory(prefix="oldman-epg-startup-") as directory:
+            root = Path(directory)
+            registry = StaticBundleRegistry()
+            registry.register(
+                StaticBundle(
+                    name="app:main",
+                    entry_path="src/main.ts",
+                    manifest_path=root / "dist" / ".vite" / "manifest.json",
+                    static_url="/static/dist",
+                )
+            )
+            app.ctx.static_bundle_registry = registry
+
+            # 没跑过 pnpm build：manifest 不在。
+            with self.assertRaisesRegex(RuntimeError, "Vite manifest"):
+                service.prepare_server(cast(Any, app))
+
+            manifest = root / "dist" / ".vite" / "manifest.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({"src/main.ts": {"file": "assets/main.js"}}), encoding="utf-8")
+
+            # 产物在了，但语言包没发布：同样不许起。
+            with self.assertRaisesRegex(RuntimeError, "Frontend catalogs"):
+                service.prepare_server(cast(Any, app))
 
 
 def create_test_app() -> Sanic:

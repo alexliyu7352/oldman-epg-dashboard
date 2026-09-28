@@ -3,18 +3,17 @@
 import asyncio
 import io
 import json
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from uuid import uuid4
 
-from PIL import Image
 import typer
-
 from oldman.cache.images import ImageCache
 from oldman.cli import Command
 from oldman.i18n import gettext_lazy as _
 from oldman.providers.redis import redis_client
 from oldman.storage import FileSystemStorage
+from PIL import Image
 
 
 def _png_bytes() -> bytes:

@@ -37,6 +37,30 @@ describe("startOldmanApp", () => {
     vi.unstubAllGlobals();
   });
 
+  it("mounts the dashboard base page when an entry name is not registered", async () => {
+    document.head.innerHTML = '<meta name="oldman-asset-base" content="http://localhost:5173/">';
+    document.documentElement.removeAttribute("data-om-ready");
+    document.body.innerHTML = '<main data-om-page="never-registered"></main>';
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ locale: "en", messages: {} }), { headers: { "Content-Type": "application/json" } })));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    vi.resetModules();
+    const { startOldmanApp, stopOldmanApp } = await import("./main");
+    const { BasePage } = await import("./pages/base-page");
+    const { getOldmanContext } = await import("oldman-web/core");
+
+    await startOldmanApp();
+    try {
+      expect(document.documentElement.dataset.omReady).toBe("true");
+      expect(getOldmanContext().pageRegistry.current).toBeInstanceOf(BasePage);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("No page registered for never-registered"));
+    } finally {
+      await stopOldmanApp();
+      warn.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("resolves relative asset base before loading i18n catalogs", async () => {
     document.head.innerHTML = '<meta name="oldman-asset-base" content="/static/dist/">';
     document.documentElement.removeAttribute("data-om-ready");

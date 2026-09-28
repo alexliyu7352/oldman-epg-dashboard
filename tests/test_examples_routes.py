@@ -12,26 +12,39 @@ from typing import Any, cast
 from unittest.mock import AsyncMock, patch
 
 from apps.auth.session import DashboardSessionData
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader
+
+import oldman.web
 from oldman.web.session import Session
+from oldman.conf.schemas import AuthConfig
+from oldman.web.authentication import Authentication, record_authentication, session_authentication
 from tests.test_web_app import create_test_app
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def request_with_session(session: DashboardSessionData, path: str):
-    """Build the request surface consumed by the shared staff guard."""
+def request_with_session(session: DashboardSessionData, path: str, app: Any = None):
+    """Build the request surface consumed by the shared staff guard.
+
+    拒绝分支要渲染 403 页面，那需要真实 app 的模板环境和 error_handler；只给一个
+    `SimpleNamespace` 的话，断言还没跑到就死在渲染里了。
+    """
     session_manager = Session()
     session_manager.interface = cast(Any, SimpleNamespace(session_name="session"))
-    return SimpleNamespace(
+    request_app = app if app is not None else SimpleNamespace(ctx=SimpleNamespace())
+    request_app.ctx.session = session_manager
+    request = SimpleNamespace(
         args={},
-        app=SimpleNamespace(ctx=SimpleNamespace(session=session_manager)),
+        app=request_app,
         ctx=SimpleNamespace(session=session),
         headers={"accept": "text/html"},
         path=path,
         query_string="",
     )
+    # What the authentication pipeline records for a request carrying this session.
+    record_authentication(request, session_authentication(session))
+    return request
 
 
 class ExampleRouteTests(unittest.TestCase):
@@ -109,6 +122,7 @@ class ExampleRouteTests(unittest.TestCase):
             "example_notifications_page",
             "example_notification_send",
             "example_auth_probe",
+            "example_service_probe",
             "example_auth_page",
             "example_session_page",
             "example_session_revoke",
@@ -118,11 +132,11 @@ class ExampleRouteTests(unittest.TestCase):
         ):
             self.assertIn(f"{self.app.name}.{name}", route_names)
 
+        # 侧边栏 import 了框架的菜单宏，所以渲染需要能同时找到两处模板目录的 loader。
+        framework_templates = Path(oldman.web.__file__).resolve().parent / "templates"
         sidebar = (
-            Environment(autoescape=True)
-            .from_string(
-                (ROOT / "templates/partials/sidebar.html").read_text(encoding="utf-8")
-            )
+            Environment(autoescape=True, loader=FileSystemLoader([ROOT / "templates", framework_templates]))
+            .get_template("partials/sidebar.html")
             .render(_=lambda value: value, active_page="", active_section="")
         )
         for category, section in EXAMPLE_SECTIONS.items():
@@ -136,6 +150,8 @@ class ExampleRouteTests(unittest.TestCase):
                 )
                 self.assertIn(f'href="{path}"', sidebar)
         self.assertNotIn('href="/examples/plugins/index"', sidebar)
+        # The built-in Admin has its own layout: its entry opens as a whole page, not inside the main Frame.
+        self.assertIn('href="/admin" data-turbo="false"', sidebar)
 
     def test_every_page_uses_staff_guard_shared_context_and_examples_entry(
         self,
@@ -349,6 +365,7 @@ class ExampleRouteTests(unittest.TestCase):
                 request_with_session(
                     DashboardSessionData(user_id=2, is_active=True, is_staff=False),
                     "/examples/tables/static",
+                    self.app,
                 ),
                 "tables",
                 "static",
@@ -496,6 +513,91 @@ class ExampleRouteTests(unittest.TestCase):
 
         self.assertEqual(anonymous_response.status, 401)
         self.assertEqual(non_staff_response.status, 403)
+
+    def test_service_probe_admits_api_keys_and_nothing_else(self) -> None:
+        from apps.examples.views import auth_session_i18n as example_views
+
+        staff = request_with_session(
+            DashboardSessionData(user_id=7, is_active=True, is_staff=True),
+            "/examples/auth/service-probe",
+        )
+        anonymous = request_with_session(DashboardSessionData(), "/examples/auth/service-probe")
+        caller = request_with_session(DashboardSessionData(), "/examples/auth/service-probe")
+        record_authentication(caller, Authentication(method="api_key", caller="demo_script", ambient=False))
+        for request in (staff, anonymous, caller):
+            request.headers = {"accept": "application/json"}
+
+        async def call(request: Any) -> Any:
+            return await example_views.example_service_probe(request)
+
+        responses = [asyncio.run(call(request)) for request in (staff, anonymous, caller)]
+
+        self.assertEqual([403, 401, 200], [response.status for response in responses])
+        self.assertEqual(
+            {"caller": "demo_script", "method": "api_key", "user_id": None},
+            json.loads(responses[2].body)["data"],
+        )
+
+    def test_token_and_caller_pages_show_endpoints_and_key_names_but_never_a_secret(self) -> None:
+        from apps.examples.views import auth_session_i18n as example_views
+
+        secret = "demo-secret-that-must-not-reach-the-page"
+        configured = example_views.settings.model_copy(deep=True)
+        configured.web.auth = AuthConfig.model_validate(
+            {
+                "authenticators": ["session", "jwt", "api_key"],
+                "jwt": {"secret": "j" * 48},
+                "api_keys": {"demo_script": {"secret": secret}},
+            }
+        )
+        contexts = {}
+        with patch.object(example_views, "settings", configured):
+            for page in ("tokens", "callers"):
+                request = request_with_session(
+                    DashboardSessionData(user_id=9, username="staff", is_active=True, is_staff=True),
+                    f"/examples/auth/{page}",
+                    app=self.app,
+                )
+                with patch.object(example_views, "render_template", new=AsyncMock(return_value=object())) as render:
+                    asyncio.run(inspect.unwrap(example_views.example_auth_page)(request, page))
+                rendered = render.await_args
+                assert rendered is not None
+                contexts[page] = rendered.kwargs["context"]
+
+        tokens, callers = contexts["tokens"], contexts["callers"]
+        self.assertTrue(tokens["jwt_enabled"])
+        self.assertEqual(
+            ("/api/token", "/api/token/refresh", "/api/token/revoke", "/examples/auth/probe"),
+            (tokens["token_obtain_url"], tokens["token_refresh_url"], tokens["token_revoke_url"], tokens["probe_url"]),
+        )
+        self.assertTrue(callers["api_key_enabled"])
+        self.assertEqual(["demo_script"], callers["api_key_names"])
+        self.assertEqual(("X-API-Key", "/examples/auth/service-probe"), (callers["api_key_header"], callers["service_probe_url"]))
+        for context in (tokens, callers):
+            self.assertNotIn(secret, repr(context))
+            self.assertNotIn("j" * 48, repr(context))
+
+    def test_token_and_caller_pages_explain_how_to_enable_what_is_off(self) -> None:
+        from apps.examples.views import auth_session_i18n as example_views
+
+        configured = example_views.settings.model_copy(deep=True)
+        configured.web.auth = AuthConfig()
+        with patch.object(example_views, "settings", configured):
+            request: Any = request_with_session(
+                DashboardSessionData(user_id=9, is_active=True, is_staff=True),
+                "/examples/auth/tokens",
+                app=self.app,
+            )
+            tokens = example_views._caller_context(request, "tokens")
+            callers = example_views._caller_context(request, "callers")
+
+        self.assertFalse(tokens["jwt_enabled"])
+        self.assertFalse(callers["api_key_enabled"])
+        self.assertEqual([], callers["api_key_names"])
+        tokens_page = (ROOT / "templates" / "pages" / "examples" / "auth" / "tokens.html").read_text(encoding="utf-8")
+        callers_page = (ROOT / "templates" / "pages" / "examples" / "auth" / "callers.html").read_text(encoding="utf-8")
+        self.assertIn("{% if not jwt_enabled %}", tokens_page)
+        self.assertIn("{% if not api_key_enabled %}", callers_page)
 
     def test_i18n_examples_use_the_owned_templates(self) -> None:
         from apps.examples.views import auth_session_i18n as example_views

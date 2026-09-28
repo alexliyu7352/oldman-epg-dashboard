@@ -1,9 +1,9 @@
 """Import-safe synchronous targets: no Settings, ORM or parent connections."""
 
-from collections import Counter
 import os
-from pathlib import Path
 import time
+from collections import Counter
+from pathlib import Path
 
 
 def inspect_projects(statuses: list[str], scenario: str, marker: str) -> dict:

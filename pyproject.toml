@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "EPG dashboard consumer application for the Oldman framework."
 requires-python = ">=3.12, <3.14"
 dependencies = [
-    "oldman>=0.1.0,<0.2.0",
+    "oldman>=0.3.0,<0.4.0",
 ]
 
 [dependency-groups]
@@ -17,3 +17,19 @@ package = false
 
 [tool.oldman]
 project_id = "327c6c3a-30e1-4d72-b60a-278de522f7d1"
+
+# 与框架同一套约定。此前 demo 没有 lint 配置,import 顺序一类的问题全靠人眼。
+[tool.ruff]
+target-version = "py312"
+line-length = 150
+exclude = [".git", ".ruff_cache", "__pycache__", ".venv", "node_modules", "static"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

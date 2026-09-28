@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from apps.auth.decorators import admin_required
 from oldman.i18n import gettext_lazy as _
-from oldman.web import NotFound
+from oldman.web import NotFound, router
+from oldman.web.auth import staff_required
 from oldman.web.request import Request
 from oldman.web.response import redirect_response
-from oldman.web.routing import get_app
 from oldman.web.template import render_template
 
 EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
@@ -25,7 +24,15 @@ EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
     },
     "cache": {
         "title": _("Cache"),
-        "pages": {"redis": _("Redis Cache")},
+        "pages": {"redis": _("Redis Cache"), "models": _("Model Cache")},
+    },
+    "config": {
+        "title": _("Dynamic Configuration"),
+        "pages": {"file": _("File Configuration"), "redis": _("Redis Configuration")},
+    },
+    "security": {
+        "title": _("Security"),
+        "pages": {"fingerprint": _("Browser Fingerprint")},
     },
     "tables": {
         "title": _("Tables"),
@@ -45,6 +52,7 @@ EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
             "basics": _("Basic Fields"),
             "choices": _("Choice Fields"),
             "layouts": _("Form Layouts"),
+            "booleans": _("Boolean Widgets"),
             "validation": _("Validation"),
             "selects": _("Selects"),
             "autocomplete": _("Autocomplete"),
@@ -127,6 +135,8 @@ EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
             "login": _("Login"),
             "guards": _("Access Guards"),
             "identity": _("Current Identity"),
+            "tokens": _("Access Tokens"),
+            "callers": _("Service Callers"),
         },
     },
     "session": {
@@ -175,18 +185,17 @@ EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
     },
 }
 
-app = get_app()
 
 
-@app.get("/examples", name="examples_index")
-@admin_required()
+@router.get("/examples", name="examples_index")
+@staff_required()
 async def examples_index(request: Request):
     """Open the first concrete example page."""
     return redirect_response("/examples/tables/static")
 
 
-@app.get("/examples/plugins", name="examples_plugins")
-@admin_required()
+@router.get("/examples/plugins", name="examples_plugins")
+@staff_required()
 async def examples_plugins(request: Request):
     """Render the plugin capability index."""
     section = EXAMPLE_SECTIONS["plugins"]
@@ -206,8 +215,8 @@ async def examples_plugins(request: Request):
     )
 
 
-@app.get("/examples/<category:str>/<page:str>", name="examples_page")
-@admin_required()
+@router.get("/examples/<category:str>/<page:str>", name="examples_page")
+@staff_required()
 async def examples_page(request: Request, category: str, page: str):
     """Render a documented example route or return a real 404."""
     return await _render_example(request, category, page)
@@ -237,19 +246,21 @@ async def _render_example(request: Request, category: str, page: str):
 __all__ = ["EXAMPLE_SECTIONS"]
 
 # Import concrete route modules only after the shared section inventory exists.
-from . import forms as _forms  # noqa: E402,F401
+from . import auth_session_i18n as _auth_session_i18n  # noqa: E402,F401
 from . import cache as _cache  # noqa: E402,F401
-from . import http as _http  # noqa: E402,F401
-from . import tasks as _tasks  # noqa: E402,F401
+from . import charts as _charts  # noqa: E402,F401
 from . import communication as _communication  # noqa: E402,F401
+from . import config as _config  # noqa: E402,F401
 from . import data_inputs as _data_inputs  # noqa: E402,F401
+from . import forms as _forms  # noqa: E402,F401
+from . import http as _http  # noqa: E402,F401
+from . import messages as _messages  # noqa: E402,F401
+from . import modals as _modals  # noqa: E402,F401
+from . import navigation as _navigation  # noqa: E402,F401
+from . import notifications as _notifications  # noqa: E402,F401
+from . import security as _security  # noqa: E402,F401
+from . import sortable as _sortable  # noqa: E402,F401
 from . import storage as _storage  # noqa: E402,F401
 from . import tables as _tables  # noqa: E402,F401
-from . import modals as _modals  # noqa: E402,F401
-from . import messages as _messages  # noqa: E402,F401
-from . import navigation as _navigation  # noqa: E402,F401
-from . import sortable as _sortable  # noqa: E402,F401
-from . import charts as _charts  # noqa: E402,F401
-from . import notifications as _notifications  # noqa: E402,F401
-from . import auth_session_i18n as _auth_session_i18n  # noqa: E402,F401
+from . import tasks as _tasks  # noqa: E402,F401
 from . import ui as _ui  # noqa: E402,F401

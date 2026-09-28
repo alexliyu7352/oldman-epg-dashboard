@@ -7,7 +7,6 @@ import sys
 from uuid import uuid4
 
 import typer
-
 from oldman.cache import MemoryCache, RedisCache, TwoLevelCache
 from oldman.cli import Command
 from oldman.db import db_manager

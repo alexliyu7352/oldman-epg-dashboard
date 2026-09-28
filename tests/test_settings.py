@@ -55,33 +55,29 @@ class SettingsTest(unittest.TestCase):
         """The runnable service must use the configured Redis Session backend."""
         self.assertTrue(settings.web.session.enabled)
         self.assertEqual(settings.web.session.redis_alias, "SESSION")
-        self.assertEqual(settings.web.session.prefix, "oldman_session:")
-        self.assertEqual(settings.web.session.user_prefix, "oldman_user_session:")
         self.assertEqual(settings.web.session.cookie_name, "oldman_session_id")
         self.assertTrue(settings.redis.SESSION.redis_url.startswith("redis://"))
 
     def test_dashboard_languages_come_from_i18n_language_settings(self) -> None:
         """Dashboard language menu data should use the shared Oldman language config."""
-        from services.web import dashboard_language_items, dashboard_supported_languages
+        from oldman.web.i18n import language_menu_items, language_registry
 
-        self.assertEqual(dashboard_supported_languages(), list(settings.i18n.languages))
+        self.assertEqual(list(language_registry().codes), list(settings.i18n.languages))
 
-        items = dashboard_language_items()
+        items = language_menu_items()
         self.assertEqual([item["code"] for item in items], list(settings.i18n.languages))
         self.assertEqual(items[1]["name"], "简体中文")
-        self.assertEqual(
-            items[1]["flag_asset"],
-            "/static/oldman/images/flags/cn.svg",
-        )
+        self.assertEqual(items[1]["flagUrl"], "/static/oldman/images/flags/cn.svg")
 
     def test_dashboard_language_aliases_are_settings_driven(self) -> None:
         """Configured aliases and locales should resolve to the dashboard canonical code."""
-        from services.web import normalize_dashboard_language
+        from oldman.web.i18n import language_registry
 
-        self.assertEqual(normalize_dashboard_language("zh-CN"), "zh-Hans")
-        self.assertEqual(normalize_dashboard_language("zh-Hans"), "zh-Hans")
-        self.assertEqual(normalize_dashboard_language("zh-HK"), "zh-Hant")
-        self.assertEqual(normalize_dashboard_language("zh_Hans"), "")
+        registry = language_registry()
+        self.assertEqual(registry.resolve("zh-CN"), "zh-Hans")
+        self.assertEqual(registry.resolve("zh-Hans"), "zh-Hans")
+        self.assertEqual(registry.resolve("zh-HK"), "zh-Hant")
+        self.assertEqual(registry.resolve("zh_Hans"), "")
 
     def test_settings_yaml_is_local_runtime_config(self) -> None:
         """本地配置和 SQLite 运行数据不能被加入 Git 仓库。"""

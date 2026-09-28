@@ -5,11 +5,10 @@ from __future__ import annotations
 import datetime as dt
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, Numeric, SmallInteger, String, Text, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from oldman.db.models import DatabaseModel
 from oldman.i18n import gettext_lazy as _
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, Integer, Numeric, SmallInteger, String, Text, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 MYSQL_CASE_SENSITIVE_COLLATION = "utf8mb4_bin"
 MYSQL_CASE_INSENSITIVE_COLLATION = "utf8mb4_unicode_ci"
@@ -23,7 +22,7 @@ def mysql_collated_string(length: int, collation: str) -> String:
 class ChannelsEpg(DatabaseModel):
     """旧 Django `epg_channelsepg` 表的后台管理映射。"""
 
-    __tablename__ = "epg_channelsepg"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "epg_channelsepg"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), index=True)
@@ -54,7 +53,7 @@ class ChannelsEpg(DatabaseModel):
 class EpgList(DatabaseModel):
     """旧 Django `epg_epglist` 表的后台管理映射。"""
 
-    __tablename__ = "epg_epglist"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "epg_epglist"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     channel_id: Mapped[int] = mapped_column(ForeignKey("epg_channelsepg.id"), index=True)
@@ -75,7 +74,7 @@ class EpgList(DatabaseModel):
 class ChannelName(DatabaseModel):
     """旧 Django `epg_channelname` 表的后台只读统计映射。"""
 
-    __tablename__ = "epg_channelname"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "epg_channelname"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
@@ -104,7 +103,7 @@ class ChannelName(DatabaseModel):
 class UpstreamSourceRecord(DatabaseModel):
     """上游原始记录镜像，用于首页同步状态和来源质量统计。"""
 
-    __tablename__ = "upstream_source_record"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "upstream_source_record"
     __table_args__ = (
         UniqueConstraint("source_code", "source_record_key", name="uq_upstream_source_record_source_key"),
         Index("ix_upstream_source_record_catalog_feed_id", "catalog_feed_id"),
@@ -142,7 +141,7 @@ class UpstreamSourceRecord(DatabaseModel):
 class CatalogChannel(DatabaseModel):
     """频道身份分组，只回答“这是谁”。"""
 
-    __tablename__ = "catalog_channel"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "catalog_channel"
     __table_args__ = (
         UniqueConstraint("channel_id", name="uq_catalog_channel_channel_id"),
         Index("ix_catalog_channel_channel_key", "channel_key"),
@@ -173,7 +172,7 @@ class CatalogChannel(DatabaseModel):
 class CatalogFeed(DatabaseModel):
     """频道真实播出版本，是后台 dashboard 的 feed 统计来源。"""
 
-    __tablename__ = "catalog_feed"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "catalog_feed"
     __table_args__ = (
         UniqueConstraint("tvg_id", name="uq_catalog_feed_tvg_id"),
         UniqueConstraint("catalog_channel_id", "feed_suffix", name="uq_catalog_feed_channel_suffix"),
@@ -223,7 +222,7 @@ class CatalogFeed(DatabaseModel):
 class CatalogLogoAsset(DatabaseModel):
     """feed 级当前 logo，供 dashboard 统计覆盖率和质量分布。"""
 
-    __tablename__ = "catalog_logo_asset"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "catalog_logo_asset"
     __table_args__ = (
         UniqueConstraint("catalog_feed_id", name="uq_catalog_logo_asset_feed"),
         Index("ix_catalog_logo_asset_sha256", "sha256"),
@@ -267,7 +266,7 @@ class CatalogLogoAsset(DatabaseModel):
 class CatalogMatchDecision(DatabaseModel):
     """频道库编译和人工闭环审计，首页只读取待处理规模。"""
 
-    __tablename__ = "catalog_match_decision"  # pyright: ignore[reportAssignmentType] -- SQLAlchemy declared_attr override
+    __tablename__ = "catalog_match_decision"
     __table_args__ = (
         Index("ix_catalog_match_decision_scope", "decision_scope"),
         Index("ix_catalog_match_decision_source_record_id", "source_record_id"),

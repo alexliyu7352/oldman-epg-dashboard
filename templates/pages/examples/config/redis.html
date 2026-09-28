@@ -1,0 +1,76 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("Values in one Redis key through RedisStore") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("SiteFlags declares the fields, their types and their defaults. The whole value lives in one key; every read goes to Redis, so a write from another process shows at the next read.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <form method="post" action="/examples/config/redis" data-om-component="form" data-om-form data-om-form-mode="json" data-config-flags-form novalidate>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_for(request) }}">
+        <div class="om-form-message" data-om-form-message role="alert" hidden></div>
+        <div class="mb-4 grid gap-4 md:grid-cols-3">
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="maintenance">
+            <span class="om-form-label">{{ _("Maintenance") }}</span>
+            <label class="om-check-option"><input type="checkbox" class="om-check" name="maintenance" {% if state.flags.maintenance %}checked{% endif %}> {{ _("Site under maintenance") }}</label>
+          </div>
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="banner">
+            <label class="om-form-label" for="config-banner">{{ _("Banner") }}</label>
+            <input class="om-input w-full" id="config-banner" name="banner" maxlength="200" value="{{ state.flags.banner }}">
+            <div class="om-form-error" data-om-error-for="banner" hidden></div>
+          </div>
+          <div class="om-form-field" data-om-form-field data-om-form-field-name="max_streams_per_user">
+            <label class="om-form-label" for="config-max-streams">{{ _("Streams per user") }}</label>
+            <input class="om-input w-full" id="config-max-streams" name="max_streams_per_user" type="number" min="1" max="20" step="1" value="{{ state.flags.max_streams_per_user }}">
+            <div class="om-form-error" data-om-error-for="max_streams_per_user" hidden></div>
+          </div>
+        </div>
+        <div class="mb-4 flex flex-wrap gap-3">
+          <button type="submit" name="operation" value="read" class="om-button om-button-primary">{{ _("Read") }}</button>
+          <button type="submit" name="operation" value="update_flags" class="om-button om-button-secondary">{{ _("Save the three fields (update)") }}</button>
+          <button type="submit" name="operation" value="write_elsewhere" class="om-button om-button-secondary">{{ _("Write the banner from another instance") }}</button>
+          <button type="submit" name="operation" value="wrong_type" class="om-button om-button-light">{{ _("Try to save text into the number field") }}</button>
+          <button type="submit" name="operation" value="restore" class="om-button om-button-light">{{ _("Restore the defaults") }}</button>
+        </div>
+        <p data-om-form-status role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="om-card mb-5">
+    <div class="om-card-header">
+      <div>
+        <h2 class="om-card-title mb-1">{{ _("A device allowlist in a Redis set through RedisSet") }}</h2>
+        <p class="mb-0 text-sm text-default-500">{{ _("Each operation is one set command, so checking a device never reads the whole list.") }}</p>
+      </div>
+    </div>
+    <div class="om-card-body">
+      <form method="post" action="/examples/config/redis" data-om-component="form" data-om-form data-om-form-mode="json" data-config-devices-form novalidate>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_for(request) }}">
+        <div class="om-form-message" data-om-form-message role="alert" hidden></div>
+        <div class="om-form-field mb-4 max-w-md" data-om-form-field data-om-form-field-name="device_id">
+          <label class="om-form-label" for="config-device">{{ _("Device ID") }}</label>
+          <input class="om-input w-full" id="config-device" name="device_id" maxlength="40" value="tv-001">
+          <div class="om-form-error" data-om-error-for="device_id" hidden></div>
+        </div>
+        <div class="mb-4 flex flex-wrap gap-3">
+          <button type="submit" name="operation" value="add_device" class="om-button om-button-secondary">{{ _("Add") }}</button>
+          <button type="submit" name="operation" value="remove_device" class="om-button om-button-secondary">{{ _("Remove") }}</button>
+          <button type="submit" name="operation" value="check_device" class="om-button om-button-primary">{{ _("Is it allowed?") }}</button>
+          <button type="submit" name="operation" value="random_device" class="om-button om-button-light">{{ _("Pick one at random") }}</button>
+        </div>
+        <p data-om-form-status role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="om-card">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("What Redis holds") }}</h2></div>
+    <div class="om-card-body" id="config-redis-result" aria-live="polite" aria-atomic="true">
+      {% with operation="page" %}{% include "pages/examples/config/_redis_result.html" %}{% endwith %}
+    </div>
+  </section>
+{% endblock %}

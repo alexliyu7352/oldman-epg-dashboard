@@ -13,7 +13,10 @@ export class ExamplesPage extends BasePage {
         "navigation-probe": async () => (await import("@app/components/examples/navigation-probe")).NavigationProbe,
         "example-chart": async () => (await import("@app/components/examples/realtime-chart")).ExampleChart,
         "realtime-table": async () => (await import("@app/components/examples/realtime-table")).RealtimeTable,
-        "icon-catalog": async () => (await import("@app/components/examples/icon-catalog")).IconCatalog
+        "icon-catalog": async () => (await import("@app/components/examples/icon-catalog")).IconCatalog,
+        "fingerprint-probe": async () => (await import("@app/components/examples/fingerprint-probe")).FingerprintProbe,
+        "token-flow": async () => (await import("@app/components/examples/token-flow")).TokenFlow,
+        "api-key-probe": async () => (await import("@app/components/examples/api-key-probe")).ApiKeyProbe
       }
     });
   }

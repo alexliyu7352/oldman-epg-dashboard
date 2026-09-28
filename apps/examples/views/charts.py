@@ -4,9 +4,17 @@ from __future__ import annotations
 
 import asyncio
 
-from sanic.exceptions import BadRequest
+from oldman.db import db_manager
+from oldman.i18n import gettext_lazy as _
+from oldman.web import BadRequest, router
+from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction
+from oldman.web.auth import staff_required
+from oldman.web.request import Request
+from oldman.web.response import api_response
+from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.sse import SSEPublisher, SSEQueueMode, SSEStream, sse
+from oldman.web.template import render_template
 
-from apps.auth.decorators import admin_required
 from apps.examples import services
 from apps.examples.chart_views import (
     COMPOSITION_CHARTS,
@@ -15,15 +23,6 @@ from apps.examples.chart_views import (
     TREND_CHARTS,
     ExampleChartData,
 )
-from oldman.db import db_manager
-from oldman.i18n import gettext_lazy as _
-from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction
-from oldman.web.request import Request
-from oldman.web.response import api_response
-from oldman.web.routing import get_app
-from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.sse import SSEPublisher, SSEQueueMode, SSEStream, sse
-from oldman.web.template import render_template
 
 from . import EXAMPLE_SECTIONS, _render_example
 
@@ -32,17 +31,16 @@ OWNED_CHART_PAGES = frozenset(
 )
 CHART_EVENT = "examples.chart.metric"
 
-app = get_app()
-app.add_route(
+router.add_route(
     ExampleChartData.as_view(),
     ExampleChartData.route_path,
     name=ExampleChartData.route_name,
 )
 
 
-@app.get("/examples/charts/<page:str>", name="example_charts_page")
+@router.get("/examples/charts/<page:str>", name="example_charts_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_charts_page(request: Request, page: str):
     """Render one concrete database-backed Chart page."""
     if page not in OWNED_CHART_PAGES:
@@ -71,8 +69,8 @@ async def example_charts_page(request: Request, page: str):
     return await render_template("pages/examples/charts/gallery.html", context=context)
 
 
-@app.get("/examples/charts/realtime/events", name="example_realtime_chart_events")
-@admin_required()
+@router.get("/examples/charts/realtime/events", name="example_realtime_chart_events")
+@staff_required()
 @sse.streaming(queue_mode=SSEQueueMode.LATEST, session_guard=True, login_url="/login")
 async def example_realtime_chart_events(request: Request, stream: SSEStream) -> None:
     """Replay database rows locally, then wait on the shared Redis stream."""
@@ -87,9 +85,9 @@ async def example_realtime_chart_events(request: Request, stream: SSEStream) -> 
     await stream.subscribe(services.realtime_chart_stream(server_id))
 
 
-@app.post("/examples/charts/realtime/publish", name="example_realtime_chart_publish")
+@router.post("/examples/charts/realtime/publish", name="example_realtime_chart_publish")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_realtime_chart_publish(request: Request):
     """Commit one metric, then publish it through the configured SSE Redis channel."""
     server_id = _server_id(request)

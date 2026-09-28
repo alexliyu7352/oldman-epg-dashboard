@@ -1,30 +1,20 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% block title %}{{ _("Analytics") }} · Oldman{% endblock %}
 
 {% block content %}
 <section class="om-page-section" data-om-component="dashboard-overview">
-    <div class="om-page-heading">
-      <div>
-        <p class="om-page-kicker">Oldman</p>
-        <h1 class="om-page-title">{{ _("Analytics") }}</h1>
+    {% call page_head(_("Analytics")) %}
+      <div class="om-segmented" role="group" aria-label="{{ _('Range') }}">
+        <button class="om-segment" type="button" data-om-dashboard-range="7d" aria-pressed="false">7 {{ _("Days") }}</button>
+        <button class="om-segment active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+        <button class="om-segment" type="button" data-om-dashboard-range="90d" aria-pressed="false">90 {{ _("Days") }}</button>
       </div>
-      <div class="om-page-actions">
-        <div class="om-dropdown">
-          <button class="om-button om-button-soft-secondary om-button-sm" type="button" data-om-dropdown-toggle aria-expanded="false">
-            <i class="ri-calendar-event-line"></i>{{ _("Range") }}
-          </button>
-          <div class="om-dropdown-menu om-dropdown-menu-end">
-            <button class="om-dropdown-item" type="button" data-om-dashboard-range="7d">7 {{ _("Days") }}</button>
-            <button class="om-dropdown-item active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
-            <button class="om-dropdown-item" type="button" data-om-dashboard-range="90d">90 {{ _("Days") }}</button>
-          </div>
-        </div>
-        <button class="om-button om-button-soft-success om-button-sm" type="button" data-om-dashboard-refresh>
-          <i class="ri-refresh-line"></i>{{ _("Refresh") }}
-        </button>
-      </div>
-    </div>
+      <button class="om-button om-button-secondary" type="button" data-om-dashboard-refresh>
+        <i class="ri-refresh-line"></i>{{ _("Refresh") }}
+      </button>
+    {% endcall %}
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
       <div class="xl:col-span-3 md:col-span-6">

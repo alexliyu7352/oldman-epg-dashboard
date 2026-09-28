@@ -1,11 +1,11 @@
 """Fixed external program for the managed-subprocess example; no framework imports."""
 
-from collections import Counter
 import json
 import os
 import subprocess
 import sys
 import time
+from collections import Counter
 
 
 def main() -> None:

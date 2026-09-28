@@ -19,6 +19,7 @@ import unittest
 from contextlib import ExitStack
 from pathlib import Path
 
+from oldman.testing import owned_redis_server
 from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,8 @@ class NatsExampleTest(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 return result.stdout
 
+            # loaddata writes cached ExampleTask rows; their invalidation goes to this test's Redis.
+            cache_redis_url = stack.enter_context(owned_redis_server(root / "redis", environment=os.environ))
             try:
                 spawn("nats", [str(NATS_SERVER), "-a", "127.0.0.1", "-p", str(port)])
                 for attempt in range(100):
@@ -91,6 +94,7 @@ class NatsExampleTest(unittest.TestCase):
                     payload["nats"]["TASKIQ"]["nats_url"] = f"nats://127.0.0.1:{port}"
                     payload["nats_bus"]["namespace"] = "demo_validation"
                     payload["taskiq"]["enabled"] = False
+                    (payload.get("redis") or payload.setdefault("redis", {}))["CACHE"] = {"redis_url": cache_redis_url}
                     with (root / "data" / f"{service}_settings.yaml").open("w") as file:
                         YAML().dump(payload, file)
                     cli(service, "settings", "sync")

@@ -8,37 +8,33 @@ import logging
 import re
 from uuid import uuid4
 
+from oldman.conf import settings
+from oldman.db import db_manager
+from oldman.i18n import gettext_lazy as _
+from oldman.providers.redis import redis_client
+from oldman.web import NotFound, router
+from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_error_response, form_response
+from oldman.web.auth import staff_required
+from oldman.web.request import Request
+from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.template import render_fragment, render_template
 from redis.exceptions import RedisError
 from sqlalchemy import select
 from taskiq.exceptions import SendTaskError
 from taskiq_redis.exceptions import ResultIsMissingError
 
-from apps.auth.decorators import admin_required
-from apps.auth.session import dashboard_session
 from apps.examples.models import ExampleProject, ExampleTask
-from oldman.conf import settings
-from oldman.db import db_manager
-from oldman.i18n import gettext_lazy as _
-from oldman.providers.redis import redis_client
-from oldman.web import NotFound
-from oldman.web.api import ApiErrorCode, DefaultApiFormResponse, ReplaceHtmlAction
-from oldman.web.request import Request
-from oldman.web.response import api_response
-from oldman.web.routing import get_app
-from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.template import render_template
 
 from . import EXAMPLE_SECTIONS
 
-app = get_app()
 logger = logging.getLogger(__name__)
 PAGES = {"results", "schedules", "queues"}
 OPERATIONS = {"summary", "export", "fail", "ignored", "retry", "complete", "local", "broadcast", "time", "interval", "cron", "rpc"}
 
 
 def _user_id(request: Request) -> int:
-    """Narrow the authenticated Session identity without querying another User."""
-    user_id = dashboard_session(request).user_id
+    """Narrow the signed-in user's identity without querying another User."""
+    user_id = request.ctx.user.id
     if user_id is None:
         raise RuntimeError("The staff guard must supply an authenticated user")
     return user_id
@@ -56,20 +52,19 @@ async def _client():
 
 def _invalid(message, *, field: str | None = None):
     """Validation remains a HTTP 200 Form business error, not a transport error."""
-    return api_response(DefaultApiFormResponse(error_code=ApiErrorCode.INVALID_REQUEST, message=message, errors={field: message} if field else {}))
+    return form_error_response(message, errors={field: message} if field else None, error_code=ApiErrorCode.INVALID_REQUEST)
 
 
 async def _result(request: Request, **context):
     """Replace one shared result area; no custom browser task runner is needed."""
-    template = request.app.ext.environment.get_template("pages/examples/tasks/_result.html")
-    html = await template.render_async(**context)
+    html = await render_fragment(request, "pages/examples/tasks/_result.html", **context)
     code = ApiErrorCode.INVALID_REQUEST if context.get("outcome") == "publication_error" else ApiErrorCode.OK
-    return api_response(DefaultApiFormResponse(error_code=code, actions=[ReplaceHtmlAction(html=html, target="#task-result")]))
+    return form_response(error_code=code, actions=[ReplaceHtmlAction(html=html, target="#task-result")])
 
 
-@app.get("/examples/tasks/<page:str>", name="example_tasks_page")
+@router.get("/examples/tasks/<page:str>", name="example_tasks_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_tasks_page(request: Request, page: str):
     """Read choices and owned plans only; GET never publishes or schedules work."""
     if page not in PAGES:
@@ -94,9 +89,9 @@ async def example_tasks_page(request: Request, page: str):
     })
 
 
-@app.post("/examples/tasks/run/<operation:str>", name="example_task_run")
+@router.post("/examples/tasks/run/<operation:str>", name="example_task_run")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_task_run(request: Request, operation: str):
     """Publish fixed Demo operations only, preserving unknown delivery outcomes."""
     if operation not in OPERATIONS:
@@ -105,8 +100,9 @@ async def example_task_run(request: Request, operation: str):
         return _invalid(_("Enable Taskiq in this service before using the example."))
     if operation == "rpc" and not settings.nats_bus.enabled:
         return _invalid(_("Enable nats_bus in Web and Worker before submitting the RPC task."))
-    from apps.examples import tasks
     from oldman.tasks.distributed import schedule_source
+
+    from apps.examples import tasks
 
     project_id = record_id = 0
     if operation not in {"local", "broadcast", "interval", "cron"}:
@@ -160,9 +156,9 @@ async def example_task_run(request: Request, operation: str):
     return await _result(request, outcome="published", **ownership)
 
 
-@app.post("/examples/tasks/result/<task_id:str>", name="example_task_result")
+@router.post("/examples/tasks/result/<task_id:str>", name="example_task_result")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_task_result(request: Request, task_id: str):
     """Read only IDs owned by this user; missing ownership never grants access."""
     if not settings.taskiq.enabled or re.fullmatch(r"[a-f0-9]{32}", task_id) is None:
@@ -184,9 +180,9 @@ async def example_task_result(request: Request, task_id: str):
     return await _result(request, outcome="failed" if result.is_err else "success", value=result.return_value, error=str(result.error) if result.is_err else "", **owned)
 
 
-@app.post("/examples/tasks/cancel/<schedule_id:str>", name="example_task_cancel")
+@router.post("/examples/tasks/cancel/<schedule_id:str>", name="example_task_cancel")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_task_cancel(request: Request, schedule_id: str):
     """Cancel an owned plan, not already queued work or another user's schedule."""
     if not settings.taskiq.enabled:

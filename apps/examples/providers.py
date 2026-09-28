@@ -5,17 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from markupsafe import Markup, escape
+from oldman.web.components.selects import DataSelectProvider, ModelSelectProvider, SelectChoice, select_registry
 from sqlalchemy import select
 
-from oldman.web.components.selects import DataSelectProvider, ModelSelectProvider, SelectChoice, select_registry
-
 from .models import ExampleLogo, ExampleTag
-
-
-def _is_staff_request(request: Any) -> bool:
-    """Allow provider reads only for the authenticated Dashboard staff session."""
-    session = getattr(getattr(request, "ctx", None), "session", None)
-    return bool(session and session.is_authenticated() and getattr(session, "is_staff", False))
 
 
 @select_registry.register("example_logos")
@@ -25,10 +18,6 @@ class ExampleLogoProvider(ModelSelectProvider):
     model = ExampleLogo
     search_fields = ("name", "slug", "country_code")
     page_size = 8
-
-    async def check_auth(self, request: Any, context: Any) -> bool:
-        """Require the same staff identity as the surrounding example page."""
-        return _is_staff_request(request)
 
     async def get_queryset(self, request: Any, context: Any):
         """Return stable, available Logo rows."""
@@ -63,10 +52,6 @@ class ExampleTagProvider(ModelSelectProvider):
     search_fields = ("name", "slug")
     page_size = 6
 
-    async def check_auth(self, request: Any, context: Any) -> bool:
-        """Require the same staff identity as the surrounding example page."""
-        return _is_staff_request(request)
-
     async def get_queryset(self, request: Any, context: Any):
         """Return tags in stable display order."""
         return select(ExampleTag).order_by(ExampleTag.name.asc(), ExampleTag.id.asc())
@@ -77,10 +62,6 @@ class ExampleCountryProvider(DataSelectProvider):
     """Finite country choices showing the non-database provider boundary."""
 
     page_size = 10
-
-    async def check_auth(self, request: Any, context: Any) -> bool:
-        """Require an authenticated staff session."""
-        return _is_staff_request(request)
 
     async def get_choices(self, request: Any, context: Any):
         """Return the fixture's finite country set."""

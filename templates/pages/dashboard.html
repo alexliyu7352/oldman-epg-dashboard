@@ -1,61 +1,43 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% block title %}{{ _("Dashboard") }} · Oldman{% endblock %}
 
 {% block content %}
 <section class="om-page-section" data-om-component="dashboard-overview">
-  <div class="om-page-heading">
-    <div>
-      <p class="om-page-kicker">Oldman</p>
-      <h1 class="om-page-title">{{ _("Dashboard") }}</h1>
+  {% call page_head(_("Dashboard")) %}
+    <div class="om-segmented" role="group" aria-label="{{ _('Range') }}">
+      <button class="om-segment" type="button" data-om-dashboard-range="7d" aria-pressed="false">7 {{ _("Days") }}</button>
+      <button class="om-segment active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+      <button class="om-segment" type="button" data-om-dashboard-range="90d" aria-pressed="false">90 {{ _("Days") }}</button>
     </div>
-    <div class="om-page-actions">
-      <div class="om-dropdown">
-        <button class="om-button om-button-soft-secondary om-button-sm" type="button" data-om-dropdown-toggle aria-expanded="false">
-          <i class="ri-calendar-event-line"></i>{{ _("Range") }}
-        </button>
-        <div class="om-dropdown-menu om-dropdown-menu-end">
-          <button class="om-dropdown-item" type="button" data-om-dashboard-range="7d">7 {{ _("Days") }}</button>
-          <button class="om-dropdown-item active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
-          <button class="om-dropdown-item" type="button" data-om-dashboard-range="90d">90 {{ _("Days") }}</button>
-        </div>
-      </div>
-      <button class="om-button om-button-soft-success om-button-sm" type="button" data-om-dashboard-refresh>
-        <i class="ri-refresh-line"></i>{{ _("Refresh") }}
-      </button>
-    </div>
-  </div>
+    <button class="om-button om-button-secondary" type="button" data-om-dashboard-refresh>
+      <i class="ri-refresh-line"></i>{{ _("Refresh") }}
+    </button>
+  {% endcall %}
 
   <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
     <div class="lg:col-span-1">
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2">
-        <div class="om-analytics-tile bg-green-500/15">
-          <div class="om-card-body">
-            <span class="om-analytics-icon bg-green-500"><i class="ri-tv-2-line" aria-hidden="true"></i></span>
-            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.channel_count }}">0</span></h2>
-            <p class="om-stat-label">{{ _("Total Channels") }}</p>
-          </div>
+        <div class="om-stat-card">
+          <span class="om-stat-icon" aria-hidden="true"><i class="ri-tv-2-line" aria-hidden="true"></i></span>
+          <p class="om-stat-label">{{ _("Total Channels") }}</p>
+          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.channel_count }}">0</span></p>
         </div>
-        <div class="om-analytics-tile bg-orange-500/15">
-          <div class="om-card-body">
-            <span class="om-analytics-icon bg-orange-500"><i class="ri-calendar-event-line" aria-hidden="true"></i></span>
-            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.epg_count }}">0</span></h2>
-            <p class="om-stat-label">{{ _("Programmes") }}</p>
-          </div>
+        <div class="om-stat-card">
+          <span class="om-stat-icon" aria-hidden="true"><i class="ri-calendar-event-line" aria-hidden="true"></i></span>
+          <p class="om-stat-label">{{ _("Programmes") }}</p>
+          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.epg_count }}">0</span></p>
         </div>
-        <div class="om-analytics-tile bg-violet-500/15">
-          <div class="om-card-body">
-            <span class="om-analytics-icon bg-violet-500"><i class="ri-image-line" aria-hidden="true"></i></span>
-            <h2 class="om-stat-value">{{ stats.logo_coverage_percent }}%</h2>
-            <p class="om-stat-label">{{ _("Logo Coverage") }}</p>
-          </div>
+        <div class="om-stat-card">
+          <span class="om-stat-icon" aria-hidden="true"><i class="ri-image-line" aria-hidden="true"></i></span>
+          <p class="om-stat-label">{{ _("Logo Coverage") }}</p>
+          <p class="om-stat-value">{{ stats.logo_coverage_percent }}%</p>
         </div>
-        <div class="om-analytics-tile bg-sky-500/15">
-          <div class="om-card-body">
-            <span class="om-analytics-icon bg-sky-500"><i class="ri-cloud-line" aria-hidden="true"></i></span>
-            <h2 class="om-stat-value"><span class="counter-value" data-target="{{ stats.upstream_record_count }}">0</span></h2>
-            <p class="om-stat-label">{{ _("Upstream Records") }}</p>
-          </div>
+        <div class="om-stat-card">
+          <span class="om-stat-icon" aria-hidden="true"><i class="ri-cloud-line" aria-hidden="true"></i></span>
+          <p class="om-stat-label">{{ _("Upstream Records") }}</p>
+          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.upstream_record_count }}">0</span></p>
         </div>
       </div>
     </div>

@@ -5,7 +5,6 @@ import json
 from uuid import uuid4
 
 import typer
-
 from oldman.cache import cache_async_response, redis_cache
 from oldman.cli import Command
 from oldman.db import db_manager

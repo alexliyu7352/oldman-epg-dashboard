@@ -1,6 +1,6 @@
-import { Component } from "oldman-web/core";
+import { Component, httpErrorMessage } from "oldman-web/core";
 import type { ApexChart } from "oldman-web/components/apex-chart";
-import type { OldmanFeedback } from "./feedback";
+import type { DashboardFeedback } from "oldman-web/dashboard/feedback";
 
 const CHART_SELECTORS = ["#programme-trend-chart", "#feed-status-chart", "#logo-quality-chart"];
 
@@ -54,7 +54,7 @@ export class DashboardOverview extends Component {
   private async showChartFailure(error: unknown): Promise<void> {
     await this.feedback()?.alert({
       icon: "error",
-      text: error instanceof Error ? error.message : this.i18n.t("Request failed"),
+      text: httpErrorMessage(error, this.i18n),
       title: this.i18n.t("Chart request failed")
     });
   }
@@ -75,8 +75,8 @@ export class DashboardOverview extends Component {
     return `${url.pathname}${url.search}`;
   }
 
-  private feedback(): OldmanFeedback | null {
-    return this.manager?.get<OldmanFeedback>("#dashboard-feedback") ?? null;
+  private feedback(): DashboardFeedback | null {
+    return this.manager?.get<DashboardFeedback>("#dashboard-feedback") ?? null;
   }
 
   private showRefreshToast(): void {

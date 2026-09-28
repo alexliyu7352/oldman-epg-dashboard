@@ -10,13 +10,21 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.parse
 from pathlib import Path
 from types import ModuleType
 
+from oldman.testing.gates import ensure_gate_admin
+from ruamel.yaml import YAML
+
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.demo_auth import DEMO_API_KEY_NAME  # noqa: E402
+
 SUPPORT_PATH = ROOT / "scripts" / "verify-dashboard-browser.py"
-DEFAULT_URL = "http://localhost:17998/"
+DEFAULT_URL = "http://localhost:17997/"
 DEFAULT_USERNAME = "oldman_admin"
 DEFAULT_PASSWORD = "oldman_admin_123"
 SECONDARY_USERNAME = "oldman_examples_other"
@@ -37,27 +45,17 @@ def load_browser_support() -> ModuleType:
 
 
 def ensure_secondary_user() -> None:
-    """Create the second isolated browser identity through the existing helper."""
+    """Create the second isolated browser identity through the framework helper."""
     config_file = os.environ.get("OLDMAN_GATE_CONFIG_FILE")
     if not config_file:
         raise RuntimeError("The examples gate requires OLDMAN_GATE_CONFIG_FILE")
-    subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts" / "create_admin.py"),
-            "--username",
-            SECONDARY_USERNAME,
-            "--password",
-            SECONDARY_PASSWORD,
-            "--email",
-            "oldman-examples-other@example.com",
-            "--config",
-            config_file,
-        ],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    ensure_gate_admin(
+        Path(config_file),
+        environment=os.environ,
+        project_root=ROOT,
+        username=SECONDARY_USERNAME,
+        password=SECONDARY_PASSWORD,
+        email="oldman-examples-other@example.com",
     )
 
 
@@ -1801,18 +1799,17 @@ def assert_message_and_feedback_examples(
     )
     client.pump(2.0)
     trusted = client.evaluate(
-        r"""
-(() => {
+        rf"""
+(() => {{
   const items = document.querySelectorAll("[data-om-flash-message]");
   const item = items[0];
-  return { failures: [
-    ...(items.length === 1 ? [] : [`trusted HTML rendered ${items.length} items`]),
+  return {{ failures: [
+    ...(items.length === 1 ? [] : [`trusted HTML rendered ${{items.length}} items`]),
     ...(item?.querySelector("strong")?.textContent?.trim() ? [] : ["fixed trusted Message HTML was not rendered"]),
-    ...(document.querySelectorAll("[data-om-activity-notification-item]").length === %d ? [] : ["page Message changed the notification center"])
-  ] };
-})()
-"""
-        % notification_count,
+    ...(document.querySelectorAll("[data-om-activity-notification-item]").length === {notification_count} ? [] : ["page Message changed the notification center"])
+  ] }};
+}})()
+""",
         timeout=5.0,
     )
     result.pageErrors.extend(
@@ -2960,6 +2957,169 @@ def assert_auth_session_examples(
     )
 
 
+def gate_api_key() -> str:
+    """The demo API key the gate settings generated (scripts/demo_auth.py), read from the gate's config file."""
+    config_file = os.environ.get("OLDMAN_GATE_CONFIG_FILE")
+    if not config_file:
+        raise RuntimeError("The examples gate requires OLDMAN_GATE_CONFIG_FILE")
+    payload = YAML(typ="safe").load(Path(config_file).read_text(encoding="utf-8"))
+    return payload["web"]["auth"]["api_keys"][DEMO_API_KEY_NAME]["secret"]
+
+
+def assert_token_and_caller_examples(
+    client, support: ModuleType, base_url: str, result
+) -> None:
+    """Walk the token flow and the API key probe; both pages send those calls without cookies.
+
+    Session is tried before jwt and api_key, so a request that still carried the cookie would be
+    recognized as the session: the probe would report "session" and the key-only probe would
+    answer 403. "jwt" and 200 prove the cookie stayed behind.
+    """
+    bad_response_count = len(result.badResponses)
+    console_error_count = len(result.consoleErrors)
+
+    tokens_path = "/examples/auth/tokens"
+    support.navigate(client, urllib.parse.urljoin(base_url, tokens_path))
+    assert_example_page(client, support, tokens_path, "auth", "tokens", result)
+    password = os.environ.get("OLDMAN_ADMIN_PASSWORD", DEFAULT_PASSWORD)
+    tokens = client.evaluate(
+        f"""
+(async () => {{
+  const root = document.querySelector('[data-om-component="token-flow"]');
+  if (!root) return {{ failures: ["token flow was not rendered"] }};
+  const outcome = async (step) => {{
+    const selector = `[data-token-result="${{step}}"]`;
+    for (let index = 0; index < 100 && !root.querySelector(`${{selector}} .om-badge`); index += 1) {{
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }}
+    return root.querySelector(selector)?.textContent ?? "";
+  }};
+  const failures = [];
+  root.querySelector("[data-token-form] input[name=password]").value = {json.dumps(password)};
+  root.querySelector("[data-token-form] button[type=submit]").click();
+  const obtained = await outcome("obtain");
+  if (!obtained.includes("HTTP 200")) failures.push(`obtain: ${{obtained}}`);
+  const firstAccess = root.querySelector('[data-token-value="access"]')?.textContent;
+  root.querySelector('[data-token-step="probe"]').click();
+  const probed = await outcome("probe");
+  if (!probed.includes("HTTP 200") || !probed.includes("jwt")) failures.push(`bearer probe: ${{probed}}`);
+  root.querySelector('[data-token-step="refresh"]').click();
+  const refreshed = await outcome("refresh");
+  if (!refreshed.includes("HTTP 200")) failures.push(`refresh: ${{refreshed}}`);
+  if (root.querySelector('[data-token-value="access"]')?.textContent === firstAccess) failures.push("refresh kept the same access token");
+  root.querySelector('[data-token-step="revoke"]').click();
+  const revoked = await outcome("revoke");
+  if (!revoked.includes("HTTP 401")) failures.push(`sign-out did not end the access token: ${{revoked}}`);
+  return {{ failures }};
+}})()
+""",
+        timeout=40.0,
+    )
+    result.pageErrors.extend(
+        f"Access tokens: {failure}" for failure in support.assertion_failures(tokens)
+    )
+
+    callers_path = "/examples/auth/callers"
+    support.navigate(client, urllib.parse.urljoin(base_url, callers_path))
+    assert_example_page(client, support, callers_path, "auth", "callers", result)
+    api_key = gate_api_key()
+    callers = client.evaluate(
+        f"""
+(async () => {{
+  const root = document.querySelector('[data-om-component="api-key-probe"]');
+  if (!root) return {{ failures: ["API key probe was not rendered"] }};
+  if (document.documentElement.outerHTML.includes({json.dumps(api_key)})) return {{ failures: ["the API key secret reached the page"] }};
+  const call = async (probe) => {{
+    const selector = `[data-caller-result="${{probe}}"]`;
+    root.querySelector(`[data-caller-probe="${{probe}}"]`).click();
+    for (let index = 0; index < 100 && !root.querySelector(`${{selector}} .om-badge`); index += 1) {{
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }}
+    return root.querySelector(selector)?.textContent ?? "";
+  }};
+  const failures = [];
+  const sessionOnly = await call("session");
+  if (!sessionOnly.includes("HTTP 403")) failures.push(`session only: ${{sessionOnly}}`);
+  root.querySelector("[data-api-key-input]").value = {json.dumps(api_key)};
+  const withKey = await call("key");
+  if (!withKey.includes("HTTP 200") || !withKey.includes({json.dumps(DEMO_API_KEY_NAME)})) failures.push(`with the key: ${{withKey}}`);
+  const wrongKey = await call("wrong");
+  if (!wrongKey.includes("HTTP 401")) failures.push(`wrong key: ${{wrongKey}}`);
+  root.querySelector("[data-api-key-input]").value = "";
+  return {{ failures }};
+}})()
+""",
+        timeout=40.0,
+    )
+    result.pageErrors.extend(
+        f"Service callers: {failure}" for failure in support.assertion_failures(callers)
+    )
+
+    # The refusals are what these pages demonstrate; Chrome logs each 4xx it receives.
+    expected_refusals = {"/examples/auth/probe": {401}, "/examples/auth/service-probe": {401, 403}}
+    result.badResponses[bad_response_count:] = [
+        response
+        for response in result.badResponses[bad_response_count:]
+        if response.get("status")
+        not in expected_refusals.get(urllib.parse.urlparse(response.get("url", "")).path, set())
+    ]
+    result.consoleErrors[console_error_count:] = [
+        error
+        for error in result.consoleErrors[console_error_count:]
+        if not error.startswith("Failed to load resource: the server responded with a status of 40")
+    ]
+
+
+def wait_for_browser_catalog(
+    client,
+    support: ModuleType,
+    *,
+    language: str,
+    expected: str | None = None,
+    timeout: float = 10.0,
+) -> list[str]:
+    """Poll from here until the switcher, `<html lang>` and the browser catalog agree.
+
+    每次都重新 evaluate：切语言可能带来一次服务端导航，导航期间的 evaluate 会失败，这不是缺陷，
+    重试即可；超时了才是真的没切过去。
+    """
+    deadline = time.monotonic() + timeout
+    last = "no state read"
+    while time.monotonic() < deadline:
+        try:
+            state = client.evaluate(
+                f"""
+(() => {{
+  const language = {json.dumps(language)};
+  const option = document.querySelector(`[data-om-component="language-switcher"] [data-lang="${{language}}"]`);
+  return JSON.stringify({{
+    lang: document.documentElement.lang,
+    pressed: option?.getAttribute("aria-pressed") ?? "",
+    loading: document.querySelector("[data-example-i18n-browser-loading]")?.textContent?.trim() ?? "",
+    ready: document.documentElement.dataset.omReady === "true"
+  }});
+}})()
+""",
+                timeout=5.0,
+            )
+        except Exception as error:  # noqa: BLE001 - 导航期间的 evaluate 失败要重试，不是断言失败
+            last = f"evaluate failed during navigation: {error}"
+            time.sleep(0.2)
+            continue
+        payload = json.loads(state) if isinstance(state, str) else {}
+        last = json.dumps(payload, ensure_ascii=False)
+        if (
+            payload.get("ready")
+            and payload.get("lang") == language
+            and payload.get("pressed") == "true"
+            and (expected is None or payload.get("loading") == expected)
+        ):
+            return []
+        time.sleep(0.2)
+    del support
+    return [f"browser catalog did not switch to {language}: {last}"]
+
+
 def assert_i18n_examples(client, support: ModuleType, base_url: str, result) -> None:
     """Verify one language choice reaches both the browser catalog and Jinja."""
     expected = {
@@ -2976,30 +3136,27 @@ def assert_i18n_examples(client, support: ModuleType, base_url: str, result) -> 
     for language, translations in expected.items():
         support.navigate(client, urllib.parse.urljoin(base_url, browser_path))
         assert_example_page(client, support, browser_path, "i18n", "browser", result)
-        switched = client.evaluate(
+        # 切换器在语言真的变了、且带 data-om-language-url 时会导航到服务端地址，所以轮询不能留在页面里：
+        # 导航一发生，同一个 Runtime.evaluate 就会以 "Inspected target navigated or closed" 失败。
+        clicked = client.evaluate(
             f"""
-(async () => {{
+(() => {{
   const language = {json.dumps(language)};
-  const expected = {json.dumps(translations[0], ensure_ascii=False)};
   const option = document.querySelector(`[data-om-component="language-switcher"] [data-lang="${{language}}"]`);
   if (!(option instanceof HTMLButtonElement)) return {{ failures: [`missing language option ${{language}}`] }};
   option.click();
-  for (let index = 0; index < 100; index += 1) {{
-    const loading = document.querySelector("[data-example-i18n-browser-loading]")?.textContent?.trim();
-    if (document.documentElement.lang === language && option.getAttribute("aria-pressed") === "true" && loading === expected) {{
-      return {{ failures: [] }};
-    }}
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }}
-  return {{ failures: [`browser catalog did not switch to ${{language}}`] }};
+  return {{ failures: [] }};
 }})()
 """,
-            timeout=8.0,
+            timeout=5.0,
         )
-        result.pageErrors.extend(
-            f"i18n {language}: {failure}"
-            for failure in support.assertion_failures(switched)
-        )
+        click_failures = support.assertion_failures(clicked)
+        result.pageErrors.extend(f"i18n {language}: {failure}" for failure in click_failures)
+        if not click_failures:
+            switch_failures = wait_for_browser_catalog(
+                client, support, language=language, expected=translations[0]
+            )
+            result.pageErrors.extend(f"i18n {language}: {failure}" for failure in switch_failures)
 
         support.navigate(client, urllib.parse.urljoin(base_url, server_path))
         assert_example_page(client, support, server_path, "i18n", "server", result)
@@ -3059,18 +3216,20 @@ def assert_i18n_examples(client, support: ModuleType, base_url: str, result) -> 
     )
 
     restore = original_language if original_language in expected else "en"
+    # 恢复原语言同样可能触发服务端导航，等待只能放在页面外面。
     client.evaluate(
         f"""
-(async () => {{
+(() => {{
   const option = document.querySelector(`[data-om-component="language-switcher"] [data-lang="{restore}"]`);
   option?.click();
-  for (let index = 0; index < 100 && (document.documentElement.lang !== "{restore}" || option?.getAttribute("aria-pressed") !== "true"); index += 1) {{
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }}
   return true;
 }})()
 """,
-        timeout=8.0,
+        timeout=5.0,
+    )
+    result.pageErrors.extend(
+        f"i18n restore: {failure}"
+        for failure in wait_for_browser_catalog(client, support, language=restore)
     )
 
 
@@ -3296,13 +3455,21 @@ def assert_ui_reference_examples(
 
   const tooltip = await waitForMount("[data-om-component='tooltip']");
   const tooltipTrigger = tooltip?.querySelector("[data-om-tooltip-trigger]");
+  // 打开时气泡会被 portal 到 <body>（避免被 transform/contain 的祖先裁切），所以只能从 document 找，
+  // 在组件根里找会拿到 null：那样"显示了吗"永远通过，"关掉了吗"永远失败。
+  const tooltipContentId = tooltipTrigger?.getAttribute("aria-describedby");
+  const readTooltip = () => (tooltipContentId
+    ? document.getElementById(tooltipContentId)
+    : document.querySelector("[data-om-tooltip-content]"));
   tooltipTrigger?.focus();
   tooltipTrigger?.dispatchEvent(new FocusEvent("focus"));
-  const tooltipContent = tooltip?.querySelector("[data-om-tooltip-content]");
-  if (tooltipContent?.hidden || !tooltipTrigger?.getAttribute("aria-describedby")) failures.push("keyboard focus did not show tooltip");
+  const openedTooltip = readTooltip();
+  if (!openedTooltip || openedTooltip.hidden) failures.push("keyboard focus did not show tooltip");
+  if (!tooltipTrigger?.getAttribute("aria-describedby")) failures.push("tooltip trigger is missing aria-describedby");
   tooltipTrigger?.blur();
   tooltipTrigger?.dispatchEvent(new FocusEvent("blur"));
-  if (!tooltipContent?.hidden) failures.push("tooltip remained open after blur");
+  const closedTooltip = readTooltip();
+  if (!closedTooltip || !closedTooltip.hidden) failures.push(`tooltip remained open after blur (hidden=${closedTooltip?.hidden})`);
 
   const popover = await waitForMount("[data-example-popover]");
   const popoverTrigger = popover?.querySelector("[data-om-popover-trigger]");
@@ -3324,8 +3491,13 @@ def assert_ui_reference_examples(
   if (!nested?.hidden) failures.push("Escape did not close nested Modal");
   if (drawer?.hidden) failures.push("nested Escape also closed Drawer");
   document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-  await new Promise((resolve) => setTimeout(resolve, 220));
-  if (!drawer?.hidden || document.body.classList.contains("om-modal-open")) failures.push("Drawer did not release its overlay state");
+  // 关闭要等声明的过渡时间走完才真正 hidden（抽屉的滑出比普通弹窗长），所以等状态而不是等一个固定毫秒数。
+  for (let index = 0; index < 60; index += 1) {
+    if (drawer?.hidden && !document.body.classList.contains("om-modal-open")) break;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  if (!drawer?.hidden) failures.push(`Drawer stayed open after Escape (state=${drawer?.dataset.omState})`);
+  if (document.body.classList.contains("om-modal-open")) failures.push("body kept om-modal-open after the last overlay closed");
   return { failures };
 })()
 """,
@@ -3587,6 +3759,203 @@ def assert_plugin_index(client, support: ModuleType, base_url: str, result) -> N
     )
 
 
+def assert_model_cache_example(client, support: ModuleType, base_url: str, result) -> None:
+    """Press each button of the model cache page and check what the cache did after it."""
+    path = "/examples/cache/models"
+    support.navigate(client, urllib.parse.urljoin(base_url, path))
+    assert_example_page(client, support, path, "cache", "models", result)
+    payload = client.evaluate(
+        r"""
+(async () => {
+  const failures = [];
+  const form = document.querySelector("[data-model-cache-form]");
+  const panel = document.querySelector("#model-cache-result");
+  if (!form || !panel) return { failures: ["model cache form or result panel was not rendered"] };
+  const run = async (operation) => {
+    panel.innerHTML = "";
+    form.querySelector(`button[value="${operation}"]`).click();
+    for (let index = 0; index < 100 && !panel.querySelector(`[data-model-cache-operation="${operation}"]`); index += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return panel.querySelector(`[data-model-cache-operation="${operation}"]`);
+  };
+  // Until this process's own invalidation lands, a read bypasses the cache; read again then.
+  const read = async () => {
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const shown = await run("read");
+      const source = shown?.querySelector("[data-model-cache-source]")?.dataset.modelCacheSource;
+      if (source !== "bypassed") {
+        return { source, titles: [...(shown?.querySelectorAll("[data-model-cache-title]") || [])].map((cell) => cell.textContent) };
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return { source: "bypassed", titles: [] };
+  };
+  const expect = (label, actual, wanted) => { if (actual !== wanted) failures.push(`${label}: expected ${wanted}, got ${actual}`); };
+
+  const first = await read();
+  if (!first.titles.length) failures.push("the chosen project showed no tasks");
+  if (!["misses", "hits"].includes(first.source)) failures.push(`first read: ${first.source}`);
+  expect("second read", (await read()).source, "hits");
+  await run("rename");
+  const renamed = await read();
+  expect("after an ORM write", renamed.source, "misses");
+  if (!renamed.titles[0]?.endsWith(" (ORM)")) failures.push(`ORM write not shown: ${renamed.titles[0]}`);
+  await run("rename_other");
+  expect("after another project's write", (await read()).source, "hits");
+  await run("rename_sql");
+  const stale = await read();
+  expect("after an UPDATE statement", stale.source, "hits");
+  if (stale.titles[0]?.includes("(SQL)")) failures.push("the UPDATE statement should stay invisible until invalidation");
+  await run("invalidate");
+  const fresh = await read();
+  expect("after invalidate_cache", fresh.source, "misses");
+  if (!fresh.titles[0]?.endsWith(" (SQL)")) failures.push(`invalidated read missing the UPDATE: ${fresh.titles[0]}`);
+  await run("rename_project");
+  expect("after a project write (invalidate_on)", (await read()).source, "misses");
+  const restored = await run("restore");
+  if (!(Number(restored?.querySelector("[data-model-cache-restored]")?.dataset.modelCacheRestored) >= 3)) failures.push("restore changed fewer rows than were marked");
+  const clean = await read();
+  if (clean.titles.some((title) => / \((ORM|SQL)\)$/.test(title))) failures.push(`marks left after restore: ${clean.titles.join(", ")}`);
+  return { failures };
+})()
+""",
+        timeout=90.0,
+    )
+    result.pageErrors.extend(
+        f"Model cache: {failure}" for failure in support.assertion_failures(payload)
+    )
+
+
+def assert_dynamic_config_examples(client, support: ModuleType, base_url: str, result) -> None:
+    """Walk both dynamic configuration pages: own saves, an outside edit, a refused wrong type, and the device set."""
+    path = "/examples/config/file"
+    support.navigate(client, urllib.parse.urljoin(base_url, path))
+    assert_example_page(client, support, path, "config", "file", result)
+    payload = client.evaluate(
+        r"""
+(async () => {
+  const failures = [];
+  const form = document.querySelector("[data-config-file-form]");
+  const panel = document.querySelector("#config-file-result");
+  if (!form || !panel) return { failures: ["file configuration form or result panel was not rendered"] };
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const field = (name) => form.querySelector(`[name="${name}"]`);
+  const run = async (operation) => {
+    panel.innerHTML = "";
+    form.querySelector(`button[value="${operation}"]`).click();
+    for (let index = 0; index < 100 && !panel.querySelector(`[data-config-file-operation="${operation}"]`); index += 1) await sleep(100);
+    return panel.querySelector(`[data-config-file-operation="${operation}"]`);
+  };
+  const hooks = (shown) => Number(shown?.querySelector("[data-config-outside-changes]")?.dataset.configOutsideChanges);
+  const announcement = (shown) => shown?.querySelector("[data-config-announcement]")?.dataset.configAnnouncement;
+  const offset = (shown) => shown?.querySelector('[data-config-channel="cctv1"]')?.dataset.configOffset;
+  const expect = (label, actual, wanted) => { if (actual !== wanted) failures.push(`${label}: expected ${wanted}, got ${actual}`); };
+
+  const base = hooks(await run("restore"));
+  if (Number.isNaN(base)) return { failures: ["the hook count was not shown"] };
+  field("channel_id").value = "cctv1";
+  field("epg_offset_minutes").value = "25";
+  let shown = await run("set_channel");
+  expect("offset after get/assign/save", offset(shown), "25");
+  expect("hook calls after an own save", hooks(shown), base);
+  field("announcement").value = "Set by update";
+  shown = await run("announce");
+  expect("announcement after update", announcement(shown), "Set by update");
+  expect("hook calls after update", hooks(shown), base);
+
+  field("announcement").value = "Edited outside";
+  await run("edit_outside");
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    shown = await run("read");
+    if (announcement(shown) === "Edited outside") break;
+    await sleep(300);
+  }
+  expect("announcement after the outside edit", announcement(shown), "Edited outside");
+  expect("hook calls after the outside edit", hooks(shown), base + 1);
+  expect("offset kept through the outside edit", offset(shown), "25");
+
+  await run("break_outside");
+  await sleep(2300);
+  shown = await run("read");
+  expect("announcement while the file is broken", announcement(shown), "Edited outside");
+  expect("offset while the file is broken", offset(shown), "25");
+  if (!shown?.querySelector("[data-config-file-text]")?.textContent.includes("soon")) failures.push("the broken file text was not shown");
+
+  field("epg_offset_minutes").value = "9999";
+  form.querySelector('button[value="set_channel"]').click();
+  const error = form.querySelector('[data-om-error-for="epg_offset_minutes"]');
+  for (let index = 0; index < 50 && (error?.hidden ?? true); index += 1) await sleep(100);
+  if (!error || error.hidden) failures.push("an out-of-range offset showed no field error");
+
+  shown = await run("restore");
+  expect("announcement after restore", announcement(shown), "");
+  expect("offset after restore", offset(shown), "0");
+  return { failures };
+})()
+""",
+        timeout=60.0,
+    )
+    result.pageErrors.extend(f"File configuration: {failure}" for failure in support.assertion_failures(payload))
+
+    path = "/examples/config/redis"
+    support.navigate(client, urllib.parse.urljoin(base_url, path))
+    assert_example_page(client, support, path, "config", "redis", result)
+    payload = client.evaluate(
+        r"""
+(async () => {
+  const failures = [];
+  const flagsForm = document.querySelector("[data-config-flags-form]");
+  const devicesForm = document.querySelector("[data-config-devices-form]");
+  const panel = document.querySelector("#config-redis-result");
+  if (!flagsForm || !devicesForm || !panel) return { failures: ["Redis configuration forms or result panel were not rendered"] };
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const run = async (form, operation) => {
+    panel.innerHTML = "";
+    form.querySelector(`button[value="${operation}"]`).click();
+    for (let index = 0; index < 100 && !panel.querySelector(`[data-config-redis-operation="${operation}"]`); index += 1) await sleep(100);
+    return panel.querySelector(`[data-config-redis-operation="${operation}"]`);
+  };
+  const flags = (shown) => shown?.querySelector("[data-config-flags]")?.dataset || {};
+  const devices = (shown) => shown?.querySelector("[data-config-devices]")?.dataset.configDevices;
+  const expect = (label, actual, wanted) => { if (actual !== wanted) failures.push(`${label}: expected ${wanted}, got ${actual}`); };
+
+  await run(flagsForm, "restore");
+  flagsForm.querySelector('[name="maintenance"]').checked = true;
+  flagsForm.querySelector('[name="banner"]').value = "Upgrading tonight";
+  flagsForm.querySelector('[name="max_streams_per_user"]').value = "5";
+  let shown = await run(flagsForm, "update_flags");
+  expect("maintenance after update", flags(shown).configMaintenance, "yes");
+  expect("banner after update", flags(shown).configBanner, "Upgrading tonight");
+  expect("streams after update", flags(shown).configMaxStreams, "5");
+  flagsForm.querySelector('[name="banner"]').value = "From another instance";
+  shown = await run(flagsForm, "write_elsewhere");
+  expect("banner written by another instance", flags(shown).configBanner, "From another instance");
+  shown = await run(flagsForm, "wrong_type");
+  if (!shown?.querySelector("[data-config-refusal]")) failures.push("the wrong type was not refused");
+  expect("streams after the refused write", flags(shown).configMaxStreams, "5");
+
+  devicesForm.querySelector('[name="device_id"]').value = "tv-gate";
+  shown = await run(devicesForm, "add_device");
+  expect("devices after add", devices(shown), "tv-gate");
+  shown = await run(devicesForm, "check_device");
+  expect("check after add", shown?.querySelector("[data-config-device-answer]")?.dataset.configDeviceAnswer, "yes");
+  shown = await run(devicesForm, "random_device");
+  expect("random pick", shown?.querySelector("[data-config-random-device]")?.dataset.configRandomDevice, "tv-gate");
+  await run(devicesForm, "remove_device");
+  shown = await run(devicesForm, "check_device");
+  expect("check after remove", shown?.querySelector("[data-config-device-answer]")?.dataset.configDeviceAnswer, "no");
+
+  shown = await run(flagsForm, "restore");
+  expect("maintenance after restore", flags(shown).configMaintenance, "no");
+  expect("devices after restore", devices(shown), "");
+  return { failures };
+})()
+""",
+        timeout=60.0,
+    )
+    result.pageErrors.extend(f"Redis configuration: {failure}" for failure in support.assertion_failures(payload))
+
 def verify_examples(base_url: str, result, support: ModuleType) -> None:
     """Open representative shells and prove repeated Turbo navigation."""
     screenshot_root = (
@@ -3683,6 +4052,9 @@ def verify_examples(base_url: str, result, support: ModuleType) -> None:
         assert_chart_examples(client, support, base_url, result)
         assert_notification_examples(client, support, base_url, result)
         assert_auth_session_examples(client, support, base_url, result)
+        assert_token_and_caller_examples(client, support, base_url, result)
+        assert_model_cache_example(client, support, base_url, result)
+        assert_dynamic_config_examples(client, support, base_url, result)
         assert_i18n_examples(client, support, base_url, result)
 
         assert_ui_reference_examples(client, support, base_url, result)

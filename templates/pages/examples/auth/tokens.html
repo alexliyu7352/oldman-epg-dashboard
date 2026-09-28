@@ -1,0 +1,125 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  {% if not jwt_enabled %}
+    <section class="om-alert om-alert-warning mb-5" role="note" data-example-tokens-disabled>
+      <div>
+        <p class="mb-1 font-medium">{{ _("Access tokens are not enabled on this service.") }}</p>
+        <p class="mb-3 text-sm">{{ _("List jwt in web.auth.authenticators and give it a signing key of at least 32 characters in data/web_settings.yaml, then restart. The example settings file leaves the key out on purpose: whoever holds it can sign a token for any user, superusers included.") }}</p>
+        <pre class="mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>web:
+  auth:
+    authenticators: [session, jwt]
+    jwt:
+      secret: &lt;.venv/bin/python -c "import secrets; print(secrets.token_urlsafe(48))"&gt;</code></pre>
+      </div>
+    </section>
+  {% else %}
+    <section class="om-alert om-alert-info mb-5" role="note">
+      <div>
+        <p class="mb-1 font-medium">{{ _("A client that is not a browser page signs in with a token instead of a cookie.") }}</p>
+        <p class="mb-0 text-sm">{{ _("Every request below is sent without cookies, so the probe can only recognize you by the Authorization header. Open the browser's network panel to see it.") }}</p>
+      </div>
+    </section>
+
+    <div
+      data-om-component="token-flow"
+      data-obtain-url="{{ token_obtain_url }}"
+      data-refresh-url="{{ token_refresh_url }}"
+      data-revoke-url="{{ token_revoke_url }}"
+      data-probe-url="{{ probe_url }}"
+    >
+      <section class="om-card mb-5">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("Tokens held by this page") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("Only the last characters are shown. They live in this page's memory and are gone when it reloads.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <dl class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-sm text-default-500">{{ _("Access token") }}</dt>
+              <dd class="mb-0 font-mono text-sm" data-token-value="access">{{ _("None") }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm text-default-500">{{ _("Refresh token") }}</dt>
+              <dd class="mb-0 font-mono text-sm" data-token-value="refresh">{{ _("None") }}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("1. Get a token") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("POST %(url)s with a username and password. Only staff accounts get tokens, as only staff can sign in here.", url=token_obtain_url) }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <form class="mb-4 grid gap-4" data-token-form data-turbo="false">
+              <label class="om-form-group block">
+                <span class="om-form-label">{{ _("Username") }}</span>
+                <input name="username" class="om-field" value="{{ session_profile.username }}" autocomplete="username" required>
+              </label>
+              <label class="om-form-group block">
+                <span class="om-form-label">{{ _("Password") }}</span>
+                <input name="password" type="password" class="om-field" autocomplete="current-password" required>
+              </label>
+              <div><button type="submit" class="om-button om-button-primary">{{ _("Get tokens") }}</button></div>
+            </form>
+            <div class="text-sm" data-token-result="obtain" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("2. Call the probe with the access token") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("The same staff-only probe the Access Guards page calls with the session; here it sees Authorization: Bearer and nothing else.") }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-secondary mb-4" data-token-step="probe" disabled>{{ _("Call the probe") }}</button>
+            <div class="text-sm" data-token-result="probe" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("3. Refresh") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("POST %(url)s with the refresh token. Each refresh token works once: showing a spent one again ends the whole sign-in, since two parties then hold it.", url=token_refresh_url) }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-secondary mb-4" data-token-step="refresh" disabled>{{ _("Refresh the tokens") }}</button>
+            <div class="text-sm" data-token-result="refresh" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="om-card">
+          <div class="om-card-header">
+            <div>
+              <h2 class="om-card-title mb-1">{{ _("4. Sign out") }}</h2>
+              <p class="mb-0 text-sm text-default-500">{{ _("POST %(url)s with the refresh token and the access token in the Authorization header: both stop working at once, and the probe is called again to show it.", url=token_revoke_url) }}</p>
+            </div>
+          </div>
+          <div class="om-card-body">
+            <button type="button" class="om-button om-button-secondary mb-4" data-token-step="revoke" disabled>{{ _("Sign out") }}</button>
+            <div class="text-sm" data-token-result="revoke" aria-live="polite" aria-atomic="true">
+              <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

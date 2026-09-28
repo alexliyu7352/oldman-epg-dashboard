@@ -1,6 +1,6 @@
 {% macro task_form(operation, label, field="project_id") %}
 <form method="post" action="/examples/tasks/run/{{ operation }}" data-om-component="form" data-om-form data-om-form-mode="json" novalidate>
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ dashboard_csrf_token(request) }}">
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_for(request) }}">
   <div class="om-form-message" data-om-form-message role="alert" hidden></div>
   {% if field %}
   <div class="om-form-field mb-3" data-om-form-field data-om-form-field-name="{{ field }}">

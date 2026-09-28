@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from apps.auth.decorators import admin_required
-from apps.examples import services
 from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
+from oldman.web import router
 from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction, HtmlSwap, ReplaceHtmlAction
+from oldman.web.auth import staff_required
 from oldman.web.request import Request
 from oldman.web.response import api_response
-from oldman.web.routing import get_app
 from oldman.web.security.csrf import csrf_protect
-from oldman.web.template import render_template
+from oldman.web.template import render_fragment, render_template
+
+from apps.examples import services
 
 from . import EXAMPLE_SECTIONS, _render_example
 
@@ -29,11 +30,10 @@ MOVE_ERRORS = {
     "stale_source": _("The task changed elsewhere. Refresh the board and try again."),
 }
 
-app = get_app()
 
 
-@app.get("/examples/sortable/<page:str>", name="example_sortable_page")
-@admin_required()
+@router.get("/examples/sortable/<page:str>", name="example_sortable_page")
+@staff_required()
 async def example_sortable_page(request: Request, page: str):
     """Render the real task board or delegate an unknown future page."""
     if page not in OWNED_SORTABLE_PAGES:
@@ -44,9 +44,9 @@ async def example_sortable_page(request: Request, page: str):
     )
 
 
-@app.post("/examples/sortable/tasks/move", name="example_sortable_move")
+@router.post("/examples/sortable/tasks/move", name="example_sortable_move")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_sortable_move(request: Request):
     """Apply one drag or keyboard move through the same domain service."""
     try:
@@ -107,8 +107,7 @@ def _parameter(request: Request, name: str, *, required: bool = True) -> str:
 
 async def _render_board(request: Request) -> str:
     """Render current counts and controls after either a drag or button move."""
-    template = request.app.ext.environment.get_template("partials/examples/sortable/board.html")
-    return await template.render_async(**await _board_context())
+    return await render_fragment(request, "partials/examples/sortable/board.html", **await _board_context())
 
 
 async def _board_context() -> dict[str, object]:

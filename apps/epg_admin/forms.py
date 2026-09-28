@@ -2,36 +2,23 @@
 
 from __future__ import annotations
 
-import datetime as dt
-import inspect
-from typing import Any, cast
+from typing import Any
 
-from wtforms import BooleanField, DateField, DateTimeLocalField, DecimalField, IntegerField, SelectField, StringField, TextAreaField
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
-
-from apps.epg_admin.models import CatalogChannel, CatalogFeed, CatalogMatchDecision, ChannelName, ChannelsEpg, EpgList
 from oldman.i18n import gettext_lazy as _
+from oldman.utils.date import naive_utcnow
 from oldman.web.components.forms import (
-    AjaxAutocompleteWidget,
-    AjaxSelectWidget,
+    AjaxAutocompleteField,
+    AjaxSelectField,
     DateTimePickerWidget,
     FieldLayout,
     TailwindModelForm,
     TailwindTableFilterForm,
 )
 from oldman.web.components.selects import SelectChoice
+from wtforms import BooleanField, DateField, DateTimeLocalField, DecimalField, IntegerField, SelectField, StringField, TextAreaField
+from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
-
-def utcnow_naive() -> dt.datetime:
-    """返回当前 UTC 时间，并保持现有数据库字段使用的无时区 datetime。"""
-    return dt.datetime.now(dt.UTC).replace(tzinfo=None)
-
-
-def optional_int(value: object) -> int | None:
-    """把远程 select 的空值转换成 None，其余值转换成 int。"""
-    if value in {"", None}:
-        return None
-    return int(cast(Any, value))
+from apps.epg_admin.models import CatalogChannel, CatalogFeed, CatalogMatchDecision, ChannelName, ChannelsEpg, EpgList
 
 
 class ChannelsEpgFilterForm(TailwindTableFilterForm):
@@ -94,21 +81,11 @@ class ChannelsEpgForm(TailwindModelForm):
             "description",
         ]
 
-    async def save(self, *, commit: bool = False, session: Any = None) -> ChannelsEpg:
-        """保存频道实例并维护旧业务需要的派生字段。"""
-        channel = await super().save(commit=False)
+    async def before_save(self, channel: ChannelsEpg) -> None:
+        """维护旧业务需要的派生字段。"""
         if channel.create_date is None:
-            channel.create_date = utcnow_naive()
+            channel.create_date = naive_utcnow()
         channel.tvg_id_lookup = channel.tvg_id.lower() if channel.tvg_id else None
-        if commit:
-            active_session = session or self.session
-            if active_session is None:
-                raise ValueError("save(commit=True) requires a session")
-            active_session.add(channel)
-            flush_result = active_session.flush()
-            if inspect.isawaitable(flush_result):
-                await flush_result
-        return channel
 
 
 class EpgListFilterForm(TailwindTableFilterForm):
@@ -135,26 +112,19 @@ class EpgListFilterForm(TailwindTableFilterForm):
 class EpgListForm(TailwindModelForm):
     """节目单新建和编辑表单。"""
 
-    channel_id = SelectField(
+    channel_id = AjaxSelectField(
         _("Channel"),
-        choices=[],
-        coerce=int,
-        validate_choice=False,
-        widget=AjaxSelectWidget(
-            provider="channels",
-            route_name="admin_select_provider",
-            page_size=20,
-            enhance_choices=True,
-        ),
+        provider="channels",
+        route_name="admin_select_provider",
+        page_size=20,
+        enhance_choices=True,
         validators=[DataRequired()],
     )
-    channel_lookup = StringField(
+    channel_lookup = AjaxAutocompleteField(
         _("Channel Lookup"),
-        widget=AjaxAutocompleteWidget(
-            provider="channels",
-            route_name="admin_select_provider",
-            page_size=10,
-        ),
+        provider="channels",
+        route_name="admin_select_provider",
+        page_size=10,
         validators=[Optional()],
     )
     title = StringField(_("Title"), validators=[Optional()])
@@ -187,37 +157,18 @@ class EpgListForm(TailwindModelForm):
 
     def bind_initial_channel_controls(self) -> None:
         """把当前节目频道写入远程 select/autocomplete 的首屏回显。"""
-        if self.is_bound:
-            return
         channel = getattr(self.instance, "channel", None)
         if channel is None:
             return
-        channel_id = optional_int(getattr(channel, "id", None))
+        channel_id = getattr(channel, "id", None)
         channel_name = getattr(channel, "name", "")
-        if channel_id in {None, ""}:
-            return
+        self.channel_id.initial_choice(channel_id, channel_name)
+        self.channel_lookup.initial_choice(channel_id, channel_name)
 
-        self.channel_id.choices = [(channel_id, str(channel_name))]
-        self.channel_id.data = channel_id
-        self.channel_lookup.data = str(channel_id)
-        render_kw = dict(getattr(self.channel_lookup, "render_kw", None) or {})
-        render_kw["value"] = str(channel_name)
-        self.channel_lookup.render_kw = render_kw
-
-    async def save(self, *, commit: bool = False, session: Any = None) -> EpgList:
-        """保存节目单实例并维护创建时间。"""
-        item = await super().save(commit=False)
+    async def before_save(self, item: EpgList) -> None:
+        """维护创建时间。"""
         if item.create_date is None:
-            item.create_date = utcnow_naive()
-        if commit:
-            active_session = session or self.session
-            if active_session is None:
-                raise ValueError("save(commit=True) requires a session")
-            active_session.add(item)
-            flush_result = active_session.flush()
-            if inspect.isawaitable(flush_result):
-                await flush_result
-        return item
+            item.create_date = naive_utcnow()
 
 
 class ChannelNameFilterForm(TailwindTableFilterForm):
@@ -263,26 +214,19 @@ class ChannelNameForm(TailwindModelForm):
     name_es = StringField(_("Spanish Name"), validators=[Optional()])
     logo = StringField(_("Logo"), validators=[DataRequired()])
     logo_size = DecimalField(_("Logo Size"), validators=[Optional()], places=2)
-    epg_id = SelectField(
+    epg_id = AjaxSelectField(
         _("Bound EPG"),
-        choices=[],
-        coerce=optional_int,
-        validate_choice=False,
-        widget=AjaxSelectWidget(
-            provider="channels",
-            route_name="admin_select_provider",
-            page_size=20,
-            enhance_choices=True,
-        ),
+        provider="channels",
+        route_name="admin_select_provider",
+        page_size=20,
+        enhance_choices=True,
         validators=[Optional()],
     )
-    epg_lookup = StringField(
+    epg_lookup = AjaxAutocompleteField(
         _("EPG Lookup"),
-        widget=AjaxAutocompleteWidget(
-            provider="channels",
-            route_name="admin_select_provider",
-            page_size=10,
-        ),
+        provider="channels",
+        route_name="admin_select_provider",
+        page_size=10,
         validators=[Optional()],
     )
     published = BooleanField(_("Published"))
@@ -367,37 +311,18 @@ class ChannelNameForm(TailwindModelForm):
 
     def bind_initial_epg_controls(self) -> None:
         """把当前绑定频道写入远程 select/autocomplete 的首屏回显。"""
-        if self.is_bound:
-            return
         channel = getattr(self.instance, "_bound_epg", None)
         if channel is None:
             return
-        channel_id = optional_int(getattr(channel, "id", None))
+        channel_id = getattr(channel, "id", None)
         channel_name = getattr(channel, "name", "")
-        if channel_id in {None, ""}:
-            return
+        self.epg_id.initial_choice(channel_id, channel_name)
+        self.epg_lookup.initial_choice(channel_id, channel_name)
 
-        self.epg_id.choices = [(channel_id, str(channel_name))]
-        self.epg_id.data = channel_id
-        self.epg_lookup.data = str(channel_id)
-        render_kw = dict(getattr(self.epg_lookup, "render_kw", None) or {})
-        render_kw["value"] = str(channel_name)
-        self.epg_lookup.render_kw = render_kw
-
-    async def save(self, *, commit: bool = False, session: Any = None) -> ChannelName:
-        """保存频道名称实例并维护创建时间。"""
-        channel_name = await super().save(commit=False)
+    async def before_save(self, channel_name: ChannelName) -> None:
+        """维护创建时间。"""
         if channel_name.create_date is None:
-            channel_name.create_date = utcnow_naive()
-        if commit:
-            active_session = session or self.session
-            if active_session is None:
-                raise ValueError("save(commit=True) requires a session")
-            active_session.add(channel_name)
-            flush_result = active_session.flush()
-            if inspect.isawaitable(flush_result):
-                await flush_result
-        return channel_name
+            channel_name.create_date = naive_utcnow()
 
     async def clean(self) -> None:
         """校验旧外键是否存在，避免数据库约束错误变成 500。"""
@@ -475,22 +400,12 @@ class CatalogChannelForm(TailwindModelForm):
         model = CatalogChannel
         fields = ["channel_key", "owner_country_code", "channel_id", "identity_name", "status", "confidence", "evidence_json"]
 
-    async def save(self, *, commit: bool = False, session: Any = None) -> CatalogChannel:
-        """保存频道目录实例并维护创建/更新时间。"""
-        catalog_channel = await super().save(commit=False)
-        now = utcnow_naive()
+    async def before_save(self, catalog_channel: CatalogChannel) -> None:
+        """维护创建/更新时间。"""
+        now = naive_utcnow()
         if catalog_channel.created_at is None:
             catalog_channel.created_at = now
         catalog_channel.updated_at = now
-        if commit:
-            active_session = session or self.session
-            if active_session is None:
-                raise ValueError("save(commit=True) requires a session")
-            active_session.add(catalog_channel)
-            flush_result = active_session.flush()
-            if inspect.isawaitable(flush_result):
-                await flush_result
-        return catalog_channel
 
 
 class CatalogFeedFilterForm(TailwindTableFilterForm):
@@ -545,14 +460,12 @@ class UpstreamRecordFilterForm(TailwindTableFilterForm):
         validate_choice=False,
     )
     record_kind = StringField(_("Kind"), validators=[Optional()], render_kw={"placeholder": "channel"})
-    catalog_feed_id = StringField(
+    catalog_feed_id = AjaxAutocompleteField(
         _("Catalog Feed"),
+        provider="catalog_feeds",
+        route_name="admin_select_provider",
+        page_size=20,
         validators=[Optional()],
-        widget=AjaxAutocompleteWidget(
-            provider="catalog_feeds",
-            route_name="admin_select_provider",
-            page_size=20,
-        ),
     )
     last_seen_from = DateTimeLocalField(_("Last Seen From"), validators=[Optional()], format="%Y-%m-%dT%H:%M", widget=DateTimePickerWidget(date_format="Y-m-d\\TH:i"))
     last_seen_to = DateTimeLocalField(_("Last Seen To"), validators=[Optional()], format="%Y-%m-%dT%H:%M", widget=DateTimePickerWidget(date_format="Y-m-d\\TH:i"))
@@ -572,14 +485,12 @@ class LogoAssetFilterForm(TailwindTableFilterForm):
     """Logo 资产质量工作台筛选表单。"""
 
     q = StringField(_("Search"), render_kw={"type": "search", "placeholder": _("Search feed, hash, source")})
-    catalog_feed_id = StringField(
+    catalog_feed_id = AjaxAutocompleteField(
         _("Catalog Feed"),
+        provider="catalog_feeds",
+        route_name="admin_select_provider",
+        page_size=20,
         validators=[Optional()],
-        widget=AjaxAutocompleteWidget(
-            provider="catalog_feeds",
-            route_name="admin_select_provider",
-            page_size=20,
-        ),
     )
     source_kind = StringField(_("Source Kind"), validators=[Optional()], render_kw={"placeholder": "upstream"})
     mime_type = StringField(_("Mime"), validators=[Optional()], render_kw={"placeholder": "image/png"})
@@ -617,32 +528,26 @@ class MatchDecisionFilterForm(TailwindTableFilterForm):
         validate_choice=False,
     )
     decided_by = StringField(_("Operator"), validators=[Optional()], render_kw={"placeholder": _("Operator")})
-    source_record_id = StringField(
+    source_record_id = AjaxAutocompleteField(
         _("Source Record"),
+        provider="upstream_records",
+        route_name="admin_select_provider",
+        page_size=20,
         validators=[Optional()],
-        widget=AjaxAutocompleteWidget(
-            provider="upstream_records",
-            route_name="admin_select_provider",
-            page_size=20,
-        ),
     )
-    catalog_channel_id = StringField(
+    catalog_channel_id = AjaxAutocompleteField(
         _("Catalog Channel"),
+        provider="catalog_channels",
+        route_name="admin_select_provider",
+        page_size=20,
         validators=[Optional()],
-        widget=AjaxAutocompleteWidget(
-            provider="catalog_channels",
-            route_name="admin_select_provider",
-            page_size=20,
-        ),
     )
-    catalog_feed_id = StringField(
+    catalog_feed_id = AjaxAutocompleteField(
         _("Catalog Feed"),
+        provider="catalog_feeds",
+        route_name="admin_select_provider",
+        page_size=20,
         validators=[Optional()],
-        widget=AjaxAutocompleteWidget(
-            provider="catalog_feeds",
-            route_name="admin_select_provider",
-            page_size=20,
-        ),
     )
 
     field_layout = (
@@ -718,17 +623,12 @@ class MatchDecisionForm(TailwindModelForm):
 class CatalogFeedForm(TailwindModelForm):
     """CatalogFeed 新建和编辑表单。"""
 
-    catalog_channel_id = SelectField(
+    catalog_channel_id = AjaxSelectField(
         _("Catalog Channel"),
-        choices=[],
-        coerce=int,
-        validate_choice=False,
-        widget=AjaxSelectWidget(
-            provider="catalog_channels",
-            route_name="admin_select_provider",
-            page_size=20,
-            enhance_choices=True,
-        ),
+        provider="catalog_channels",
+        route_name="admin_select_provider",
+        page_size=20,
+        enhance_choices=True,
         validators=[DataRequired()],
     )
     feed_suffix = StringField(_("Feed Suffix"), validators=[Optional()])
@@ -819,35 +719,17 @@ class CatalogFeedForm(TailwindModelForm):
 
     def bind_initial_catalog_channel(self) -> None:
         """把当前关联 CatalogChannel 写入远程 select 的首屏回显。"""
-        if self.is_bound:
-            return
         catalog_channel = getattr(self.instance, "catalog_channel", None)
         if catalog_channel is None:
             return
-        channel_id = optional_int(getattr(catalog_channel, "id", None))
-        label = catalog_channel_option_label(catalog_channel)
-        if channel_id in {None, ""}:
-            return
+        self.catalog_channel_id.initial_choice(getattr(catalog_channel, "id", None), catalog_channel_option_label(catalog_channel))
 
-        self.catalog_channel_id.choices = [(channel_id, label)]
-        self.catalog_channel_id.data = channel_id
-
-    async def save(self, *, commit: bool = False, session: Any = None) -> CatalogFeed:
-        """保存 CatalogFeed 并维护创建/更新时间。"""
-        catalog_feed = await super().save(commit=False)
-        now = utcnow_naive()
+    async def before_save(self, catalog_feed: CatalogFeed) -> None:
+        """维护创建/更新时间。"""
+        now = naive_utcnow()
         if catalog_feed.created_at is None:
             catalog_feed.created_at = now
         catalog_feed.updated_at = now
-        if commit:
-            active_session = session or self.session
-            if active_session is None:
-                raise ValueError("save(commit=True) requires a session")
-            active_session.add(catalog_feed)
-            flush_result = active_session.flush()
-            if inspect.isawaitable(flush_result):
-                await flush_result
-        return catalog_feed
 
 
 def catalog_channel_option_label(catalog_channel: CatalogChannel) -> str:

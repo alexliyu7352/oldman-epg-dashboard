@@ -4,40 +4,39 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-
-from apps.auth.decorators import admin_required
-from apps.examples import providers as _providers  # noqa: F401 - import registers providers.
-from apps.examples.forms import LogoAutocompleteForm, LogoMultipleSelectForm, LogoSelectForm
-from apps.examples.models import ExampleLogo, ExampleProject, ExampleStreamProfile
 from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
-from oldman.web import NotFound
-from oldman.web.api import ApiErrorCode, DefaultApiFormResponse, FeedbackAction, ReplaceHtmlAction
+from oldman.web import NotFound, router
+from oldman.web.api import ReplaceHtmlAction, feedback_response
+from oldman.web.auth import staff_required
 from oldman.web.components.selects import SelectProviderView
 from oldman.web.request import Request
 from oldman.web.response import json_response
-from oldman.web.routing import get_app
 from oldman.web.security import WebSecurityPurpose, configured_web_security_key
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.shortcuts import get_object_or_404
 from oldman.web.template import render_template
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+
+from apps.examples import providers as _providers  # noqa: F401 - import registers providers.
+from apps.examples.forms import LogoAutocompleteForm, LogoMultipleSelectForm, LogoSelectForm
+from apps.examples.models import ExampleLogo, ExampleProject, ExampleStreamProfile
 
 from . import EXAMPLE_SECTIONS
 
 SELECT_BINDING_SECRET = configured_web_security_key(WebSecurityPurpose.SELECT_BINDING)
 
-app = get_app()
-app.add_route(
+router.add_route(
     SelectProviderView.as_view(secret_key=SELECT_BINDING_SECRET),
     "/examples/select/<provider_name:str>",
     name="example_select_provider",
 )
 
 
-@app.get("/examples/data-inputs/<page:str>", name="example_data_inputs_page")
+@router.get("/examples/data-inputs/<page:str>", name="example_data_inputs_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_data_inputs_page(request: Request, page: str):
     """Render the three data-input pages from real fixture rows."""
     if page not in {"lists", "autocomplete", "providers"}:
@@ -91,25 +90,25 @@ async def render_remote_form_page(request: Request, page: str, context: dict[str
     return await render_template(f"pages/examples/forms/{page}.html", context=context)
 
 
-@app.post("/examples/forms/selects/<profile_id:int>/edit", name="example_logo_select_update")
+@router.post("/examples/forms/selects/<profile_id:int>/edit", name="example_logo_select_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_logo_select_update(request: Request, profile_id: int):
     """Persist a provider-selected Logo foreign key."""
     return await _update_logo(request, profile_id, mode="selects")
 
 
-@app.post("/examples/forms/autocomplete/<profile_id:int>/edit", name="example_logo_autocomplete_update")
+@router.post("/examples/forms/autocomplete/<profile_id:int>/edit", name="example_logo_autocomplete_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_logo_autocomplete_update(request: Request, profile_id: int):
     """Persist an autocomplete-selected Logo foreign key."""
     return await _update_logo(request, profile_id, mode="autocomplete")
 
 
-@app.post("/examples/data-inputs/autocomplete/<profile_id:int>/edit", name="example_data_input_autocomplete_update")
+@router.post("/examples/data-inputs/autocomplete/<profile_id:int>/edit", name="example_data_input_autocomplete_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_data_input_autocomplete_update(request: Request, profile_id: int):
     """Use the same autocomplete contract from the Data inputs section."""
     return await _update_logo(request, profile_id, mode="data-inputs-autocomplete")
@@ -125,9 +124,7 @@ async def _update_logo(request: Request, profile_id: int, *, mode: str):
     }[mode]
     target = "#example-logo-select-form" if mode == "selects" else "#example-logo-autocomplete-form"
     async with db_manager.get_session() as session:
-        profile = await session.get(ExampleStreamProfile, profile_id)
-        if profile is None:
-            raise NotFound("Stream profile was not found")
+        profile = await get_object_or_404(session, ExampleStreamProfile, profile_id, message="Stream profile was not found")
         form = form_class.from_request(
             request,
             instance=profile,
@@ -146,15 +143,7 @@ async def _update_logo(request: Request, profile_id: int, *, mode: str):
         )
         html = await replacement.render(action=action, form_mode="json", submit_label=_("Save logo"), validate=True)
 
-    payload = DefaultApiFormResponse(
-        error_code=ApiErrorCode.OK,
-        message=_("Logo selection saved."),
-        actions=[
-            FeedbackAction(title=_("Logo selection saved."), icon="success"),
-            ReplaceHtmlAction(target=target, html=str(html)),
-        ],
-    )
-    return json_response(payload.to_dict())
+    return feedback_response(_("Logo selection saved."), actions=[ReplaceHtmlAction(target=target, html=str(html))])
 
 
 async def _first_profile_with_logo() -> tuple[ExampleStreamProfile | None, ExampleLogo | None]:

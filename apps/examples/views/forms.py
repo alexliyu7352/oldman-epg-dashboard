@@ -4,26 +4,27 @@ from __future__ import annotations
 
 from typing import Any
 
-from apps.auth.decorators import admin_required
+from oldman.db import db_manager
+from oldman.i18n import gettext_lazy as _
+from oldman.web import NotFound, router
+from oldman.web.api import (
+    CloseModalAction,
+    ReplaceHtmlAction,
+    accepts_json_form_response,
+    feedback_response,
+    form_invalid_response,
+    modal_response,
+)
+from oldman.web.auth import staff_required
+from oldman.web.request import Request
+from oldman.web.response import html_response, json_response
+from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.shortcuts import get_object_or_404
+from oldman.web.template import render_fragment, render_template
+
 from apps.examples import services
 from apps.examples.forms import FORM_PAGE_FORMS, ContainerExampleForm, StreamProfileForm
 from apps.examples.models import ExampleStreamProfile
-from oldman.db import db_manager
-from oldman.i18n import gettext_lazy as _
-from oldman.web import NotFound
-from oldman.web.api import (
-    ApiErrorCode,
-    CloseModalAction,
-    DefaultApiFormResponse,
-    FeedbackAction,
-    ReplaceHtmlAction,
-    ResponseAction,
-)
-from oldman.web.request import Request
-from oldman.web.response import html_response, json_response
-from oldman.web.routing import get_app
-from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.template import render_template
 
 from . import EXAMPLE_SECTIONS, _render_example
 
@@ -32,12 +33,11 @@ DUAL_MODE_FORM_PAGES = frozenset(
     {"basics", "slug", "input-spinner", "tags", "color-picker", "rich-text", "multi-step"}
 )
 
-app = get_app()
 
 
-@app.get("/examples/forms/<page:str>", name="example_forms_page")
+@router.get("/examples/forms/<page:str>", name="example_forms_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_forms_page(request: Request, page: str):
     """Render one concrete Form example page."""
     if page not in OWNED_FORM_PAGES:
@@ -111,9 +111,9 @@ async def example_forms_page(request: Request, page: str):
     return await render_template(template, context=context)
 
 
-@app.get("/examples/forms/color-picker/modal", name="example_color_picker_modal")
+@router.get("/examples/forms/color-picker/modal", name="example_color_picker_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_color_picker_modal(request: Request):
     """Load the same ColorPicker Form through the shared dynamic Modal lifecycle."""
     form = FORM_PAGE_FORMS["color-picker"](request=request, prefix="json")
@@ -122,12 +122,12 @@ async def example_color_picker_modal(request: Request):
         form_mode="json",
         submit_label=_("Submit example"),
     )
-    return json_response({"title": str(_("Color Picker in a remote Modal")), "html": str(html)})
+    return modal_response(_("Color Picker in a remote Modal"), html=html)
 
 
-@app.get("/examples/forms/rich-text/modal", name="example_rich_text_modal")
+@router.get("/examples/forms/rich-text/modal", name="example_rich_text_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_rich_text_modal(request: Request):
     """Load the Rich Text Form through the shared dynamic Modal lifecycle."""
     form = FORM_PAGE_FORMS["rich-text"](request=request, prefix="json")
@@ -136,12 +136,12 @@ async def example_rich_text_modal(request: Request):
         form_mode="json",
         submit_label=_("Submit example"),
     )
-    return json_response({"title": str(_("Rich Text Editor in a remote Modal")), "html": str(html)})
+    return modal_response(_("Rich Text Editor in a remote Modal"), html=html)
 
 
-@app.post("/examples/forms/<page:str>/submit/<mode:str>", name="example_form_submit")
+@router.post("/examples/forms/<page:str>/submit/<mode:str>", name="example_form_submit")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_form_submit(request: Request, page: str, mode: str):
     """Validate one ordinary example Form through HTML or JSON mode."""
     form_class = FORM_PAGE_FORMS.get(page)
@@ -170,9 +170,9 @@ async def example_form_submit(request: Request, page: str, mode: str):
     return await _form_success_response(request, page=page, form=form)
 
 
-@app.post("/examples/forms/json-list/create", name="example_stream_profile_create")
+@router.post("/examples/forms/json-list/create", name="example_stream_profile_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_stream_profile_create(request: Request):
     """Create a real Text-backed StreamProfile from the HTML Form path."""
     async with db_manager.get_session() as session:
@@ -183,15 +183,13 @@ async def example_stream_profile_create(request: Request):
     return await _success_fragment(request, _("Stream profile created."), "/examples/forms/json-list")
 
 
-@app.post("/examples/forms/json-list/<profile_id:int>/edit", name="example_stream_profile_update")
+@router.post("/examples/forms/json-list/<profile_id:int>/edit", name="example_stream_profile_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_stream_profile_update(request: Request, profile_id: int):
     """Update a real StreamProfile and replace the JSON Form in place."""
     async with db_manager.get_session() as session:
-        profile = await session.get(ExampleStreamProfile, profile_id)
-        if profile is None:
-            raise NotFound("Stream profile was not found")
+        profile = await get_object_or_404(session, ExampleStreamProfile, profile_id, message="Stream profile was not found")
         form = StreamProfileForm.from_request(request, instance=profile, session=session, prefix="edit")
         if not await form.validate():
             return json_response(form.to_api_response().to_dict(), status=200)
@@ -202,20 +200,12 @@ async def example_stream_profile_update(request: Request, profile_id: int):
             submit_label=_("Save JSON list"),
         )
 
-    payload = DefaultApiFormResponse(
-        error_code=ApiErrorCode.OK,
-        message=_("Stream profile saved."),
-        actions=[
-            FeedbackAction(title=_("Stream profile saved."), icon="success"),
-            ReplaceHtmlAction(target="#json-stream-profile-form", html=str(replacement)),
-        ],
-    )
-    return json_response(payload.to_dict())
+    return feedback_response(_("Stream profile saved."), actions=[ReplaceHtmlAction(target="#json-stream-profile-form", html=str(replacement))])
 
 
-@app.get("/examples/forms/containers/modal", name="example_form_container_modal")
+@router.get("/examples/forms/containers/modal", name="example_form_container_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_form_container_modal(request: Request):
     """Load the same ordinary Form into the shared remote Modal component."""
     form = ContainerExampleForm(request=request, prefix="modal")
@@ -224,23 +214,18 @@ async def example_form_container_modal(request: Request):
         form_mode="json",
         submit_label=_("Submit modal form"),
     )
-    return json_response({"title": str(_("Remote ordinary Form")), "html": str(html)})
+    return modal_response(_("Remote ordinary Form"), html=html)
 
 
-@app.post("/examples/forms/containers/modal", name="example_form_container_modal_submit")
+@router.post("/examples/forms/containers/modal", name="example_form_container_modal_submit")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_form_container_modal_submit(request: Request):
     """Validate the remote Modal's ordinary Form with the shared JSON protocol."""
     form = ContainerExampleForm.from_request(request, prefix="modal")
     if not await form.validate():
         return json_response(form.to_api_response().to_dict(), status=200)
-    payload = DefaultApiFormResponse(
-        error_code=ApiErrorCode.OK,
-        message=_("Modal form submitted."),
-        actions=[FeedbackAction(title=_("Modal form submitted."), icon="success"), CloseModalAction()],
-    )
-    return json_response(payload.to_dict())
+    return feedback_response(_("Modal form submitted."), actions=[CloseModalAction()])
 
 
 def _page_context(page: str) -> dict[str, Any]:
@@ -273,10 +258,11 @@ def _form_card(form: Any, page: str, mode: str, title: object) -> dict[str, Any]
 
 async def _form_error_response(request: Request, form: Any, *, action: str, mode: str):
     """Return the response contract selected by the mounted Form component."""
-    if _accepts_json(request):
-        return json_response(form.to_api_response().to_dict(), status=200)
-    html = await form.render(action=action, form_mode=mode, submit_label=_("Submit example"))
-    return html_response(str(html), status=422)
+    return await form_invalid_response(
+        request,
+        form,
+        fragment=lambda: form.render(action=action, form_mode=mode, submit_label=_("Submit example")),
+    )
 
 
 async def _form_success_response(request: Request, *, page: str, form: Any):
@@ -288,16 +274,8 @@ async def _form_success_response(request: Request, *, page: str, form: Any):
         f"/examples/forms/{page}",
         results=results,
     )
-    if _accepts_json(request):
-        actions: list[ResponseAction] = [FeedbackAction(title=_("Form submitted successfully."), icon="success")]
-        if results:
-            actions.append(ReplaceHtmlAction(html=html))
-        payload = DefaultApiFormResponse(
-            error_code=ApiErrorCode.OK,
-            message=_("Form submitted successfully."),
-            actions=actions,
-        )
-        return json_response(payload.to_dict())
+    if accepts_json_form_response(request):
+        return feedback_response(_("Form submitted successfully."), actions=[ReplaceHtmlAction(html=html)] if results else [])
     return html_response(html)
 
 
@@ -314,8 +292,7 @@ async def _render_success_fragment(
     results: list[dict[str, object]] | None = None,
 ) -> str:
     """Render reusable success HTML for both Form response modes."""
-    template = request.app.ext.environment.get_template("partials/examples/forms/success.html")
-    return await template.render_async(message=message, results=results or [], return_url=return_url)
+    return await render_fragment(request, "partials/examples/forms/success.html", message=message, results=results or [], return_url=return_url)
 
 
 def _submitted_results(form: Any) -> list[dict[str, object]]:
@@ -325,11 +302,6 @@ def _submitted_results(form: Any) -> list[dict[str, object]]:
         for name, field in form._fields.items()
         if name in form.cleaned_data
     ]
-
-
-def _accepts_json(request: Request) -> bool:
-    """Return whether the Form component requested the JSON protocol."""
-    return "application/json" in str((request.headers or {}).get("accept", "")).lower()
 
 
 __all__ = ["OWNED_FORM_PAGES"]

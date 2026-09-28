@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Any
 
 from markupsafe import Markup, escape
+from oldman.i18n import gettext_lazy as _
+from oldman.web.auth import has_perm
+from oldman.web.components.tables import Column, SQLAlchemyTableView, TailwindTableRenderer, badge, date_cell
+from oldman.web.components.tables.views import TableValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from oldman.i18n import gettext_lazy as _
-from oldman.web.components.tables import Column, SQLAlchemyTableView, TailwindTableRenderer
-from oldman.web.components.tables.views import TableValidationError
-
 from .models import ExampleProject
+from .permissions import ExamplePermissions
 
 PROJECT_STATUSES = frozenset({"planned", "active", "review", "paused", "completed"})
 PROJECT_PRIORITIES = frozenset({"low", "normal", "high", "critical"})
@@ -28,6 +28,7 @@ class ExampleProjectTable(SQLAlchemyTableView):
     model = ExampleProject
     page_size = 10
     selectable = True
+    export_formats = ("csv",)
     ordering = ("-updated_at",)
     search_fields = ("name", "slug", "description", "team.name")
     unsortable_columns = ("action",)
@@ -44,10 +45,9 @@ class ExampleProjectTable(SQLAlchemyTableView):
         Column("action", _("Actions"), field_path=None, callback="get_column_action_data", exportable=False),
     )
 
-    async def check_auth(self, request: Any) -> bool:
-        """Require the same authenticated Dashboard session as the owning page."""
-        session = getattr(getattr(request, "ctx", None), "session", None)
-        return bool(session and session.is_authenticated())
+    async def check_auth(self, request) -> bool:
+        """Staff alone is not enough here: the data needs a role granting examples.view_projects."""
+        return await has_perm(request, ExamplePermissions.view_projects)
 
     async def get_queryset(self):
         """Return projects with the team needed by both render paths."""
@@ -99,12 +99,12 @@ class ExampleProjectTable(SQLAlchemyTableView):
 
     def get_column_status_data(self, row: ExampleProject, **kwargs: object):
         """Render project status as a compact badge."""
-        return _badge(row.status, "success" if row.status == "active" else "secondary"), row.status
+        return badge(row.status.title(), "success" if row.status == "active" else "secondary"), row.status
 
     def get_column_priority_data(self, row: ExampleProject, **kwargs: object):
         """Render project priority as a compact badge."""
         tone = "danger" if row.priority in {"high", "critical"} else "info"
-        return _badge(row.priority, tone), row.priority
+        return badge(row.priority.title(), tone), row.priority
 
     def get_column_progress_data(self, row: ExampleProject, **kwargs: object):
         """Render progress without a client-only value source."""
@@ -117,7 +117,7 @@ class ExampleProjectTable(SQLAlchemyTableView):
 
     def get_column_updated_at_data(self, row: ExampleProject, **kwargs: object):
         """Return stable ISO data alongside a readable timestamp."""
-        return row.updated_at.strftime("%Y-%m-%d %H:%M"), row.updated_at.isoformat()
+        return date_cell(row.updated_at)
 
     def get_column_action_data(self, row: ExampleProject, **kwargs: object):
         """Open the shared remote Modal for edit or delete."""
@@ -134,11 +134,6 @@ class ExampleProjectTable(SQLAlchemyTableView):
             ),
             "",
         )
-
-
-def _badge(value: str, tone: str) -> Markup:
-    """Render one trusted badge around escaped database text."""
-    return Markup(f'<span class="om-badge om-badge-{tone}">{escape(value.title())}</span>')
 
 
 __all__ = ["ExampleProjectTable", "PROJECT_PRIORITIES", "PROJECT_STATUSES"]

@@ -1,86 +1,46 @@
+{% from "oldman/dashboard/partials/shell.html" import sidebar_menu_group, sidebar_menu_item with context %}
+
 {% macro example_menu_group(slug, title, icon, pages) -%}
+  {# 示例区的分组：段名由 slug 推出来，子项的 active 由 active_page 决定。 #}
   {% set section_slug = slug | replace("-", "_") %}
   {% set section_name = "examples_" ~ section_slug %}
-  {% set panel_id = "sidebarExamples-" ~ section_slug %}
-  <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == section_name else '' }}" data-om-menu-item>
-    <button class="menu-link oldman-menu-link {{ 'active' if active_section == section_name else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == section_name else 'false' }}" aria-controls="{{ panel_id }}">
-      <i class="menu-icon oldman-menu-icon {{ icon }}"></i>
-      <span class="menu-text">{{ title }}</span>
-      <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-    </button>
-    <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == section_name else 'hidden' }}" id="{{ panel_id }}" data-om-menu-panel {% if active_section != section_name %}hidden{% endif %}>
-      {% for href, page_slug, page_title in pages %}
-        {% set page_name = section_name ~ "_" ~ (page_slug | replace("-", "_")) %}
-        <li class="menu-item"><a href="{{ href }}" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == page_name else '' }}"><span class="menu-text">{{ page_title }}</span></a></li>
-      {% endfor %}
-    </ul>
-  </li>
+  {% call sidebar_menu_group("sidebarExamples-" ~ section_slug, title, icon, active=active_section == section_name) %}
+    {% for href, page_slug, page_title in pages %}
+        {{ sidebar_menu_item(href, page_title, active=active_page == section_name ~ "_" ~ (page_slug | replace("-", "_"))) }}
+    {% endfor %}
+  {% endcall %}
 {%- endmacro %}
 
-      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'dashboard' else '' }}" data-om-menu-item>
-        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'dashboard' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'dashboard' else 'false' }}" aria-controls="sidebarDashboard">
-          <i class="menu-icon oldman-menu-icon ri-dashboard-2-line"></i>
-          <span class="menu-text">{{ _("Dashboard") }}</span>
-          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-        </button>
-        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'dashboard' else 'hidden' }}" id="sidebarDashboard" data-om-menu-panel {% if active_section != 'dashboard' %}hidden{% endif %}>
-          <li class="menu-item"><a href="/dashboard" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page in ['dashboard', 'dashboard_overview'] else '' }}"><span class="menu-text">{{ _("Overview") }}</span></a></li>
-          <li class="menu-item"><a href="/dashboard/analytics" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'dashboard_analytics' else '' }}"><span class="menu-text">{{ _("Analytics") }}</span></a></li>
-        </ul>
-      </li>
+      {% call sidebar_menu_group("sidebarDashboard", _("Dashboard"), "ri-dashboard-2-line", active=active_section == 'dashboard') %}
+        {{ sidebar_menu_item("/dashboard", _("Overview"), active=active_page in ['dashboard', 'dashboard_overview']) }}
+        {{ sidebar_menu_item("/dashboard/analytics", _("Analytics"), active=active_page == 'dashboard_analytics') }}
+      {% endcall %}
 
-      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'epg' else '' }}" data-om-menu-item>
-        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'epg' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'epg' else 'false' }}" aria-controls="sidebarEpg">
-          <i class="menu-icon oldman-menu-icon ri-tv-2-line"></i>
-          <span class="menu-text">{{ _("EPG Management") }}</span>
-          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-        </button>
-        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'epg' else 'hidden' }}" id="sidebarEpg" data-om-menu-panel {% if active_section != 'epg' %}hidden{% endif %}>
-          <li class="menu-item"><a href="/channels-epg" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'channels_epg' else '' }}"><span class="menu-text">{{ _("Channels") }}</span></a></li>
-          <li class="menu-item"><a href="/channel-names" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'channel_names' else '' }}"><span class="menu-text">{{ _("Channel Names") }}</span></a></li>
-          <li class="menu-item"><a href="/epg-list" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'epg_list' else '' }}"><span class="menu-text">{{ _("Programmes") }}</span></a></li>
-        </ul>
-      </li>
+      {% call sidebar_menu_group("sidebarEpg", _("EPG Management"), "ri-tv-2-line", active=active_section == 'epg') %}
+        {{ sidebar_menu_item("/channels-epg", _("Channels"), active=active_page == 'channels_epg') }}
+        {{ sidebar_menu_item("/channel-names", _("Channel Names"), active=active_page == 'channel_names') }}
+        {{ sidebar_menu_item("/epg-list", _("Programmes"), active=active_page == 'epg_list') }}
+      {% endcall %}
 
-      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'catalog' else '' }}" data-om-menu-item>
-        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'catalog' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'catalog' else 'false' }}" aria-controls="sidebarCatalog">
-          <i class="menu-icon oldman-menu-icon ri-database-2-line"></i>
-          <span class="menu-text">{{ _("Catalog") }}</span>
-          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-        </button>
-        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'catalog' else 'hidden' }}" id="sidebarCatalog" data-om-menu-panel {% if active_section != 'catalog' %}hidden{% endif %}>
-          <li class="menu-item"><a href="/catalog-channels" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'catalog_channels' else '' }}"><span class="menu-text">{{ _("Catalog Channels") }}</span></a></li>
-          <li class="menu-item"><a href="/catalog-feeds" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'catalog_feeds' else '' }}"><span class="menu-text">{{ _("Catalog Feeds") }}</span></a></li>
-          <li class="menu-item"><a href="/match-decisions" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'match_decisions' else '' }}"><span class="menu-text">{{ _("Match Decisions") }}</span></a></li>
-        </ul>
-      </li>
+      {% call sidebar_menu_group("sidebarCatalog", _("Catalog"), "ri-database-2-line", active=active_section == 'catalog') %}
+        {{ sidebar_menu_item("/catalog-channels", _("Catalog Channels"), active=active_page == 'catalog_channels') }}
+        {{ sidebar_menu_item("/catalog-feeds", _("Catalog Feeds"), active=active_page == 'catalog_feeds') }}
+        {{ sidebar_menu_item("/match-decisions", _("Match Decisions"), active=active_page == 'match_decisions') }}
+      {% endcall %}
 
-      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'ingestion' else '' }}" data-om-menu-item>
-        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'ingestion' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'ingestion' else 'false' }}" aria-controls="sidebarIngestion">
-          <i class="menu-icon oldman-menu-icon ri-cloud-line"></i>
-          <span class="menu-text">{{ _("Ingestion") }}</span>
-          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-        </button>
-        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'ingestion' else 'hidden' }}" id="sidebarIngestion" data-om-menu-panel {% if active_section != 'ingestion' %}hidden{% endif %}>
-          <li class="menu-item"><a href="/upstream-records" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'upstream_records' else '' }}"><span class="menu-text">{{ _("Upstream Records") }}</span></a></li>
-          <li class="menu-item"><a href="/logo-assets" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'logo_assets' else '' }}"><span class="menu-text">{{ _("Logo Assets") }}</span></a></li>
-        </ul>
-      </li>
+      {% call sidebar_menu_group("sidebarIngestion", _("Ingestion"), "ri-cloud-line", active=active_section == 'ingestion') %}
+        {{ sidebar_menu_item("/upstream-records", _("Upstream Records"), active=active_page == 'upstream_records') }}
+        {{ sidebar_menu_item("/logo-assets", _("Logo Assets"), active=active_page == 'logo_assets') }}
+      {% endcall %}
 
-      <li class="menu-item oldman-menu-item nav-item {{ 'active' if active_section == 'system' else '' }}" data-om-menu-item>
-        <button class="menu-link oldman-menu-link {{ 'active' if active_section == 'system' else '' }}" type="button" data-om-menu-toggle aria-expanded="{{ 'true' if active_section == 'system' else 'false' }}" aria-controls="sidebarSystem">
-          <i class="menu-icon oldman-menu-icon ri-settings-3-line"></i>
-          <span class="menu-text">{{ _("System") }}</span>
-          <i class="menu-arrow oldman-menu-chevron ri-arrow-right-s-line"></i>
-        </button>
-        <ul class="sub-menu oldman-submenu menu-om-dropdown {{ 'show' if active_section == 'system' else 'hidden' }}" id="sidebarSystem" data-om-menu-panel {% if active_section != 'system' %}hidden{% endif %}>
-          <li class="menu-item"><a href="/users" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'users' else '' }}"><span class="menu-text">{{ _("Users") }}</span></a></li>
-          <li class="menu-item"><a href="/user-session" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'user_session' else '' }}"><span class="menu-text">{{ _("User Session") }}</span></a></li>
-          <li class="menu-item"><a href="/notifications" class="menu-link oldman-submenu-link nav-link {{ 'active' if active_page == 'notifications' else '' }}"><span class="menu-text">{{ _("Notifications") }}</span></a></li>
-        </ul>
-      </li>
+      {% call sidebar_menu_group("sidebarSystem", _("System"), "ri-settings-3-line", active=active_section == 'system') %}
+        {{ sidebar_menu_item("/users", _("Users"), active=active_page == 'users') }}
+        {{ sidebar_menu_item("/user-session", _("User Session"), active=active_page == 'user_session') }}
+        {{ sidebar_menu_item("/notifications", _("Notifications"), active=active_page == 'notifications') }}
+        {{ sidebar_menu_item("/admin", _("Admin"), turbo=false) }}
+      {% endcall %}
 
-      <li class="menu-title"><span>{{ _("Examples") }}</span></li>
+      <li class="menu-title oldman-menu-title"><span>{{ _("Examples") }}</span></li>
 
       {{ example_menu_group("communication", _("Service communication"), "ri-cloud-line", [
         ["/examples/communication/rpc", "rpc", _("Immediate RPC")],
@@ -99,7 +59,16 @@
       ]) }}
 
       {{ example_menu_group("cache", _("Cache"), "ri-database-2-line", [
-        ["/examples/cache/redis", "redis", _("Redis Cache")]
+        ["/examples/cache/redis", "redis", _("Redis Cache")],
+        ["/examples/cache/models", "models", _("Model Cache")]
+      ]) }}
+      {{ example_menu_group("config", _("Dynamic Configuration"), "ri-settings-3-line", [
+        ["/examples/config/file", "file", _("File Configuration")],
+        ["/examples/config/redis", "redis", _("Redis Configuration")]
+      ]) }}
+
+      {{ example_menu_group("security", _("Security"), "ri-shield-keyhole-line", [
+        ["/examples/security/fingerprint", "fingerprint", _("Browser Fingerprint")]
       ]) }}
 
       {{ example_menu_group("tables", _("Tables"), "ri-table-2", [
@@ -116,6 +85,7 @@
         ["/examples/forms/basics", "basics", _("Basic Fields")],
         ["/examples/forms/choices", "choices", _("Choice Fields")],
         ["/examples/forms/layouts", "layouts", _("Form Layouts")],
+        ["/examples/forms/booleans", "booleans", _("Boolean Widgets")],
         ["/examples/forms/validation", "validation", _("Validation")],
         ["/examples/forms/selects", "selects", _("Selects")],
         ["/examples/forms/autocomplete", "autocomplete", _("Autocomplete")],
@@ -184,7 +154,9 @@
       {{ example_menu_group("auth", _("Authentication"), "ri-shield-user-line", [
         ["/examples/auth/login", "login", _("Login")],
         ["/examples/auth/guards", "guards", _("Access Guards")],
-        ["/examples/auth/identity", "identity", _("Current Identity")]
+        ["/examples/auth/identity", "identity", _("Current Identity")],
+        ["/examples/auth/tokens", "tokens", _("Access Tokens")],
+        ["/examples/auth/callers", "callers", _("Service Callers")]
       ]) }}
 
       {{ example_menu_group("session", _("Session"), "ri-time-line", [

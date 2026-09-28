@@ -3,6 +3,10 @@
 import asyncio
 import os
 
+from oldman.conf import settings
+from oldman.db import db_manager
+from oldman.logging import logger
+from oldman.providers.nats import bus
 from sqlalchemy import func, select
 
 from apps.examples.models import ExampleProject, ExampleTask
@@ -13,10 +17,6 @@ from apps.examples.nats_messages import (
     ProjectStatusReply,
     ProjectStatusRequest,
 )
-from oldman.conf import settings
-from oldman.db import db_manager
-from oldman.logging import logger
-from oldman.providers.nats import bus
 
 # Three fixed keys; no per-user/message history or unbounded sender collection.
 counts = {"compete": 0, "broadcast": 0, "reports": 0}

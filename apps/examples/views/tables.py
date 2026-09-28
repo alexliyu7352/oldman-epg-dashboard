@@ -5,35 +5,35 @@ from __future__ import annotations
 import asyncio
 from itertools import cycle
 
-from apps.auth.decorators import admin_required
-from apps.examples import services
-from apps.examples.forms import ExampleProjectFilterForm, ExampleProjectForm
-from apps.examples.models import ExampleProject
-from apps.examples.tables import ExampleProjectTable
 from oldman.db import db_manager
-from oldman.i18n import LazyTranslation
 from oldman.i18n import gettext_lazy as _
-from oldman.web import NotFound
-from oldman.web.api import ApiErrorCode, CloseModalAction, DefaultApiFormResponse, FeedbackAction, ReloadTableAction
+from oldman.web import router
+from oldman.web.api import modal_response, modal_success_response
+from oldman.web.auth import require_perm, staff_required
 from oldman.web.components.tables import TableResult
 from oldman.web.request import Request
 from oldman.web.response import json_response
-from oldman.web.routing import get_app
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
+from oldman.web.shortcuts import get_object_or_404
 from oldman.web.sse import SSEQueueMode, SSEStream, sse
-from oldman.web.template import render_template
+from oldman.web.template import render_fragment, render_template
+
+from apps.examples import services
+from apps.examples.forms import ExampleProjectFilterForm, ExampleProjectForm
+from apps.examples.models import ExampleProject
+from apps.examples.permissions import ExamplePermissions
+from apps.examples.tables import ExampleProjectTable
 
 from . import EXAMPLE_SECTIONS, _render_example
 
 OWNED_TABLE_PAGES = frozenset({"static", "responsive", "html", "json", "states", "realtime", "advanced"})
 FILTER_NAMES = ("team_id", "status", "priority", "is_active")
 
-app = get_app()
-app.add_route(ExampleProjectTable.as_view(), ExampleProjectTable.route_path, name=ExampleProjectTable.route_name)
+router.add_route(ExampleProjectTable.as_view(), ExampleProjectTable.route_path, name=ExampleProjectTable.route_name)
 
 
-@app.get("/examples/tables/<page:str>", name="example_tables_page")
-@admin_required()
+@router.get("/examples/tables/<page:str>", name="example_tables_page")
+@staff_required()
 async def example_tables_page(request: Request, page: str):
     """Render one concrete Table example page."""
     if page not in OWNED_TABLE_PAGES:
@@ -79,16 +79,14 @@ async def example_tables_page(request: Request, page: str):
         return await render_template("pages/examples/tables/states.html", context=context)
 
     context["gaps"] = (
-        (_("Data export"), _("Export the current filtered dataset without loading every row into the browser.")),
-        (_("Sticky headers and columns"), _("Keep identifiers visible in long and wide operational tables.")),
-        (_("Column visibility"), _("Let users choose which optional columns remain visible.")),
+        (_("Sticky columns"), _("Pin identifier columns while a wide table scrolls sideways.")),
         (_("Bulk actions"), _("Apply one validated action to selected rows.")),
     )
     return await render_template("pages/examples/tables/advanced.html", context=context)
 
 
-@app.get("/examples/tables/realtime/events", name="example_realtime_table_events")
-@admin_required()
+@router.get("/examples/tables/realtime/events", name="example_realtime_table_events")
+@staff_required()
 @sse.streaming(queue_mode=SSEQueueMode.LATEST, session_guard=True, login_url="/login")
 async def example_realtime_table_events(request: Request, stream: SSEStream) -> None:
     """Replay database-backed server samples through one page-owned SSE stream."""
@@ -102,11 +100,12 @@ async def example_realtime_table_events(request: Request, stream: SSEStream) -> 
         await asyncio.sleep(1)
 
 
-@app.get("/examples/tables/projects/new-modal", name="example_project_create_modal")
+@router.get("/examples/tables/projects/new-modal", name="example_project_create_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_project_create_modal(request: Request):
     """Load a create Form into the shared remote Modal."""
+    await require_perm(request, ExamplePermissions.change_projects)
     async with db_manager.get_read_session() as session:
         form = ExampleProjectForm(request=request, session=session)
         html = await form.render(
@@ -115,29 +114,31 @@ async def example_project_create_modal(request: Request):
             submit_label=_("Create project"),
             validate=True,
         )
-    return json_response({"title": str(_("Create example project")), "html": str(html)})
+    return modal_response(_("Create example project"), html=html)
 
 
-@app.post("/examples/tables/projects/create", name="example_project_create")
+@router.post("/examples/tables/projects/create", name="example_project_create")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_project_create(request: Request):
     """Create one Project and reload the mounted HTML or JSON Table."""
+    await require_perm(request, ExamplePermissions.change_projects)
     async with db_manager.get_session() as session:
         form = ExampleProjectForm.from_request(request, session=session)
         if not await form.validate():
             return json_response(form.to_api_response().to_dict())
         await form.save(commit=True, session=session)
-    return _project_saved_response(_("Project created."))
+    return modal_success_response(_("Project created."), table_target="#example-projects-table")
 
 
-@app.get("/examples/tables/projects/<project_id:int>/edit-modal", name="example_project_edit_modal")
+@router.get("/examples/tables/projects/<project_id:int>/edit-modal", name="example_project_edit_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_project_edit_modal(request: Request, project_id: int):
-    """Load an existing Project Form into the shared remote Modal."""
+    """Load an existing Project Form into the shared remote Modal: reading it needs only view_projects."""
+    await require_perm(request, ExamplePermissions.view_projects)
     async with db_manager.get_read_session() as session:
-        project = await _project_or_404(session, project_id)
+        project = await get_object_or_404(session, ExampleProject, project_id, message="Example project was not found")
         form = ExampleProjectForm(request=request, instance=project, session=session)
         html = await form.render(
             action=f"/examples/tables/projects/{project_id}/update",
@@ -145,45 +146,46 @@ async def example_project_edit_modal(request: Request, project_id: int):
             submit_label=_("Save project"),
             validate=True,
         )
-    return json_response({"title": str(_("Edit example project")), "html": str(html)})
+    return modal_response(_("Edit example project"), html=html)
 
 
-@app.post("/examples/tables/projects/<project_id:int>/update", name="example_project_update")
+@router.post("/examples/tables/projects/<project_id:int>/update", name="example_project_update")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_project_update(request: Request, project_id: int):
     """Update one Project through the ordinary ModelForm transaction."""
+    await require_perm(request, ExamplePermissions.change_projects)
     async with db_manager.get_session() as session:
-        project = await _project_or_404(session, project_id)
+        project = await get_object_or_404(session, ExampleProject, project_id, message="Example project was not found")
         form = ExampleProjectForm.from_request(request, instance=project, session=session)
         if not await form.validate():
             return json_response(form.to_api_response().to_dict())
         await form.save(commit=True, session=session)
-    return _project_saved_response(_("Project saved."))
+    return modal_success_response(_("Project saved."), table_target="#example-projects-table")
 
 
-@app.get("/examples/tables/projects/<project_id:int>/delete-modal", name="example_project_delete_modal")
+@router.get("/examples/tables/projects/<project_id:int>/delete-modal", name="example_project_delete_modal")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_project_delete_modal(request: Request, project_id: int):
     """Render a real confirmation Form for one Project."""
+    await require_perm(request, ExamplePermissions.change_projects)
     async with db_manager.get_read_session() as session:
-        project = await _project_or_404(session, project_id)
-        template = request.app.ext.environment.get_template("partials/examples/tables/delete_project.html")
-        html = await template.render_async(project=project, csrf_token=request.ctx.csrf_token)
-    return json_response({"title": str(_("Delete example project")), "html": html})
+        project = await get_object_or_404(session, ExampleProject, project_id, message="Example project was not found")
+        html = await render_fragment(request, "partials/examples/tables/delete_project.html", project=project, csrf_token=request.ctx.csrf_token)
+    return modal_response(_("Delete example project"), html=html)
 
 
-@app.post("/examples/tables/projects/<project_id:int>/delete", name="example_project_delete")
+@router.post("/examples/tables/projects/<project_id:int>/delete", name="example_project_delete")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_project_delete(request: Request, project_id: int):
     """Delete one Project and its fixture-owned child rows."""
-    del request
+    await require_perm(request, ExamplePermissions.change_projects)
     async with db_manager.get_session() as session:
-        project = await _project_or_404(session, project_id)
+        project = await get_object_or_404(session, ExampleProject, project_id, message="Example project was not found")
         await session.delete(project)
-    return _project_saved_response(_("Project deleted."))
+    return modal_success_response(_("Project deleted."), table_target="#example-projects-table")
 
 
 def _project_table(request: Request) -> ExampleProjectTable:
@@ -193,28 +195,6 @@ def _project_table(request: Request) -> ExampleProjectTable:
         initial_filters={name: request.args.get(name, "").strip() for name in FILTER_NAMES},
         initial_query=request.args.get("q", "").strip(),
     )
-
-
-async def _project_or_404(session, project_id: int) -> ExampleProject:
-    """Return one Project in the caller's active transaction."""
-    project = await session.get(ExampleProject, project_id)
-    if project is None:
-        raise NotFound("Example project was not found")
-    return project
-
-
-def _project_saved_response(message: str | LazyTranslation):
-    """Close the Modal and refresh whichever render mode is mounted."""
-    payload = DefaultApiFormResponse(
-        error_code=ApiErrorCode.OK,
-        message=message,
-        actions=[
-            FeedbackAction(title=message, icon="success"),
-            CloseModalAction(),
-            ReloadTableAction(target="#example-projects-table"),
-        ],
-    )
-    return json_response(payload.to_dict())
 
 
 def _page_context(page: str) -> dict[str, object]:

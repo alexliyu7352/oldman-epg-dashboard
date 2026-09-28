@@ -7,7 +7,7 @@ import datetime as dt
 import unittest
 from decimal import Decimal
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from sqlalchemy import Select
 
@@ -91,6 +91,68 @@ class ExampleTableTests(unittest.TestCase):
             },
             payload.to_dict(),
         )
+
+class ProjectTablePermissionTests(unittest.IsolatedAsyncioTestCase):
+    """The one RBAC example: staff alone does not open the project table, a role granting view_projects does."""
+
+    async def test_the_project_table_needs_a_role_granting_view_projects(self) -> None:
+        from oldman.web.authentication import RequestUser
+
+        from apps.examples.tables import ExampleProjectTable
+
+        # This service installs the roles App; permission checks only read roles where it is installed.
+        app = SimpleNamespace(ctx=SimpleNamespace(app_registry=SimpleNamespace(labels=("auth", "roles", "examples"))))
+
+        def request_for(**user: object) -> SimpleNamespace:
+            return SimpleNamespace(app=app, ctx=SimpleNamespace(user=RequestUser(id=7, username="ops", is_staff=True, **user)))  # type: ignore[arg-type]
+
+        table = ExampleProjectTable()
+        self.assertFalse(await table.check_auth(request_for()))
+        self.assertTrue(await table.check_auth(request_for(is_superuser=True)))
+        grants = AsyncMock(return_value=frozenset({"examples.view_projects"}))
+        with patch("oldman.apps.roles.store.role_permissions", grants):
+            self.assertTrue(await table.check_auth(request_for(role_ids=(1,))))
+        # Roles missing from the cache are read through the given db_manager; None means the process's own.
+        grants.assert_awaited_once_with((1,), db_manager=None)
+
+
+class ProjectEndpointPermissionTests(unittest.IsolatedAsyncioTestCase):
+    """Reading a project needs view_projects; creating, saving and deleting one needs change_projects."""
+
+    async def test_each_project_endpoint_asks_for_its_permission_before_touching_data(self) -> None:
+        import inspect
+
+        from oldman.web.authentication import RequestUser
+        from oldman.web.exceptions import Forbidden
+
+        from apps.examples.views import tables as views
+
+        app = SimpleNamespace(ctx=SimpleNamespace(app_registry=SimpleNamespace(labels=("auth", "roles", "examples"))))
+
+        def staff_request() -> SimpleNamespace:
+            # One request per call: a request remembers the permissions it looked up.
+            return SimpleNamespace(app=app, ctx=SimpleNamespace(user=RequestUser(id=7, username="ops", is_staff=True, role_ids=(1,))))
+        # (handler, needs change_projects); the handlers past their decorators, called with a staff login holding role 1.
+        endpoints = (
+            (views.example_project_create_modal, True, {}),
+            (views.example_project_create, True, {}),
+            (views.example_project_edit_modal, False, {"project_id": 5}),
+            (views.example_project_update, True, {"project_id": 5}),
+            (views.example_project_delete_modal, True, {"project_id": 5}),
+            (views.example_project_delete, True, {"project_id": 5}),
+        )
+        for granted in ({"examples.view_projects"}, {"examples.view_projects", "examples.change_projects"}):
+            with (
+                patch("oldman.apps.roles.store.role_permissions", AsyncMock(return_value=frozenset(granted))),
+                patch.object(views, "db_manager", SimpleNamespace(get_session=Mock(side_effect=LookupError("data")), get_read_session=Mock(side_effect=LookupError("data")))),
+            ):
+                for handler, needs_change, kwargs in endpoints:
+                    with self.subTest(handler=handler.__name__, granted=sorted(granted)):
+                        refused = needs_change and "examples.change_projects" not in granted
+                        # A refusal comes before the database is touched; an allowed call reaches it.
+                        with self.assertRaises(Forbidden if refused else LookupError):
+                            await inspect.unwrap(handler)(staff_request(), **kwargs)
+
 
 class RealtimeTableReadTests(unittest.IsolatedAsyncioTestCase):
     """Use a real isolated database to check replay limits and read-only behavior."""

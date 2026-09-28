@@ -1,22 +1,16 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% block title %}{{ _("User") }} · Oldman{% endblock %}
 
 {% block content %}
 <div class="page-content">
   <div class="om-page-section">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
-      <div class="md:col-span-12">
-        <div class="om-page-header">
-          <h1 class="om-page-title">{{ _("New User") if user is none else _("Edit User") }}</h1>
-          <div class="page-title-right">
-            <a href="/users" class="om-button om-button-soft-secondary om-button-sm">
-              <i class="ri-arrow-left-line align-bottom mr-1"></i>{{ _("Users") }}
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% call page_head(_("New User") if user is none else _("Edit User")) %}
+      <a href="/users" class="om-button om-button-secondary">
+      <i class="ri-arrow-left-line"></i>{{ _("Users") }}
+      </a>
+    {% endcall %}
 
     <div class="om-card">
       <div class="om-card-body">

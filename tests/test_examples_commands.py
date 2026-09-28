@@ -13,6 +13,7 @@ import tempfile
 import textwrap
 import unittest
 
+from oldman.testing import owned_redis_server, use_owned_redis
 from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,10 @@ class ProjectStatsCommandTests(unittest.TestCase):
 
     def test_command_reads_and_reports_failures(self) -> None:
         """Counts are fresh and read-only; invalid input and missing tables fail."""
-        with tempfile.TemporaryDirectory(prefix="oldman-command-test-", dir="/tmp") as temporary:
+        with (
+            tempfile.TemporaryDirectory(prefix="oldman-command-test-", dir="/tmp") as temporary,
+            owned_redis_server(Path(temporary) / "redis", environment=os.environ) as redis_url,
+        ):
             root = Path(temporary)
             for directory in ("apps", "config", "services", "locales"):
                 shutil.copytree(ROOT / directory, root / directory, ignore=shutil.ignore_patterns("__pycache__"))
@@ -32,6 +36,8 @@ class ProjectStatsCommandTests(unittest.TestCase):
             settings = YAML(typ="safe", pure=True).load(ROOT / "data/web_settings.example.yaml")
             settings["nats_bus"]["enabled"] = False
             settings["taskiq"]["enabled"] = False
+            # The commands run as real processes: never against the developer's Redis the example names.
+            use_owned_redis(settings, redis_url)
             YAML().dump(settings, root / "data/web_settings.yaml")
             environment = {**os.environ, "OLDMAN_CLI_LANGUAGE": "en", "COLUMNS": "160", "NO_COLOR": "1"}
 

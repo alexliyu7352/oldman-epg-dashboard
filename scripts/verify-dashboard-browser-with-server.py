@@ -3,57 +3,50 @@
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import json
 import os
 import re
-import secrets
 import shutil
 import signal
-import socket
 import subprocess
 import sys
 import tempfile
 import time
 import urllib.parse
-from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
 from pathlib import Path
-
-from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from scripts.linux_process_tree import ProcessTreeError, ProcessTreeTracker, tracked_popen  # noqa: E402
-from scripts.png_evidence import PngEvidenceError, require_png  # noqa: E402
+from oldman.testing import (  # noqa: E402
+    PngEvidenceError,
+    ProcessTreeError,
+    ProcessTreeTracker,
+    require_png,
+    tracked_popen,
+)
+from oldman.testing.gates import (  # noqa: E402
+    ENVIRONMENT_ALLOWLIST,
+    BrowserGateError,
+    ensure_gate_admin,
+    find_free_port,
+    gate_settings,
+    migrate_gate_database,
+    owned_redis_server,
+    port_is_open,
+    process_group_exists,
+)
+
+from scripts.demo_auth import demo_auth_settings  # noqa: E402
 
 DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 17998
+DEFAULT_PORT = 17997
+GATE_NAMESPACE = "oldman_epg_dashboard_gate"
+#: 和 data/web_settings.example.yaml 以及前端构建期注入的那把一致。
+DEMO_FINGERPRINT_KEY = "b2xkbWFuLWVwZy1kZW1vLWZpbmdlcnByaW50LWtleSE="
 DEFAULT_USERNAME = "oldman_admin"
 DEFAULT_PASSWORD = "oldman_admin_123"
-ENVIRONMENT_ALLOWLIST = frozenset(
-    {
-        "CHROME_BIN",
-        "DISPLAY",
-        "HOME",
-        "LANG",
-        "LC_ALL",
-        "LD_LIBRARY_PATH",
-        "OLDMAN_ADMIN_PASSWORD",
-        "OLDMAN_ADMIN_USERNAME",
-        "OLDMAN_AUTH_EXPIRY_EVIDENCE_DIR",
-        "OLDMAN_CHROME_HEADLESS",
-        "OLDMAN_EPG_BROWSER_EVIDENCE_DIR",
-        "OLDMAN_EPG_CHILD_SCREENSHOT_DIR",
-        "PATH",
-        "SSL_CERT_DIR",
-        "SSL_CERT_FILE",
-        "TMPDIR",
-        "XAUTHORITY",
-    }
-)
 DASHBOARD_CHILD_SCREENSHOTS = frozenset(
     {
         "desktop-dashboard",
@@ -158,10 +151,6 @@ CHILD_SCREENSHOT_ALIASES = {
 }
 
 
-class BrowserGateError(RuntimeError):
-    """浏览器门禁包装脚本执行失败。"""
-
-
 def stop_output_confirms_pid(output: str, pid: int) -> bool:
     """Require the CLI to report the exact PID after its os.kill call succeeded."""
     ansi = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
@@ -174,10 +163,10 @@ def main() -> int:
         state_root = Path(temp_dir)
         env = build_env(state_root=state_root)
         host, port = managed_server_address(env)
-        if port_is_open(host, port):
+        if port_is_open(port, host):
             raise BrowserGateError(f"浏览器门禁拒绝接管已有服务：{host}:{port}")
         if env.get("OLDMAN_BROWSER_GATE_SEEDED") == "1":
-            migrate_gate_database(env, state_root)
+            migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
             load_gate_fixture(env)
             ensure_default_admin(env)
             with start_service(env) as (service_process, process_tree):
@@ -190,7 +179,7 @@ def main() -> int:
             env["OLDMAN_GATE_STATIC_ROOT"] = str(state_root / "static")
             prepare_gate_settings(env, state_root, redis_url=redis_url)
             prepare_gate_static(env, state_root)
-            migrate_gate_database(env, state_root)
+            migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
             load_gate_fixture(env)
             ensure_default_admin(env)
             with start_service(env) as (service_process, process_tree):
@@ -199,13 +188,6 @@ def main() -> int:
                     return run_browser_gate(env)
                 finally:
                     stop_service(env, service_process, process_tree)
-
-
-def find_free_port() -> int:
-    """选择一个当前未占用的独立 loopback 端口。"""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-        listener.bind((DEFAULT_HOST, 0))
-        return int(listener.getsockname()[1])
 
 
 def prepare_gate_static(env: dict[str, str], state_root: Path) -> None:
@@ -236,155 +218,31 @@ def prepare_gate_settings(
     *,
     redis_url: str,
 ) -> Path:
-    """Write the complete isolated Web YAML consumed by every gate process."""
-    config_file = Path(env["OLDMAN_GATE_CONFIG_FILE"])
-    payload = YAML(typ="safe", pure=True).load(
-        (ROOT / "data" / "web_settings.example.yaml").read_text(
-            encoding="utf-8"
-        )
+    """门禁配置来自框架的 gate_settings；这里只写本项目自己的键。"""
+
+    def customize(payload: dict) -> None:
+        # 这个 UI 门禁自己管 Redis，不碰 NATS；分布式任务有单独的真实服务检查。
+        payload["taskiq"]["enabled"] = False
+        payload["nats_bus"]["enabled"] = False
+        # 指纹密钥在前端构建期就进了 bundle，所以服务端必须用同一把。gate_settings 默认
+        # 每次生成随机密钥，这里换回示例配置里的那把——两边对不上，示例页第一张卡就会红。
+        fingerprint = payload["web"]["security"]["fingerprint"]
+        fingerprint["aes_secret_key"] = DEMO_FINGERPRINT_KEY
+        # 访问令牌与服务调用方示例页要的密钥不在示例配置里，每次门禁临时生成。
+        payload["web"]["auth"] = demo_auth_settings()
+
+    host, port = managed_server_address(env)
+    return gate_settings(
+        ROOT / "data" / "web_settings.example.yaml",
+        state_root,
+        service_port=port,
+        redis_url=redis_url,
+        namespace=GATE_NAMESPACE,
+        database_name="dashboard.sqlite3",
+        static_dir=ROOT / "static",
+        host=host,
+        customize=customize,
     )
-    payload["database"]["url"] = (
-        f"sqlite+aiosqlite:///{state_root / 'dashboard.sqlite3'}"
-    )
-    payload["logging"]["dir"] = str(state_root / "logs")
-    # This UI gate owns Redis, not NATS; distributed tasks have a separate real-service check.
-    payload["taskiq"]["enabled"] = False
-    payload["nats_bus"]["enabled"] = False
-    payload["process"]["pid_dir"] = str(state_root / "pids")
-    payload["redis"]["SESSION"]["redis_url"] = redis_url
-    payload["redis"]["CACHE"]["redis_url"] = redis_url
-    payload["redis"]["SSE"]["redis_url"] = redis_url
-    payload["web"]["listen_host"] = DEFAULT_HOST
-    payload["web"]["listen_port"] = int(
-        urllib.parse.urlparse(env["OLDMAN_DASHBOARD_URL"]).port
-        or DEFAULT_PORT
-    )
-    payload["web"]["security"]["secret_key"] = secrets.token_urlsafe(48)
-    payload["web"]["security"]["fingerprint"]["aes_secret_key"] = (
-        base64.b64encode(secrets.token_bytes(32)).decode("ascii")
-    )
-    payload["web"]["sse"]["heartbeat_interval"] = 0.5
-    payload["web"]["sse"]["session_check_interval"] = 0.5
-    payload["web"]["static"]["root"] = env["OLDMAN_GATE_STATIC_ROOT"]
-    payload["storages"]["default"]["options"]["location"] = str(state_root / "media")
-    config_file.parent.mkdir(parents=True, exist_ok=True)
-    yaml = YAML()
-    with config_file.open("w", encoding="utf-8") as file:
-        yaml.dump(payload, file)
-    return config_file
-
-
-def migrate_gate_database(env: dict[str, str], state_root: Path) -> None:
-    """Apply the project's reviewed migrations to the isolated gate database."""
-    from oldman.db.migrations.commands import migrate
-    from oldman.db.migrations.project import load_migration_project
-
-    project_root = state_root / "migration-project"
-    (project_root / "data").mkdir(parents=True, exist_ok=True)
-    (project_root / "services").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "pyproject.toml", project_root / "pyproject.toml")
-    shutil.copy2(
-        Path(env["OLDMAN_GATE_CONFIG_FILE"]),
-        project_root / "data" / "web_settings.yaml",
-    )
-    (project_root / "services" / "web.py").write_text(
-        "from oldman.runtime.web import WebApplication\n\n"
-        "class WebService(WebApplication):\n"
-        "    pass\n",
-        encoding="utf-8",
-    )
-
-    class GateMigrationInteraction:
-        """Confirm only the known empty gate database first-use state."""
-
-        is_interactive = False
-
-        def choose(self, prompt: str, choices: tuple[str, ...]) -> str:
-            if "internal migration state" in prompt and "first use" in choices:
-                return "first use"
-            raise BrowserGateError(f"浏览器门禁遇到未计划的迁移选择：{prompt}")
-
-        def confirm(self, prompt: str, *, default: bool = False) -> bool:
-            del default
-            raise BrowserGateError(f"浏览器门禁遇到未计划的迁移确认：{prompt}")
-
-        def text(self, prompt: str, *, default: str) -> str:
-            del default
-            raise BrowserGateError(f"浏览器门禁不应生成迁移：{prompt}")
-
-    migrate(
-        load_migration_project(project_root),
-        GateMigrationInteraction(),
-    )
-
-
-@contextmanager
-def owned_redis_server(
-    state_root: Path,
-    *,
-    environment: Mapping[str, str],
-) -> Iterator[str]:
-    """启动本门禁独占的无持久化 Redis，并在退出时证明进程和端口均已回收。"""
-    executable = shutil.which("redis-server", path=environment.get("PATH"))
-    if executable is None:
-        raise BrowserGateError("真实浏览器门禁需要 redis-server")
-
-    state_root.mkdir(parents=True, exist_ok=True)
-    port = find_free_port()
-    log_handle = (state_root / "redis.log").open("wb")
-    process = subprocess.Popen(
-        [
-            executable,
-            "--bind",
-            DEFAULT_HOST,
-            "--port",
-            str(port),
-            "--save",
-            "",
-            "--appendonly",
-            "no",
-            "--daemonize",
-            "no",
-            "--dir",
-            str(state_root),
-            "--pidfile",
-            str(state_root / "redis.pid"),
-        ],
-        cwd=state_root,
-        env=dict(environment),
-        stdout=log_handle,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
-    )
-    try:
-        wait_for_port(DEFAULT_HOST, port, process=process, timeout=10)
-        yield f"redis://{DEFAULT_HOST}:{port}/0"
-    finally:
-        cleanup_errors: list[str] = []
-        if process.poll() is None:
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            process.wait(timeout=5)
-        if process.returncode not in {0, -signal.SIGTERM}:
-            cleanup_errors.append(f"Redis 返回非预期退出码 {process.returncode}")
-        if process_group_exists(process.pid):
-            cleanup_errors.append(f"Redis 进程组 {process.pid} 仍有残留")
-        try:
-            wait_for_port_to_close(DEFAULT_HOST, port, timeout=2)
-        except BrowserGateError as exc:
-            cleanup_errors.append(str(exc))
-        log_handle.close()
-        if cleanup_errors:
-            raise BrowserGateError("; ".join(cleanup_errors))
 
 
 def build_env(*, state_root: Path | None = None, source: dict[str, str] | None = None) -> dict[str, str]:
@@ -434,20 +292,14 @@ def managed_server_address(env: dict[str, str]) -> tuple[str, int]:
 
 
 def ensure_default_admin(env: dict[str, str]) -> None:
-    """调用现有脚本幂等创建浏览器门禁需要的管理员账号。"""
-    command = [
-        sys.executable,
-        str(ROOT / "scripts" / "create_admin.py"),
-        "--username",
-        env["OLDMAN_ADMIN_USERNAME"],
-        "--password",
-        env["OLDMAN_ADMIN_PASSWORD"],
-        "--email",
-        "oldman@example.com",
-        "--config",
-        env["OLDMAN_GATE_CONFIG_FILE"],
-    ]
-    subprocess.run(command, cwd=ROOT, env=env, check=True)
+    """通过框架的公开接口幂等创建浏览器门禁需要的管理员账号。"""
+    ensure_gate_admin(
+        Path(env["OLDMAN_GATE_CONFIG_FILE"]),
+        environment=env,
+        project_root=ROOT,
+        username=env["OLDMAN_ADMIN_USERNAME"],
+        password=env["OLDMAN_ADMIN_PASSWORD"],
+    )
 
 
 def load_gate_fixture(env: dict[str, str]) -> None:
@@ -469,17 +321,6 @@ def load_gate_fixture(env: dict[str, str]) -> None:
         env=env,
         check=True,
     )
-
-
-def port_is_open(host: str, port: int) -> bool:
-    """判断本地服务端口是否已经可连接。"""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(1)
-        try:
-            sock.connect((host, port))
-        except OSError:
-            return False
-        return True
 
 
 def start_service(env: dict[str, str]):
@@ -522,7 +363,7 @@ def wait_for_port(
     while time.monotonic() < deadline:
         if process is not None and process.poll() is not None:
             raise BrowserGateError(f"后台服务在监听前退出：{process.returncode}")
-        if port_is_open(host, port):
+        if port_is_open(port, host):
             return
         time.sleep(0.2)
     raise BrowserGateError(f"等待后台服务启动超时：{host}:{port}")
@@ -532,23 +373,10 @@ def wait_for_port_to_close(host: str, port: int, *, timeout: float = 10.0) -> No
     """等待本门禁拥有的服务释放端口。"""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        if not port_is_open(host, port):
+        if not port_is_open(port, host):
             return
         time.sleep(0.2)
     raise BrowserGateError(f"等待已有后台服务停止超时：{host}:{port}")
-
-
-def process_group_exists(process_group: int) -> bool:
-    """判断门禁拥有的 POSIX 进程组中是否仍有进程。"""
-    if os.name != "posix":  # pragma: no cover - 当前发布范围为 Linux
-        return False
-    try:
-        os.killpg(process_group, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
 
 
 def wait_for_process_group_exit(process_group: int, *, timeout: float = 2.0) -> bool:

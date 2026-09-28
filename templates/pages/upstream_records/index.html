@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 {% from "oldman/dashboard/components/modal.html" import modal %}
 
 {% block title %}{{ _("Upstream Records") }} · Oldman{% endblock %}
@@ -6,24 +7,17 @@
 {% block content %}
 <div class="page-content">
   <div class="om-page-section">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
-      <div class="md:col-span-12">
-        <div class="om-page-header">
-          <h1 class="om-page-title">{{ _("Upstream Records") }}</h1>
-          <div class="page-title-right">
-            <button type="button" class="om-button om-button-soft-info om-button-sm" data-om-modal-target="#upstream-records-help">
-              <i class="ri-file-search-line align-bottom mr-1"></i>{{ _("Raw Payload") }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% call page_head(_("Upstream Records")) %}
+      <button type="button" class="om-button om-button-secondary" data-om-modal-target="#upstream-records-help">
+      <i class="ri-file-search-line"></i>{{ _("Raw Payload") }}
+      </button>
+    {% endcall %}
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
       <div class="md:col-span-12 xl:col-span-8">
-        <div class="om-card">
+        {{ filter_form.render(method="get", table_target="#upstream-records-table") }}
+        <div class="om-card om-table-card mt-4">
           <div class="om-card-body">
-            {{ filter_form.render(method="get", submit_label="Filter", table_target="#upstream-records-table") }}
             {{ table.render_shell(html_id="upstream-records-table", show_search=False) }}
           </div>
         </div>

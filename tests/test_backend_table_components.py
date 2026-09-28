@@ -269,7 +269,8 @@ class TableStructuredDataTest(unittest.TestCase):
 
         result = asyncio.run(table.query_result(request))
 
-        self.assertEqual(result.total, 2)
+        # total counts what the fixed scope allows (one owned row); the frontend filter only narrows within it.
+        self.assertEqual(result.total, 1)
         self.assertEqual(result.filtered_total, 0)
         self.assertEqual(result.rows, [])
 
@@ -1004,6 +1005,30 @@ class BusinessTableFilterTest(unittest.TestCase):
         self.assertIn(("Last Seen", "last_seen_at", "get_column_last_seen_at_data"), columns)
         self.assertIn(("Action", None, "get_column_action_data"), columns)
         self.assertFalse(feed_column.sortable)
+
+    def test_upstream_record_search_keeps_records_without_a_feed(self) -> None:
+        """搜索必须对 catalog_feed 用外连接，未绑定 feed 的上游记录不能被 JOIN 过滤掉。"""
+        from apps.epg_admin.tables import UpstreamRecordTable
+
+        table = UpstreamRecordTable()
+        request = table.build_table_request(make_request(args={"q": "cctv"}), route_kwargs={})
+
+        sql = str(asyncio.run(table.apply_search(select(UpstreamSourceRecord), request)))
+
+        self.assertIn("LEFT OUTER JOIN", sql)
+        self.assertIn(CatalogFeed.__tablename__, sql)
+
+    def test_match_decision_search_keeps_decisions_without_a_feed(self) -> None:
+        """人工决策搜索同样要保留没有关联 feed 的记录。"""
+        from apps.epg_admin.tables import MatchDecisionTable
+
+        table = MatchDecisionTable()
+        request = table.build_table_request(make_request(args={"q": "manual"}), route_kwargs={})
+
+        sql = str(asyncio.run(table.apply_search(select(CatalogMatchDecision), request)))
+
+        self.assertIn("LEFT OUTER JOIN", sql)
+        self.assertIn(CatalogFeed.__tablename__, sql)
 
     def test_upstream_record_action_does_not_embed_raw_payload_in_table_fragment(self) -> None:
         """UpstreamRecord action 只能挂远程 modal，不能把完整 raw_payload 塞进表格 HTML。"""

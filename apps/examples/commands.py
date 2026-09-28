@@ -5,21 +5,20 @@ from __future__ import annotations
 from typing import Annotated
 
 import typer
-from sqlalchemy import func, select
-
 from oldman.cli import Command
 from oldman.db import db_manager
 from oldman.i18n import gettext
 from oldman.i18n import gettext_lazy as _
+from sqlalchemy import func, select
 
-from .models import ExampleProject, ExampleTeam
 from .background import BackgroundStats
-from .process_examples import PythonProcessDemo, SubprocessDemo
-from .worker_examples import WorkerDemo
+from .cache_functions import CachedStats
 from .cache_levels import CacheLevels
 from .django_cache import DjangoCacheDemo
 from .image_cache import ImageCacheDemo
-from .cache_functions import CachedStats
+from .models import ExampleProject, ExampleTeam
+from .process_examples import PythonProcessDemo, SubprocessDemo
+from .worker_examples import WorkerDemo
 
 
 class ProjectStats(Command):
@@ -44,7 +43,8 @@ class ProjectStats(Command):
                     if await session.get(ExampleTeam, team_id) is None:
                         raise ValueError(gettext("Team %(team_id)s does not exist.", team_id=team_id))
                     statement = statement.where(ExampleProject.team_id == team_id)
-                counts = {status: count for status, count in await session.execute(statement)}
+                # The result has keys() — its column names — so dict() would read it as a mapping; take the rows.
+                counts = dict((await session.execute(statement)).all())
             # Plain output keeps database values from being interpreted as Rich markup.
             typer.echo(gettext("Total projects: %(count)s", count=sum(counts.values())))
             for status, count in counts.items():

@@ -13,15 +13,15 @@ import logging
 import os
 from typing import cast
 
-from sqlalchemy import func, select, update
-from sqlalchemy.engine import CursorResult
-
-from apps.examples.models import ExampleProject, ExampleTask
 from oldman.conf import settings
 from oldman.db import db_manager
 from oldman.providers.redis import redis_client
 from oldman.storage import storages
 from oldman.tasks.distributed import broker
+from sqlalchemy import func, select, update
+from sqlalchemy.engine import CursorResult
+
+from apps.examples.models import ExampleProject, ExampleTask
 
 logger = logging.getLogger(__name__)
 project_counts: dict[str, int] = {}
@@ -89,6 +89,8 @@ async def complete_example_task(record_id: int) -> dict[str, object]:
             update(ExampleTask).where(ExampleTask.id == record_id, ExampleTask.is_completed.is_(False))
             .values(is_completed=True, status="done")
         )
+        # A bulk UPDATE fires no ORM event; the cached task queries learn of it from here.
+        ExampleTask.invalidate_cache_on_commit(session)
         changed = cast(CursorResult, result).rowcount == 1
         record = await session.get(ExampleTask, record_id)
         if record is None:
@@ -104,5 +106,6 @@ async def refresh_project_counts() -> None:
     async with db_manager.get_read_session() as session:
         rows = await session.execute(select(ExampleProject.status, func.count()).group_by(ExampleProject.status))
         project_counts.clear()
-        project_counts.update({status: count for status, count in rows})
+        # The result has keys() — its column names — so dict() would read it as a mapping; take the rows.
+        project_counts.update(dict(rows.all()))
     logger.info("Demo process cache refreshed pid=%s counts=%s", os.getpid(), project_counts)

@@ -2,6 +2,8 @@
 
 from typing import Literal
 
+from oldman.providers.nats import bus
+
 from apps.examples.nats_messages import (
     ExampleEvent,
     ObservationReply,
@@ -9,7 +11,6 @@ from apps.examples.nats_messages import (
     ProjectStatusReply,
     ProjectStatusRequest,
 )
-from oldman.providers.nats import bus
 
 PEERS = ("monitor_a", "monitor_b")
 

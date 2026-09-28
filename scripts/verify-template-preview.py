@@ -14,13 +14,7 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
-try:
-    from scripts.linux_process_tree import ProcessTreeError, ProcessTreeTracker, tracked_popen
-except ModuleNotFoundError:  # pragma: no cover - direct script execution
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts.linux_process_tree import ProcessTreeError, ProcessTreeTracker, tracked_popen
+from oldman.testing import ProcessTreeError, ProcessTreeTracker, tracked_popen
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PREVIEW_PATH = "/templates/pages/dashboard.html"

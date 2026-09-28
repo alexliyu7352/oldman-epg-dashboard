@@ -8,6 +8,9 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlencode
 
+from oldman.db import db_manager
+from oldman.i18n import gettext as _
+from oldman.web.components.selects import SelectChoice
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
@@ -22,9 +25,6 @@ from apps.epg_admin.models import (
     EpgList,
     UpstreamSourceRecord,
 )
-from oldman.db import db_manager
-from oldman.i18n import gettext as _
-from oldman.web.components.selects import SelectChoice
 
 CHANNEL_NAME_REFERENCE_TABLES = {
     "category_id": "epg_channelcategory",

@@ -217,6 +217,33 @@ describe("BasePage", () => {
     await disposePage(page);
   });
 
+  it("applies this application's own dashboard route defaults", async () => {
+    history.replaceState(null, "", "/");
+    document.body.dataset.omPage = "test-base";
+    document.body.innerHTML = `
+      <aside data-om-sidebar>
+        <nav id="navbar-nav"><a href="/dashboard">Overview</a></nav>
+        <div id="two-column-menu"></div>
+      </aside>
+      <header id="page-topbar">
+        <div id="notificationDropdown">
+          <section data-om-activity-notifications>
+            <div data-om-activity-notification-list></div>
+          </section>
+        </div>
+      </header>
+    `;
+    const page = new TestBasePage({ root: document.body });
+
+    await page.mount();
+    document.dispatchEvent(new CustomEvent("om:notification:add", { detail: { title: "No explicit href" } }));
+
+    // 根路径算仪表盘，运行时通知没给 href 时也落到 /dashboard。
+    expect(document.querySelector<HTMLAnchorElement>('#navbar-nav a[href="/dashboard"]')?.classList.contains("active")).toBe(true);
+    expect(document.querySelector<HTMLAnchorElement>("[data-om-activity-notification-item] a")?.getAttribute("href")).toBe("/dashboard");
+    await disposePage(page);
+  });
+
   it("decorates Oldman dropdown markup before mounting declarative components", async () => {
     document.body.dataset.omPage = "test-base";
     document.body.innerHTML = `

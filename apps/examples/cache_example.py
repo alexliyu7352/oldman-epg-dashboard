@@ -5,11 +5,11 @@ from __future__ import annotations
 import datetime as dt
 from typing import Literal, TypedDict, cast
 
+from oldman.cache import RedisCache
+from oldman.db import db_manager
 from sqlalchemy import func, select
 
 from apps.examples.models import ExampleProject
-from oldman.cache import RedisCache
-from oldman.db import db_manager
 
 CACHE_TTL = 30
 CACHE_KEY = "counts"
@@ -53,7 +53,8 @@ async def calculate_project_statistics() -> ProjectStatistics:
             .group_by(ExampleProject.status)
             .order_by(ExampleProject.status)
         )
-        counts = {status: count for status, count in rows}
+        # The result has keys() — its column names — so dict() would read it as a mapping; take the rows.
+        counts = dict(rows.all())
     return ProjectStatistics(
         counts=counts,
         total=sum(counts.values()),

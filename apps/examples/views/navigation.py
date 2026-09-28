@@ -4,23 +4,22 @@ from __future__ import annotations
 
 import asyncio
 
-from apps.auth.decorators import admin_required
 from oldman.i18n import gettext_lazy as _
+from oldman.web import router
 from oldman.web.api import DefaultApiResponse, ReplaceHtmlAction
+from oldman.web.auth import staff_required
 from oldman.web.request import Request
 from oldman.web.response import api_response
-from oldman.web.routing import get_app
 from oldman.web.template import render_template
 
 from . import EXAMPLE_SECTIONS, _render_example
 
 OWNED_NAVIGATION_PAGES = frozenset({"lifecycle", "actions", "loading"})
 
-app = get_app()
 
 
-@app.get("/examples/navigation/<page:str>", name="example_navigation_page")
-@admin_required()
+@router.get("/examples/navigation/<page:str>", name="example_navigation_page")
+@staff_required()
 async def example_navigation_page(request: Request, page: str):
     """Render one navigation page; the slow query exposes main-frame Loading."""
     if page not in OWNED_NAVIGATION_PAGES:
@@ -33,8 +32,8 @@ async def example_navigation_page(request: Request, page: str):
     )
 
 
-@app.get("/examples/navigation/actions/slow", name="example_navigation_slow_action")
-@admin_required()
+@router.get("/examples/navigation/actions/slow", name="example_navigation_slow_action")
+@staff_required()
 async def example_navigation_slow_action(request: Request):
     """Return late HTML so leaving the frame can demonstrate request cancellation."""
     del request
@@ -46,8 +45,8 @@ async def example_navigation_slow_action(request: Request):
     )
 
 
-@app.get("/examples/navigation/loading/wait", name="example_navigation_loading_wait")
-@admin_required()
+@router.get("/examples/navigation/loading/wait", name="example_navigation_loading_wait")
+@staff_required()
 async def example_navigation_loading_wait(request: Request):
     """Complete one real delayed request used by both Loading scopes."""
     del request

@@ -2,7 +2,6 @@
 
 import asyncio
 
-from oldman.db import db_manager
 from oldman.runtime import SimpleApplication
 
 
@@ -15,10 +14,3 @@ class NatsBService(SimpleApplication):
     async def main(self) -> None:
         """Run until the ordinary lifecycle cancels this wait."""
         await asyncio.Event().wait()
-
-    async def after_stop(self) -> None:
-        """Close the database only after framework-managed handlers exit."""
-        try:
-            await db_manager.close()
-        finally:
-            await super().after_stop()

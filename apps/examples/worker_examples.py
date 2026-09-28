@@ -1,19 +1,18 @@
 """Finite owner of a real fixed Worker, sharing only serializable project records."""
 
 import asyncio
-from enum import StrEnum
 import json
-from pathlib import Path
 import tempfile
+from enum import StrEnum
+from pathlib import Path
 from typing import Annotated
 
 import typer
-from sqlalchemy import select
-
 from oldman.cli import Command
 from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.tasks import BaseManager, TaskType
+from sqlalchemy import select
 
 from .models import ExampleProject
 from .worker_jobs import ProjectSnapshotWorker

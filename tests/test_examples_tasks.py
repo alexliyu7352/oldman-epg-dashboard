@@ -19,8 +19,9 @@ from sqlalchemy import insert
 
 from apps.examples import tasks
 from apps.examples.models import ExampleProject, ExampleTask, ExampleTeam
-from oldman.conf.schemas import DatabaseConfig, DefaultSettings
+from oldman.conf.schemas import DatabaseConfig, DefaultSettings, RedisConfig
 from oldman.db import DatabaseManager
+from oldman.providers.redis import RedisClientRegistry
 from oldman.storage.registry import StorageRegistry
 
 
@@ -42,8 +43,10 @@ class TaskExampleTests(unittest.IsolatedAsyncioTestCase):
         support = runpy.run_path(str(Path(__file__).resolve().parents[1] / "scripts/verify-dashboard-browser-with-server.py"))
         with tempfile.TemporaryDirectory(prefix="oldman-task-query-") as directory:
             with support["owned_redis_server"](Path(directory) / "redis", environment=os.environ) as url:
-                backend = RedisAsyncResultBackend(url, keep_results=True, result_ex_time=30, serializer=ORJSONSerializer())
-                client = Redis.from_url(url)
+                # RESP2, as the framework's own clients default to: redis-py 8 would otherwise send
+                # HELLO 3, which a Redis older than 6.0 (Ubuntu 20.04 ships 5.0.7) does not know.
+                backend = RedisAsyncResultBackend(url, keep_results=True, result_ex_time=30, serializer=ORJSONSerializer(), protocol=2)
+                client = Redis.from_url(url, protocol=2)
                 task_id = "a" * 32
                 owned = {"task_id": task_id, "ignored": False}
                 await client.set(f"owner:task:{task_id}", json.dumps(owned))
@@ -73,8 +76,14 @@ class TaskExampleTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_summary_export_and_conditional_completion(self) -> None:
         """Database values reach exports; duplicate completion changes the row once."""
-        with tempfile.TemporaryDirectory(prefix="oldman-task-example-") as directory:
+        support = runpy.run_path(str(Path(__file__).resolve().parents[1] / "scripts/verify-dashboard-browser-with-server.py"))
+        with (
+            tempfile.TemporaryDirectory(prefix="oldman-task-example-") as directory,
+            support["owned_redis_server"](Path(directory) / "redis", environment=os.environ) as url,
+        ):
             root = Path(directory)
+            # Completion invalidates ExampleTask's model cache; keep that write on this test's Redis.
+            cache_redis = RedisClientRegistry(RedisConfig.model_validate({"CACHE": {"redis_url": url}}))
             database = DatabaseManager(DatabaseConfig(url=f"sqlite+aiosqlite:///{root / 'test.db'}"))
             config = DefaultSettings.model_validate({"storages": {"default": {
                 "backend": "oldman.storage.backends.filesystem.FileSystemStorage",
@@ -88,9 +97,16 @@ class TaskExampleTests(unittest.IsolatedAsyncioTestCase):
                     await session.execute(insert(ExampleTeam).values(id=1, name="Team", slug="team", region="local"))
                     await session.execute(insert(ExampleProject).values(id=1, team_id=1, name="真实项目", slug="project", budget="12.50"))
                     await session.execute(insert(ExampleTask).values(id=1, project_id=1, title="Complete once"))
-                with patch.object(tasks, "db_manager", database), patch.object(tasks, "storages", storage):
+                with (
+                    patch.object(tasks, "db_manager", database),
+                    patch.object(tasks, "storages", storage),
+                    patch("oldman.db.sqlalchemy.cache.redis_client", cache_redis),
+                ):
                     summary = await tasks.project_summary(1)
                     self.assertEqual((summary["name"], summary["budget"], summary["task_count"]), ("真实项目", "12.50", 1))
+                    with patch.dict(tasks.project_counts, clear=True):
+                        await tasks.refresh_project_counts()
+                        self.assertEqual(tasks.project_counts, {"planned": 1})
                     exported = await tasks.export_project(1, 7, "sample")
                     self.assertEqual(exported["file"], "task-exports/7/sample.json")
                     saved = json.loads((root / "media" / str(exported["file"])).read_text())
@@ -109,3 +125,4 @@ class TaskExampleTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual((record.status, record.is_completed), ("done", True))
             finally:
                 await database.close()
+                await cache_redis.close()

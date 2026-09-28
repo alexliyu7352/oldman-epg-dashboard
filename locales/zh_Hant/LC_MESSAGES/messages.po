@@ -265,6 +265,9 @@ msgstr "刪除"
 msgid "Invalid username or password."
 msgstr "使用者名稱或密碼錯誤。"
 
+msgid "Too many sign-in attempts. Please try again later."
+msgstr "登入嘗試過於頻繁，請稍後再試。"
+
 #: apps/auth/views.py:145 apps/auth/views.py:414
 #: frontend/packages/oldman-web/src/dashboard/topbar.ts:192
 #: oldman/apps/admin/model_admin.py:410 oldman/apps/admin/site.py:354
@@ -323,10 +326,16 @@ msgstr "密碼已變更"
 msgid "%(username)s password was updated."
 msgstr "%(username)s 的密碼已更新。"
 
+msgid "%(username)s was signed out and needs the new password."
+msgstr "%(username)s 已被強制登出，需要使用新密碼重新登入。"
+
 #: apps/auth/views.py:399 oldman/apps/admin/site.py:339
 #: oldman/web/auth/user_session.py:135
 msgid "Session password changed"
 msgstr "工作階段密碼已變更"
+
+msgid "Your password was updated. Please sign in again."
+msgstr "密碼已更新，請重新登入。"
 
 #: apps/auth/views.py:430 oldman/apps/admin/site.py:778
 #: oldman/apps/admin/templates/admin/model/list.html:49
@@ -3825,7 +3834,7 @@ msgstr "最近7天"
 #: templates/pages/examples/charts/states.html:22
 #: templates/pages/examples/tables/states.html:18
 msgid "Permission denied"
-msgstr "許可權被拒絕"
+msgstr "沒有權限"
 
 #: templates/pages/examples/charts/states.html:25
 msgid "No manual reload yet."
@@ -8883,3 +8892,734 @@ msgstr "底線"
 
 #~ msgid "Leave this empty to generate it from the page title on submit."
 #~ msgstr "留空時會在提交後根據頁面標題自動產生。"
+
+msgid "Remember me"
+msgstr "記住我"
+
+msgid "Can sign in"
+msgstr "可以登入"
+
+msgid "Can open the dashboard"
+msgstr "可以進入後台"
+
+msgid "Has every permission"
+msgstr "擁有全部權限"
+
+msgid "More filters"
+msgstr "更多篩選"
+
+msgid "Reset"
+msgstr "重設"
+
+msgid "Boolean Widgets"
+msgstr "布林部件"
+
+msgid "Beta features"
+msgstr "測試版功能"
+
+msgid "Try features before release"
+msgstr "搶先體驗尚未發布的功能"
+
+msgid "Newsletter"
+msgstr "訂閱通訊"
+
+msgid "Product updates once a month"
+msgstr "每月一封產品更新"
+
+msgid "Accept the terms"
+msgstr "接受條款"
+
+msgid "Agreements"
+msgstr "協議"
+
+msgid "Required before the profile goes live"
+msgstr "資料上線前必須勾選"
+
+msgid "Save booleans"
+msgstr "儲存布林欄位"
+
+msgid "Sticky columns"
+msgstr "固定欄"
+
+msgid "Pin identifier columns while a wide table scrolls sideways."
+msgstr "寬表橫向捲動時把識別欄固定在左側。"
+
+msgid "{count} selected"
+msgstr "已選 {count} 項"
+
+msgid "Forgot password?"
+msgstr "忘記密碼？"
+
+msgid "Reset your password"
+msgstr "重設密碼"
+
+msgid "Enter the email address of your account and we will send you a link to choose a new password."
+msgstr "輸入帳號綁定的電子郵件，我們會傳送一個用於設定新密碼的連結。"
+
+msgid "Too many requests. Please wait a while before trying again."
+msgstr "請求太頻繁，請稍後再試。"
+
+msgid "Enter a valid email address"
+msgstr "請輸入有效的電子郵件地址"
+
+msgid "you@example.com"
+msgstr "you@example.com"
+
+msgid "Send reset link"
+msgstr "傳送重設連結"
+
+msgid "Back to sign in"
+msgstr "返回登入"
+
+msgid "Check your email"
+msgstr "請查收郵件"
+
+msgid "If an account uses that address, a link to choose a new password is on its way. It stays valid for %(hours)s hours; check the spam folder if it does not arrive."
+msgstr "如果這個電子郵件對應一個帳號，設定新密碼的連結已經送出，%(hours)s 小時內有效；沒收到請檢查垃圾郵件。"
+
+msgid "Choose a new password"
+msgstr "設定新密碼"
+
+msgid "Set a new password for %(username)s."
+msgstr "為 %(username)s 設定一個新密碼。"
+
+msgid "Update password"
+msgstr "更新密碼"
+
+msgid "This link is no longer valid"
+msgstr "連結已失效"
+
+msgid "The password reset link has expired or was already used. Request a new one to continue."
+msgstr "重設連結已過期或已被使用，請重新申請。"
+
+msgid "Request a new link"
+msgstr "重新申請連結"
+
+msgid "Your password has been updated"
+msgstr "密碼已更新"
+
+msgid "Sign in with your new password to continue."
+msgstr "請使用新密碼登入。"
+
+msgid "Reset your %(site_name)s password"
+msgstr "重設你的 %(site_name)s 密碼"
+
+msgid "Hello %(username)s,"
+msgstr "%(username)s，你好："
+
+msgid "Someone asked to reset the password of your %(site_name)s account. Open the link below to choose a new one:"
+msgstr "有人申請重設你的 %(site_name)s 帳號密碼。開啟下面的連結設定新密碼："
+
+msgid "The link stays valid for %(hours)s hours. If you did not ask for this, ignore this message; your password stays as it is."
+msgstr "連結 %(hours)s 小時內有效。如果不是你本人申請，忽略這封郵件即可，密碼不會改變。"
+
+msgid "View example projects"
+msgstr "檢視示例專案"
+
+msgid "Change example projects"
+msgstr "修改示例專案"
+
+msgid "Access Tokens"
+msgstr "訪問令牌"
+
+msgid "Service Callers"
+msgstr "服務呼叫方"
+
+msgid "Access tokens are not enabled on this service."
+msgstr "本服務沒有啟用訪問令牌。"
+
+msgid "List jwt in web.auth.authenticators and give it a signing key of at least 32 characters in data/web_settings.yaml, then restart. The example settings file leaves the key out on purpose: whoever holds it can sign a token for any user, superusers included."
+msgstr "在 data/web_settings.yaml 的 web.auth.authenticators 裡列出 jwt，並設定至少 32 個字元的簽名密鑰，然後重新啟動。範例設定檔故意不帶這把密鑰：拿到它的人能為任何使用者簽發令牌，超級使用者也不例外。"
+
+msgid "A client that is not a browser page signs in with a token instead of a cookie."
+msgstr "不是瀏覽器頁面的用戶端，用令牌而不是 cookie 登入。"
+
+msgid "Every request below is sent without cookies, so the probe can only recognize you by the Authorization header. Open the browser's network panel to see it."
+msgstr "下面每個請求都不帶 cookie，探針只能憑 Authorization 標頭認出你。打開瀏覽器的網路面板就能看到。"
+
+msgid "Tokens held by this page"
+msgstr "本頁持有的令牌"
+
+msgid "Only the last characters are shown. They live in this page's memory and are gone when it reloads."
+msgstr "只顯示末尾幾個字元。令牌只存在本頁的記憶體裡，重新整理頁面就沒了。"
+
+msgid "Access token"
+msgstr "訪問令牌"
+
+msgid "None"
+msgstr "無"
+
+msgid "Refresh token"
+msgstr "刷新令牌"
+
+msgid "1. Get a token"
+msgstr "1. 取得令牌"
+
+#, python-format
+msgid "POST %(url)s with a username and password. Only staff accounts get tokens, as only staff can sign in here."
+msgstr "用使用者名稱和密碼 POST %(url)s。只有 staff 帳號能拿到令牌，與本站只允許 staff 登入一致。"
+
+msgid "Get tokens"
+msgstr "取得令牌"
+
+msgid "2. Call the probe with the access token"
+msgstr "2. 用訪問令牌呼叫探針"
+
+msgid "The same staff-only probe the Access Guards page calls with the session; here it sees Authorization: Bearer and nothing else."
+msgstr "就是「訪問保護」頁用會話呼叫的那個只放 staff 的探針；這裡它只看到 Authorization: Bearer，別的什麼都沒有。"
+
+msgid "Call the probe"
+msgstr "呼叫探針"
+
+msgid "3. Refresh"
+msgstr "3. 刷新"
+
+#, python-format
+msgid "POST %(url)s with the refresh token. Each refresh token works once: showing a spent one again ends the whole sign-in, since two parties then hold it."
+msgstr "帶著刷新令牌 POST %(url)s。每個刷新令牌只能用一次：已經用過的再出現，說明有兩方拿著它，整個登入隨即作廢。"
+
+msgid "Refresh the tokens"
+msgstr "刷新令牌"
+
+msgid "4. Sign out"
+msgstr "4. 登出"
+
+#, python-format
+msgid "POST %(url)s with the refresh token and the access token in the Authorization header: both stop working at once, and the probe is called again to show it."
+msgstr "帶著刷新令牌 POST %(url)s，Authorization 標頭裡放訪問令牌：兩者同時失效，隨後再呼叫一次探針來證明。"
+
+msgid "Sign out"
+msgstr "登出"
+
+msgid "Not run yet."
+msgstr "還沒執行。"
+
+msgid "API keys are not enabled on this service."
+msgstr "本服務沒有啟用 API key。"
+
+msgid "List api_key in web.auth.authenticators and name at least one key under web.auth.api_keys in data/web_settings.yaml, then restart. Keys stay out of the example settings file, which is public."
+msgstr "在 data/web_settings.yaml 的 web.auth.authenticators 裡列出 api_key，並在 web.auth.api_keys 下至少設定一個 key，然後重新啟動。範例設定檔是公開的，不放 key。"
+
+msgid "A script or another service is a caller, not a user."
+msgstr "腳本或其他服務是呼叫方，不是使用者。"
+
+msgid "The probe below accepts only API keys: request.ctx.user stays anonymous and request.ctx.auth.caller names the key. Being signed in does not open it."
+msgstr "下面的探針只接受 API key：request.ctx.user 保持匿名，request.ctx.auth.caller 是 key 的名字。已登入也進不去。"
+
+msgid "Keys this service accepts"
+msgstr "本服務接受的 key"
+
+msgid "Only the names are shown; the secrets stay in web.auth.api_keys. Paste one below to call the probe with it."
+msgstr "這裡只顯示名字，密鑰留在 web.auth.api_keys 裡。把其中一個貼到下面，就能用它呼叫探針。"
+
+msgid "API key"
+msgstr "API key"
+
+msgid "Signed in, no key"
+msgstr "已登入，不帶 key"
+
+msgid "This browser's session is recognized, but the probe takes keys only, so the answer is 403 rather than 401."
+msgstr "瀏覽器的會話被認出來了，但探針只收 key，所以回答是 403 而不是 401。"
+
+msgid "Call with the session"
+msgstr "用會話呼叫"
+
+msgid "The key, no cookies"
+msgstr "帶 key，不帶 cookie"
+
+#, python-format
+msgid "Sent in the %(header)s header with cookies left out: the key alone gets in."
+msgstr "key 放在 %(header)s 標頭裡，不帶 cookie：單憑 key 就能進。"
+
+msgid "Call with the key"
+msgstr "用 key 呼叫"
+
+msgid "A wrong key"
+msgstr "錯誤的 key"
+
+msgid "The pasted key with extra characters. Nothing recognizes the request, so the answer is 401."
+msgstr "在貼上的 key 後面多加幾個字元。沒有任何認證方式認出這個請求，所以回答是 401。"
+
+msgid "Call with a wrong key"
+msgstr "用錯誤的 key 呼叫"
+
+msgid "From a script"
+msgstr "在腳本裡呼叫"
+
+msgid "Sending…"
+msgstr "傳送中…"
+
+msgid "Refused"
+msgstr "被拒絕"
+
+msgid "Get a token first."
+msgstr "請先取得令牌。"
+
+msgid "Signed in. The page now holds an access token and a refresh token."
+msgstr "已登入。本頁現在持有一個訪問令牌和一個刷新令牌。"
+
+#, python-brace-format
+msgid "Recognized {username} by {method}."
+msgstr "透過 {method} 認出了 {username}。"
+
+msgid "No cookie was sent: the access token alone signed this request in."
+msgstr "沒有傳送 cookie：這個請求單憑訪問令牌完成了認證。"
+
+msgid "A new pair was issued. The refresh token it replaced no longer works."
+msgstr "簽發了新的一對令牌，被換掉的刷新令牌隨即失效。"
+
+#, python-brace-format
+msgid "Signed out. The probe, called again with the same access token, answered HTTP {status}."
+msgstr "已登出。用同一個訪問令牌再呼叫探針，回答是 HTTP {status}。"
+
+msgid "The token response carried no tokens."
+msgstr "取得令牌的回應裡沒有令牌。"
+
+#, python-brace-format
+msgid "The access token expires in {access} seconds; the refresh token in {refresh} seconds."
+msgstr "訪問令牌 {access} 秒後過期，刷新令牌 {refresh} 秒後過期。"
+
+msgid "Paste a key from web.auth.api_keys first."
+msgstr "請先貼上一個 web.auth.api_keys 裡的 key。"
+
+#, python-brace-format
+msgid "Accepted as the caller {caller}. No user is signed in (user id: {user})."
+msgstr "作為呼叫方 {caller} 通過，沒有使用者登入（使用者 id：{user}）。"
+
+msgid "Security"
+msgstr "安全"
+
+msgid "Browser Fingerprint"
+msgstr "瀏覽器指紋"
+
+msgid "Fingerprint accepted"
+msgstr "指紋已通過"
+
+msgid "This raises the cost of abuse. It does not prove who anyone is."
+msgstr "這只能提高濫用的成本，不能證明對方是誰。"
+
+msgid "The AES key is shared with the browser so the page can encrypt its payload, which means anyone who opens devtools can read it and sign their own. Use it as friction against scripted clients; decide identity with the session."
+msgstr "AES 密鑰要交給瀏覽器，頁面才能加密載荷；這意味著任何人打開開發人員工具都能讀到它，並自己產生載荷。把它當作給腳本用戶端增加的阻力，身份仍由會話決定。"
+
+msgid "This browser"
+msgstr "本瀏覽器"
+
+msgid "The visitor id is derived from device characteristics and kept in memory only. The encrypted payload is reused until it expires, then rebuilt."
+msgstr "訪客 id 由裝置特徵推算，只保存在記憶體裡。加密後的載荷在過期前重複使用，過期後重新產生。"
+
+msgid "Visitor id"
+msgstr "訪客 id"
+
+msgid "Not generated yet"
+msgstr "尚未產生"
+
+msgid "Payload accepted within"
+msgstr "載荷有效期"
+
+#, python-format
+msgid "%(seconds)s seconds of its timestamp"
+msgstr "時間戳前後 %(seconds)s 秒內"
+
+msgid "Limit for this probe"
+msgstr "本探針的限額"
+
+#, python-format
+msgid "%(count)s requests per %(window)s seconds"
+msgstr "每 %(window)s 秒 %(count)s 次請求"
+
+msgid "A real payload passes"
+msgstr "真實載荷可以通過"
+
+msgid "Proves the browser and the server agree on the key and the wire format."
+msgstr "證明瀏覽器和伺服器端的密鑰與傳輸格式一致。"
+
+msgid "Send with fingerprint"
+msgstr "帶指紋傳送"
+
+msgid "No header is refused"
+msgstr "不帶請求標頭會被拒絕"
+
+msgid "A scripted client that skips the page's crypto gets 403, and the attempt is recorded against its IP."
+msgstr "跳過頁面加密的腳本用戶端會得到 403，這次嘗試會記在它的 IP 上。"
+
+msgid "Send without fingerprint"
+msgstr "不帶指紋傳送"
+
+msgid "An edited payload is refused"
+msgstr "被改過的載荷會被拒絕"
+
+msgid "One byte is flipped before sending. AES-GCM authenticates, so the server rejects it rather than decrypting something else."
+msgstr "傳送前改掉一個位元組。AES-GCM 帶認證，所以伺服器端直接拒絕，而不是解出別的內容。"
+
+msgid "Send an edited payload"
+msgstr "傳送改過的載荷"
+
+msgid "Too many requests are refused"
+msgstr "請求過多會被拒絕"
+
+msgid "The same visitor id keeps arriving, so the combined fingerprint/IP limiter stops it and says when to come back."
+msgstr "同一個訪客 id 不斷到來，指紋與 IP 聯合限流器會攔下它，並告知何時可以再試。"
+
+msgid "Send until refused"
+msgstr "一直傳送直到被拒"
+
+msgid "Making it harder to defeat"
+msgstr "讓它更難被繞過"
+
+msgid "Everything below raises the cost further. None of it turns this into authentication."
+msgstr "下面每一項都能進一步提高成本，但沒有一項能讓它變成身份認證。"
+
+msgid "Derive the visitor id from more signals."
+msgstr "用更多訊號推算訪客 id。"
+
+msgid "This page uses a small built-in hash of navigator and screen properties so the framework needs no extra dependency. A library such as FingerprintJS reads many more signals and survives more browser changes; pass it to createFingerprintSender as the visitorId provider."
+msgstr "本頁用一個內建的小雜湊，根據 navigator 和 screen 的屬性計算，框架因此不需要額外相依套件。FingerprintJS 這類函式庫讀取的訊號多得多，瀏覽器有變化時也更穩定；把它作為 visitorId 提供者傳給 createFingerprintSender 即可。"
+
+msgid "Obfuscate the key in your bundle."
+msgstr "在建置產物裡混淆密鑰。"
+
+msgid "The key reaches the browser at build time, never from the page. Splitting it across arrays combined at runtime, and running a JavaScript obfuscator over the build, both mean a static search of the bundle no longer finds it."
+msgstr "密鑰在建置時進入瀏覽器程式碼，從不來自頁面。把它拆進幾個執行時再拼接的陣列，或對建置產物執行 JavaScript 混淆器，都能讓對建置產物的靜態搜尋找不到它。"
+
+msgid "Rotate the key."
+msgstr "定期更換密鑰。"
+
+msgid "Deploy the frontend and the setting together. A key that has leaked stays useful until it changes."
+msgstr "前端和設定要一起部署。洩漏的密鑰在更換之前一直可用。"
+
+msgid "Keep the accepted window narrow."
+msgstr "把有效時間窗口設窄。"
+
+msgid "timestamp_max_diff bounds how long a captured payload can be replayed. Shorten it until clock skew between your users and your servers starts to hurt."
+msgstr "timestamp_max_diff 限定截獲的載荷能被重放多久。可以一直縮短，直到使用者與伺服器之間的時鐘偏差開始造成問題。"
+
+msgid "Give each sensitive route its own bucket."
+msgstr "給每個敏感路由單獨的額度。"
+
+msgid "rate_limits is keyed by endpoint, so a login route can be far stricter than a catalog page without slowing browsing down."
+msgstr "rate_limits 按介面分別設定，所以登入介面可以比目錄頁嚴格得多，而不會拖慢一般瀏覽。"
+
+msgid "Watch the anomalies."
+msgstr "關注異常。"
+
+msgid "The limiter also reports one fingerprint arriving from many IPs, and one IP carrying many fingerprints. Those patterns identify automation that a per-request check cannot."
+msgstr "限流器還會報告同一個指紋來自很多 IP、同一個 IP 帶著很多指紋的情況。這些模式能識別出逐個請求檢查發現不了的自動化行為。"
+
+#, python-brace-format
+msgid "Accepted. Seen {fp} times from this fingerprint and {ip} from this address in the current window."
+msgstr "已通過。目前窗口內，這個指紋出現了 {fp} 次，這個位址出現了 {ip} 次。"
+
+#, python-brace-format
+msgid "Refused on request {count}. {detail}"
+msgstr "第 {count} 次請求被拒絕。{detail}"
+
+#, python-brace-format
+msgid "Sent {count}, still accepted…"
+msgstr "已傳送 {count} 次，仍被接受…"
+
+msgid "Still accepted after 40 requests; the limit for this probe is higher than expected."
+msgstr "40 次請求後仍被接受；這個探針的限額比預期高。"
+
+#, python-brace-format
+msgid "{reason} Retry after {seconds} seconds."
+msgstr "{reason} {seconds} 秒後重試。"
+
+msgid "Model Cache"
+msgstr "模型快取"
+
+msgid "The selected project no longer exists."
+msgstr "所選專案已不存在。"
+
+msgid "Cache hit"
+msgstr "命中快取"
+
+msgid "Cache miss: read from the database and stored"
+msgstr "未命中：從資料庫讀取並寫入快取"
+
+msgid "Bypassed: this process has just written example tasks"
+msgstr "繞過：本行程剛寫入過範例任務"
+
+msgid "Fallback: Redis or the cache pool was unavailable"
+msgstr "降級：Redis 或快取連線池不可用"
+
+msgid "Source unknown: another read ran at the same time"
+msgstr "來源不明：同時有另一次讀取"
+
+#, python-format
+msgid "%(ms)s ms"
+msgstr "%(ms)s 毫秒"
+
+msgid "Tasks of the chosen project"
+msgstr "所選專案的任務"
+
+msgid "Position"
+msgstr "位置"
+
+msgid "This project has no tasks."
+msgstr "這個專案沒有任務。"
+
+#, python-format
+msgid "This process so far: %(hits)s hits, %(misses)s misses, %(bypassed)s bypassed, %(fallbacks)s fallbacks."
+msgstr "本行程至今：命中 %(hits)s 次，未命中 %(misses)s 次，繞過 %(bypassed)s 次，降級 %(fallbacks)s 次。"
+
+msgid "Every cached example task entry was invalidated; the next read is a miss."
+msgstr "所有範例任務的快取條目都已失效，下一次讀取不會命中。"
+
+#, python-format
+msgid "Restored %(count)s rows through the ORM, so their caches were invalidated too."
+msgstr "已透過 ORM 還原 %(count)s 列，它們的快取也隨之失效。"
+
+msgid "Nothing to change: no suitable project with tasks was found."
+msgstr "沒有可改的：找不到合適的帶任務的專案。"
+
+msgid "Committed through the ORM. Read tasks again: the cached query of this project was invalidated."
+msgstr "已透過 ORM 提交。再讀一次任務：這個專案快取的查詢已經失效。"
+
+msgid "Committed through the ORM to another project's task. Read tasks again: this project's cached query is still a hit."
+msgstr "已透過 ORM 提交另一個專案的任務。再讀一次任務：這個專案快取的查詢仍然命中。"
+
+msgid "Committed with an UPDATE statement and nothing told the cache. Read tasks again: still a hit with the old title."
+msgstr "已用 UPDATE 語句提交，沒有告訴快取。再讀一次任務：仍然命中，標題還是舊的。"
+
+msgid "Committed through the ORM. Read tasks again: every cached task query misses once."
+msgstr "已透過 ORM 提交。再讀一次任務：所有快取的任務查詢都會未命中一次。"
+
+msgid "Project tasks through the model cache"
+msgstr "經模型快取讀取專案任務"
+
+msgid "Example tasks are declared with partition_by=(\"project_id\",) and invalidate_on=(ExampleProject, ExampleTeam). Reading a project's tasks goes through the cache; each write below shows what invalidates it."
+msgstr "範例任務宣告了 partition_by=(\"project_id\",) 和 invalidate_on=(ExampleProject, ExampleTeam)。讀取一個專案的任務會經過快取；下面每種寫法都示範什麼會讓它失效。"
+
+msgid "No example projects with tasks exist. Load the demo fixture first."
+msgstr "沒有帶任務的範例專案。請先載入示範資料。"
+
+msgid "Read tasks"
+msgstr "讀取任務"
+
+msgid "Rename its first task (ORM)"
+msgstr "改名它的第一個任務（ORM）"
+
+msgid "Rename a task of another project (ORM)"
+msgstr "改名另一個專案的任務（ORM）"
+
+msgid "Rename its first task with an UPDATE statement"
+msgstr "用 UPDATE 語句改名它的第一個任務"
+
+msgid "Rename the project (ORM)"
+msgstr "改名這個專案（ORM）"
+
+msgid "Invalidate the task cache"
+msgstr "讓任務快取失效"
+
+msgid "Restore example data"
+msgstr "還原範例資料"
+
+msgid "Read twice: the first read is a miss that stores the result, the second a hit."
+msgstr "連讀兩次：第一次未命中並寫入快取，第二次命中。"
+
+msgid "After an ORM write to one of this project's tasks, the next read is a miss and shows the new title."
+msgstr "透過 ORM 改這個專案的任務後，下一次讀取未命中，顯示新標題。"
+
+msgid "A write to another project's task leaves this project's cached query a hit: its partition did not change."
+msgstr "改另一個專案的任務，這個專案快取的查詢仍然命中：它所在的分區沒有變。"
+
+msgid "An UPDATE statement fires no ORM event, so the next read is still a hit with the old title until the task cache is invalidated. Code that writes this way calls ExampleTask.invalidate_cache_on_commit(session)."
+msgstr "UPDATE 語句不觸發 ORM 事件，所以在任務快取失效之前，下一次讀取仍然命中舊標題。這樣寫入的程式要呼叫 ExampleTask.invalidate_cache_on_commit(session)。"
+
+msgid "Renaming the project makes every cached task query miss once: the database deletes a project's tasks by itself, so the cache listens to project writes."
+msgstr "改名專案會讓所有快取的任務查詢未命中一次：資料庫會自己刪除專案的任務，所以快取要監聽專案的寫入。"
+
+msgid "Choose a project and read its tasks to begin."
+msgstr "選一個專案，讀取它的任務開始。"
+
+msgid "Dynamic Configuration"
+msgstr "動態設定"
+
+msgid "File Configuration"
+msgstr "檔案設定"
+
+msgid "Redis Configuration"
+msgstr "Redis 設定"
+
+msgid "Enter a channel ID of up to 40 characters."
+msgstr "請輸入不超過 40 個字元的頻道 ID。"
+
+msgid "Enter whole minutes between -720 and 720."
+msgstr "請輸入 -720 到 720 之間的整數分鐘。"
+
+msgid "Keep the announcement within 200 characters."
+msgstr "公告請控制在 200 個字元以內。"
+
+msgid "Keep the banner within 200 characters."
+msgstr "橫幅文字請控制在 200 個字元以內。"
+
+msgid "Enter a whole number from 1 to 20."
+msgstr "請輸入 1 到 20 之間的整數。"
+
+msgid "Enter a device ID of up to 40 characters."
+msgstr "請輸入不超過 40 個字元的裝置 ID。"
+
+#, python-format
+msgid "on_file_changed calls: %(count)s"
+msgstr "on_file_changed 呼叫次數：%(count)s"
+
+msgid "Saved by the store itself, so the hook was not called."
+msgstr "由容器自己儲存，所以沒有呼叫鉤子。"
+
+#, python-format
+msgid "The file was replaced outside the store. Read again: within %(seconds)s seconds the store picks it up."
+msgstr "檔案已在容器之外被整體替換。再讀取一次：%(seconds)s 秒內容器就會讀到它。"
+
+msgid "The file now holds a word where minutes belong. At its next check the store keeps the last valid value and logs an error."
+msgstr "檔案裡本該是分鐘數的地方現在是一個單字。容器下一次檢查時保留上次的合法值，並記一條錯誤日誌。"
+
+msgid "Decoded value"
+msgstr "解碼後的值"
+
+msgid "Announcement"
+msgstr "公告"
+
+msgid "(none)"
+msgstr "（無）"
+
+msgid "Channel overrides"
+msgstr "頻道覆寫設定"
+
+msgid "EPG offset in minutes"
+msgstr "EPG 偏移（分鐘）"
+
+msgid "The file on disk"
+msgstr "磁碟上的檔案"
+
+msgid "Saved with update(): the value was checked against SiteFlags before it was written."
+msgstr "已用 update() 儲存：寫入之前按 SiteFlags 驗證過。"
+
+msgid "A second RedisStore instance wrote the banner, as another process would. Nothing is cached locally, so this read already shows it."
+msgstr "另一個 RedisStore 實例寫入了橫幅，就像另一個行程那樣。本地不做快取，所以這次讀取已經能看到。"
+
+#, python-format
+msgid "update() refused the value and wrote nothing: %(error)s"
+msgstr "update() 拒絕了這個值，什麼也沒寫：%(error)s"
+
+msgid "The value was written, which should not happen."
+msgstr "這個值被寫入了，這本不應發生。"
+
+#, python-format
+msgid "Added %(device)s."
+msgstr "已加入 %(device)s。"
+
+#, python-format
+msgid "%(device)s was already in the set."
+msgstr "%(device)s 原本就在集合裡。"
+
+#, python-format
+msgid "Removed %(device)s."
+msgstr "已移除 %(device)s。"
+
+#, python-format
+msgid "%(device)s was not in the set."
+msgstr "%(device)s 原本不在集合裡。"
+
+#, python-format
+msgid "%(device)s is allowed."
+msgstr "%(device)s 在允許名單裡。"
+
+#, python-format
+msgid "%(device)s is not allowed."
+msgstr "%(device)s 不在允許名單裡。"
+
+#, python-format
+msgid "Picked %(device)s at random."
+msgstr "隨機取到 %(device)s。"
+
+msgid "The set is empty."
+msgstr "集合是空的。"
+
+msgid "Both keys are back to their defaults."
+msgstr "兩個鍵都已恢復預設值。"
+
+msgid "Banner"
+msgstr "橫幅"
+
+msgid "Streams per user"
+msgstr "每位使用者串流數"
+
+msgid "No devices are allowed yet."
+msgstr "還沒有允許的裝置。"
+
+msgid "A YAML file read through YamlStore"
+msgstr "透過 YamlStore 讀取的 YAML 檔案"
+
+#, python-format
+msgid "ChannelOverrides declares the fields, their types and their defaults. The store keeps the decoded value in memory and looks at the file every %(seconds)s seconds."
+msgstr "ChannelOverrides 宣告欄位、型別和預設值。容器把解碼後的值留在記憶體裡，每 %(seconds)s 秒看一次檔案。"
+
+msgid "Change the channel (get, assign, save)"
+msgstr "修改頻道（get、賦值、save）"
+
+msgid "Set the announcement (update)"
+msgstr "設定公告（update）"
+
+msgid "Edit the announcement in the file, outside the store"
+msgstr "在容器之外直接改檔案裡的公告"
+
+msgid "Write a wrong type into the file"
+msgstr "往檔案裡寫入型別不對的值"
+
+msgid "Restore the defaults"
+msgstr "恢復預設值"
+
+msgid "Changing the channel reads the value, assigns the field and saves it. The store's own saves never call on_file_changed."
+msgstr "修改頻道會讀出值、給欄位賦值再儲存。容器自己的儲存從不呼叫 on_file_changed。"
+
+msgid "update(announcement=...) reads, changes and saves in one call; a subclass that overrides save covers it too."
+msgstr "update(announcement=...) 一次呼叫完成讀取、修改和儲存；子類別覆寫 save 時也覆寫了它。"
+
+#, python-format
+msgid "An edit outside the store replaces the file as an editor would. The store picks it up at its next check, at most %(seconds)s seconds later, and calls on_file_changed once."
+msgstr "容器之外的修改會像編輯器一樣整體替換檔案。容器在下一次檢查時讀到它（最多 %(seconds)s 秒後），並呼叫一次 on_file_changed。"
+
+msgid "A wrong type written into the file is not taken: the store keeps serving the last valid value and logs one error."
+msgstr "寫進檔案的錯誤型別不會被採用：容器繼續提供上次的合法值，並記一條錯誤日誌。"
+
+msgid "What the store serves"
+msgstr "容器提供的值"
+
+msgid "Values in one Redis key through RedisStore"
+msgstr "透過 RedisStore 存在一個 Redis 鍵裡的值"
+
+msgid "SiteFlags declares the fields, their types and their defaults. The whole value lives in one key; every read goes to Redis, so a write from another process shows at the next read."
+msgstr "SiteFlags 宣告欄位、型別和預設值。整個值存在一個鍵裡；每次讀取都存取 Redis，所以別的行程寫入後，下一次讀取就能看到。"
+
+msgid "Site under maintenance"
+msgstr "網站維護中"
+
+msgid "Save the three fields (update)"
+msgstr "儲存這三個欄位（update）"
+
+msgid "Write the banner from another instance"
+msgstr "從另一個實例寫入橫幅"
+
+msgid "Try to save text into the number field"
+msgstr "嘗試把文字存進數字欄位"
+
+msgid "A device allowlist in a Redis set through RedisSet"
+msgstr "透過 RedisSet 存在 Redis 集合裡的裝置允許名單"
+
+msgid "Each operation is one set command, so checking a device never reads the whole list."
+msgstr "每個操作都是一條集合命令，所以判斷一台裝置時不會讀出整個名單。"
+
+msgid "Device ID"
+msgstr "裝置 ID"
+
+msgid "Add"
+msgstr "加入"
+
+msgid "Is it allowed?"
+msgstr "是否允許？"
+
+msgid "Pick one at random"
+msgstr "隨機取一個"
+
+msgid "What Redis holds"
+msgstr "Redis 裡存的內容"

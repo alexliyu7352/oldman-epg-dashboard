@@ -2,24 +2,22 @@
 
 from __future__ import annotations
 
-from apps.auth.decorators import admin_required
-from apps.examples.apps import app as examples_app
-from apps.examples.http_example import OPERATION_PATHS, REQUEST_TIMEOUT, run_http_example
-from oldman.web import NotFound
+from oldman.web import NotFound, router
+from oldman.web.auth import staff_required
 from oldman.web.request import Request
 from oldman.web.response import replace_html_response
-from oldman.web.routing import get_app
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
-from oldman.web.template import render_template
+from oldman.web.template import render_fragment, render_template
+
+from apps.examples.apps import app as examples_app
+from apps.examples.http_example import OPERATION_PATHS, REQUEST_TIMEOUT, run_http_example
 
 from . import EXAMPLE_SECTIONS
 
-app = get_app()
 
-
-@app.get("/examples/http/client", name="example_http_page")
+@router.get("/examples/http/client", name="example_http_page")
 @add_csrf_token()
-@admin_required()
+@staff_required()
 async def example_http_page(request: Request):
     """Show the configured upstream without sending a network request."""
     section = EXAMPLE_SECTIONS["http"]
@@ -41,14 +39,13 @@ async def example_http_page(request: Request):
     )
 
 
-@app.post("/examples/http/client/<operation:str>", name="example_http_operation")
+@router.post("/examples/http/client/<operation:str>", name="example_http_operation")
 @csrf_protect()
-@admin_required()
+@staff_required()
 async def example_http_operation(request: Request, operation: str):
     """Deliver diagnostics, without confusing upstream errors with Demo errors."""
     if operation not in OPERATION_PATHS:
         raise NotFound("HTTP example operation was not found")
     result = await run_http_example(operation)
-    template = request.app.ext.environment.get_template("pages/examples/http/_result.html")
-    html = await template.render_async(result=result, request_timeout=REQUEST_TIMEOUT)
+    html = await render_fragment(request, "pages/examples/http/_result.html", result=result, request_timeout=REQUEST_TIMEOUT)
     return replace_html_response(html)

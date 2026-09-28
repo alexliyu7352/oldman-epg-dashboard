@@ -13,14 +13,10 @@ import time
 import urllib.parse
 from pathlib import Path
 
-try:
-    from scripts.png_evidence import require_png
-except ModuleNotFoundError:  # pragma: no cover - direct script execution
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts.png_evidence import require_png
+from oldman.testing import require_png
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PORT = 17998
+DEFAULT_PORT = 17997
 DEFAULT_USERNAME = "oldman_admin"
 DEFAULT_PASSWORD = "oldman_admin_123"
 WRAPPER_PATH = ROOT / "scripts" / "verify-dashboard-browser-with-server.py"

@@ -7,6 +7,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from ruamel.yaml import YAML
 from types import ModuleType
 from unittest.mock import patch
 
@@ -56,17 +58,22 @@ class DashboardBrowserWrapperTest(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="oldman-gate-settings-") as temp_dir:
             state_root = Path(temp_dir)
             env = {
-                "OLDMAN_DASHBOARD_URL": "http://127.0.0.1:17998/",
+                "OLDMAN_DASHBOARD_URL": "http://127.0.0.1:17997/",
                 "OLDMAN_GATE_CONFIG_FILE": str(state_root / "web_settings.yaml"),
                 "OLDMAN_GATE_STATIC_ROOT": str(state_root / "static"),
             }
 
-            config_file = wrapper.prepare_gate_settings(env, state_root, redis_url="redis://127.0.0.1:6380/0")
-            payload = wrapper.YAML(typ="safe", pure=True).load(config_file.read_text(encoding="utf-8"))
+            config_file = wrapper.prepare_gate_settings(env, state_root, redis_url="redis://127.0.0.1:6380")
+            payload = YAML(typ="safe", pure=True).load(config_file.read_text(encoding="utf-8"))
 
         self.assertEqual(str(state_root / "media"), payload["storages"]["default"]["options"]["location"])
         self.assertFalse(payload["taskiq"]["enabled"])
         self.assertFalse(payload["nats_bus"]["enabled"])
+        self.assertEqual(str(state_root / "static"), payload["web"]["static"]["root"])
+        # 每个 redis 别名都指向门禁自己的实例，一个都不能留在开发机的 Redis 上。
+        databases = [entry["redis_url"] for entry in payload["redis"].values()]
+        self.assertTrue(all(url.startswith("redis://127.0.0.1:6380/") for url in databases), databases)
+        self.assertEqual(len(payload["redis"]), len(set(databases)))
 
     def test_wrapper_no_longer_describes_service_as_legacy_package(self) -> None:
         source = SCRIPT_PATH.read_text(encoding="utf-8")

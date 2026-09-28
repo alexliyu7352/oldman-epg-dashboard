@@ -6,19 +6,18 @@ import asyncio
 import datetime as dt
 from collections import defaultdict
 
-from sqlalchemy import func, select
-
-from apps.epg_admin.tables import is_authenticated_request
 from oldman.i18n import gettext
 from oldman.web.components.charts import (
+    ChartInvalidRequest,
+    ChartRequest,
     ChartResult,
     ChartSeries,
     ChartSummary,
     SQLAlchemyChartView,
     TailwindChartRenderer,
 )
-from oldman.web.components.charts.views import ChartInvalidRequest
 from oldman.web.request import Request
+from sqlalchemy import func, select
 
 from .models import (
     ExampleProject,
@@ -72,8 +71,8 @@ class ExampleChartData(SQLAlchemyChartView):
         return await super().get(request, chart_key=chart_key)
 
     async def check_auth(self, request: Request) -> bool:
-        """Use the Dashboard guard and retain one deliberate 403 state."""
-        return self._chart_key != "forbidden" and is_authenticated_request(request)
+        """Retain one deliberate 403 state; the staff guard itself is the base class's."""
+        return self._chart_key != "forbidden"
 
     async def filter_delay(self, _value: str) -> None:
         """Declare the states-page delay filter used to prove latest-wins loading."""
@@ -128,7 +127,7 @@ class ExampleChartData(SQLAlchemyChartView):
         values = [
             (str(day), int(total)) for day, total in rows.all() if day is not None
         ]
-        values = _range_tail(values, chart_request.range_key)
+        values = _range_tail(values, chart_request)
         return ChartResult(
             series=[
                 ChartSeries(
@@ -159,10 +158,7 @@ class ExampleChartData(SQLAlchemyChartView):
             .group_by(date_expr)
             .order_by(date_expr)
         )
-        values = _range_tail(
-            [(str(day), int(total)) for day, total in rows.all()],
-            chart_request.range_key,
-        )
+        values = _range_tail([(str(day), int(total)) for day, total in rows.all()], chart_request)
         return ChartResult(
             series=[
                 ChartSeries(
@@ -497,13 +493,16 @@ class ExampleChartData(SQLAlchemyChartView):
         return list(latest.values())
 
 
-def _range_tail(values: list[tuple[str, int]], range_key: str) -> list[tuple[str, int]]:
-    """Keep a range-sized tail while preserving fixture usefulness over time."""
+def _range_tail(values: list[tuple[str, int]], chart_request: ChartRequest) -> list[tuple[str, int]]:
+    """Keep a range-sized tail while preserving fixture usefulness over time.
+
+    The window ends at the newest fixture row, not at today, so the demo charts stay populated;
+    its length is the range the framework parsed from the request.
+    """
     if not values:
         return values
-    days = {"7d": 7, "30d": 30, "90d": 90}[range_key]
     end = dt.date.fromisoformat(values[-1][0])
-    start = end - dt.timedelta(days=days - 1)
+    start = end - dt.timedelta(days=chart_request.range_days() - 1)
     return [
         (label, value)
         for label, value in values

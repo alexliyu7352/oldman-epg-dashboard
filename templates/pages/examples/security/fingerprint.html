@@ -1,0 +1,132 @@
+{% extends "pages/examples/base.html" %}
+
+{% block example_content %}
+  <section class="om-alert om-alert-warning mb-5" role="note">
+    <div>
+      <p class="mb-1 font-medium">{{ _("This raises the cost of abuse. It does not prove who anyone is.") }}</p>
+      <p class="mb-0 text-sm">{{ _("The AES key is shared with the browser so the page can encrypt its payload, which means anyone who opens devtools can read it and sign their own. Use it as friction against scripted clients; decide identity with the session.") }}</p>
+    </div>
+  </section>
+
+  <div data-om-component="fingerprint-probe" data-probe-endpoint="{{ probe_endpoint }}">
+    <section class="om-card mb-5">
+      <div class="om-card-header">
+        <div>
+          <h2 class="om-card-title mb-1">{{ _("This browser") }}</h2>
+          <p class="mb-0 text-sm text-default-500">{{ _("The visitor id is derived from device characteristics and kept in memory only. The encrypted payload is reused until it expires, then rebuilt.") }}</p>
+        </div>
+      </div>
+      <div class="om-card-body">
+        <dl class="grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt class="text-sm text-default-500">{{ _("Visitor id") }}</dt>
+            <dd class="mb-0 font-mono text-sm" data-probe-visitor>{{ _("Not generated yet") }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-default-500">{{ _("Payload accepted within") }}</dt>
+            <dd class="mb-0 text-sm">{{ _("%(seconds)s seconds of its timestamp", seconds=timestamp_max_diff_seconds) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-default-500">{{ _("Limit for this probe") }}</dt>
+            <dd class="mb-0 text-sm">{{ _("%(count)s requests per %(window)s seconds", count=rate_limit.fp_max, window=rate_limit.window) }}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="grid gap-5 lg:grid-cols-2">
+      <section class="om-card">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("A real payload passes") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("Proves the browser and the server agree on the key and the wire format.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <button type="button" class="om-button om-button-primary mb-4" data-probe="valid">{{ _("Send with fingerprint") }}</button>
+          <div class="text-sm" data-probe-result="valid" aria-live="polite" aria-atomic="true">
+            <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="om-card">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("No header is refused") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("A scripted client that skips the page's crypto gets 403, and the attempt is recorded against its IP.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <button type="button" class="om-button om-button-secondary mb-4" data-probe="missing">{{ _("Send without fingerprint") }}</button>
+          <div class="text-sm" data-probe-result="missing" aria-live="polite" aria-atomic="true">
+            <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="om-card">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("An edited payload is refused") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("One byte is flipped before sending. AES-GCM authenticates, so the server rejects it rather than decrypting something else.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <button type="button" class="om-button om-button-secondary mb-4" data-probe="tampered">{{ _("Send an edited payload") }}</button>
+          <div class="text-sm" data-probe-result="tampered" aria-live="polite" aria-atomic="true">
+            <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="om-card">
+        <div class="om-card-header">
+          <div>
+            <h2 class="om-card-title mb-1">{{ _("Too many requests are refused") }}</h2>
+            <p class="mb-0 text-sm text-default-500">{{ _("The same visitor id keeps arriving, so the combined fingerprint/IP limiter stops it and says when to come back.") }}</p>
+          </div>
+        </div>
+        <div class="om-card-body">
+          <button type="button" class="om-button om-button-secondary mb-4" data-probe="flood">{{ _("Send until refused") }}</button>
+          <div class="text-sm" data-probe-result="flood" aria-live="polite" aria-atomic="true">
+            <p class="mb-0 text-default-500">{{ _("Not run yet.") }}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="om-card mt-5">
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Making it harder to defeat") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-4 text-sm text-default-500">{{ _("Everything below raises the cost further. None of it turns this into authentication.") }}</p>
+      <ul class="mb-0 grid gap-3 text-sm">
+        <li>
+          <span class="font-medium">{{ _("Derive the visitor id from more signals.") }}</span>
+          {{ _("This page uses a small built-in hash of navigator and screen properties so the framework needs no extra dependency. A library such as FingerprintJS reads many more signals and survives more browser changes; pass it to createFingerprintSender as the visitorId provider.") }}
+        </li>
+        <li>
+          <span class="font-medium">{{ _("Obfuscate the key in your bundle.") }}</span>
+          {{ _("The key reaches the browser at build time, never from the page. Splitting it across arrays combined at runtime, and running a JavaScript obfuscator over the build, both mean a static search of the bundle no longer finds it.") }}
+        </li>
+        <li>
+          <span class="font-medium">{{ _("Rotate the key.") }}</span>
+          {{ _("Deploy the frontend and the setting together. A key that has leaked stays useful until it changes.") }}
+        </li>
+        <li>
+          <span class="font-medium">{{ _("Keep the accepted window narrow.") }}</span>
+          {{ _("timestamp_max_diff bounds how long a captured payload can be replayed. Shorten it until clock skew between your users and your servers starts to hurt.") }}
+        </li>
+        <li>
+          <span class="font-medium">{{ _("Give each sensitive route its own bucket.") }}</span>
+          {{ _("rate_limits is keyed by endpoint, so a login route can be far stricter than a catalog page without slowing browsing down.") }}
+        </li>
+        <li>
+          <span class="font-medium">{{ _("Watch the anomalies.") }}</span>
+          {{ _("The limiter also reports one fingerprint arriving from many IPs, and one IP carrying many fingerprints. Those patterns identify automation that a per-request check cannot.") }}
+        </li>
+      </ul>
+    </div>
+  </section>
+{% endblock %}
