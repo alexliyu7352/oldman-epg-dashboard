@@ -8,12 +8,13 @@ import json
 import os
 import re
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
 import time
 import urllib.parse
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -151,8 +152,11 @@ CHILD_SCREENSHOT_ALIASES = {
 }
 
 
+GATE_STOP_TIMEOUT = 20
+
+
 def stop_output_confirms_pid(output: str, pid: int) -> bool:
-    """Require the CLI to report the exact PID after its os.kill call succeeded."""
+    """Require the CLI to report the exact leader PID, which stop prints once that group has exited."""
     ansi = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
     return str(pid) in {ansi.sub("", line).strip() for line in output.splitlines()}
 
@@ -162,32 +166,47 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="oldman-epg-browser-gate-") as temp_dir:
         state_root = Path(temp_dir)
         env = build_env(state_root=state_root)
-        host, port = managed_server_address(env)
-        if port_is_open(port, host):
-            raise BrowserGateError(f"浏览器门禁拒绝接管已有服务：{host}:{port}")
-        if env.get("OLDMAN_BROWSER_GATE_SEEDED") == "1":
-            migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
-            load_gate_fixture(env)
-            ensure_default_admin(env)
-            with start_service(env) as (service_process, process_tree):
-                try:
-                    wait_for_port(host, port, process=service_process)
-                    return run_browser_gate(env)
-                finally:
-                    stop_service(env, service_process, process_tree)
-        with owned_redis_server(state_root / "redis", environment=env) as redis_url:
-            env["OLDMAN_GATE_STATIC_ROOT"] = str(state_root / "static")
-            prepare_gate_settings(env, state_root, redis_url=redis_url)
-            prepare_gate_static(env, state_root)
-            migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
-            load_gate_fixture(env)
-            ensure_default_admin(env)
-            with start_service(env) as (service_process, process_tree):
-                try:
-                    wait_for_port(host, port, process=service_process)
-                    return run_browser_gate(env)
-                finally:
-                    stop_service(env, service_process, process_tree)
+        with gate_service(env, state_root):
+            return run_browser_gate(env)
+
+
+@contextmanager
+def gate_service(env: dict[str, str], state_root: Path) -> Iterator[None]:
+    """准备门禁环境并启动服务，块结束时经 web stop 停止；本门禁与 auth-expiry 门禁共用这一套步骤。
+
+    父门禁已播种（OLDMAN_BROWSER_GATE_SEEDED=1）时沿用它的设置与 Redis，只迁移、装示例数据、建管理员；
+    否则先起本门禁自己的 Redis，再生成设置、准备静态文件。
+    """
+    host, port = managed_server_address(env)
+    if port_is_open(port, host):
+        raise BrowserGateError(f"浏览器门禁拒绝接管已有服务：{host}:{port}")
+    if env.get("OLDMAN_BROWSER_GATE_SEEDED") == "1":
+        migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
+        load_gate_fixture(env)
+        ensure_default_admin(env)
+        with _serving(env, host, port):
+            yield
+        return
+    with owned_redis_server(state_root / "redis", environment=env) as redis_url:
+        env["OLDMAN_GATE_STATIC_ROOT"] = str(state_root / "static")
+        prepare_gate_settings(env, state_root, redis_url=redis_url)
+        prepare_gate_static(env, state_root)
+        migrate_gate_database(Path(env["OLDMAN_GATE_CONFIG_FILE"]), state_root, project_root=ROOT)
+        load_gate_fixture(env)
+        ensure_default_admin(env)
+        with _serving(env, host, port):
+            yield
+
+
+@contextmanager
+def _serving(env: dict[str, str], host: str, port: int) -> Iterator[None]:
+    """启动服务、等端口就绪；块结束时（包括出错）经 web stop 停止并核实进程树已消失。"""
+    with start_service(env) as (service_process, process_tree):
+        try:
+            wait_for_port(host, port, process=service_process)
+            yield
+        finally:
+            stop_service(env, service_process, process_tree)
 
 
 def prepare_gate_static(env: dict[str, str], state_root: Path) -> None:
@@ -224,6 +243,8 @@ def prepare_gate_settings(
         # 这个 UI 门禁自己管 Redis，不碰 NATS；分布式任务有单独的真实服务检查。
         payload["taskiq"]["enabled"] = False
         payload["nats_bus"]["enabled"] = False
+        # web stop 最多等这么久再强停整组；门禁给 stop 命令留的时间在它之上。
+        payload.setdefault("process", {})["stop_timeout"] = GATE_STOP_TIMEOUT
         # 指纹密钥在前端构建期就进了 bundle，所以服务端必须用同一把。gate_settings 默认
         # 每次生成随机密钥，这里换回示例配置里的那把——两边对不上，示例页第一张卡就会红。
         fingerprint = payload["web"]["security"]["fingerprint"]
@@ -565,43 +586,31 @@ def stop_service(
     process_tree.remember()
     if not leader_was_running:
         errors.append(f"服务主进程在门禁发起停止前退出，退出码 {service_process.returncode}")
-    command = service_command(env, "stop")
-    leader_suspended = False
-    if leader_was_running:
+    else:
+        # stop 等整个进程组退出才返回（最多 process.stop_timeout，之后强停整组）：
+        # 它的退出码和打印的主进程 PID 就证明是这条命令停掉了这个服务。
         try:
-            process_tree.signal_leader(signal.SIGSTOP, require_live_leader=True)
-            leader_suspended = process_tree.wait_for_leader_state(frozenset({"T", "t"}), 2)
-            if not leader_suspended:
-                errors.append("owned leader 未在 stop 命令前进入暂停状态")
-        except ProcessTreeError as exc:
-            errors.append(str(exc))
-        if leader_suspended:
-            try:
-                completed = subprocess.run(
-                    command,
-                    cwd=ROOT,
-                    env=env,
-                    check=False,
-                    capture_output=True,
-                    text=True,
-                    timeout=15,
+            completed = subprocess.run(
+                service_command(env, "stop"),
+                cwd=ROOT,
+                env=env,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=GATE_STOP_TIMEOUT + 15,
+            )
+        except Exception as exc:
+            errors.append(f"web stop 执行失败: {type(exc).__name__}: {exc}")
+        else:
+            if completed.returncode != 0:
+                errors.append(
+                    f"web stop 返回 {completed.returncode}: "
+                    f"{(completed.stdout + completed.stderr).strip()[-2000:]}"
                 )
-            except Exception as exc:
-                errors.append(f"web stop 执行失败: {type(exc).__name__}: {exc}")
-            else:
-                if completed.returncode != 0:
-                    errors.append(
-                        f"web stop 返回 {completed.returncode}: "
-                        f"{(completed.stdout + completed.stderr).strip()[-2000:]}"
-                    )
-                elif not stop_output_confirms_pid(completed.stdout, service_process.pid):
-                    errors.append("web stop 未返回 owned leader PID，无法证明停止信号已送达")
-            finally:
-                try:
-                    process_tree.signal_leader(signal.SIGCONT, require_live_leader=True)
-                except ProcessTreeError as exc:
-                    errors.append(f"stop 命令后无法恢复 owned leader: {exc}")
-    survivors = process_tree.wait_for_exit(service_process, 8 if leader_was_running else 0)
+            elif not stop_output_confirms_pid(completed.stdout, service_process.pid):
+                errors.append("web stop 未返回 owned leader PID，无法证明停止的是这个服务")
+    # stop 已经等过整组退出，这里只剩回收子进程。
+    survivors = process_tree.wait_for_exit(service_process, 2 if leader_was_running else 0)
     if survivors:
         errors.append(f"owned service process tree 在优雅停止后仍有残留: {survivors}")
         try:

@@ -14,6 +14,7 @@ import urllib.parse
 from pathlib import Path
 
 from oldman.testing import require_png
+from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PORT = 17997
@@ -21,6 +22,8 @@ DEFAULT_USERNAME = "oldman_admin"
 DEFAULT_PASSWORD = "oldman_admin_123"
 WRAPPER_PATH = ROOT / "scripts" / "verify-dashboard-browser-with-server.py"
 TAILWIND_GATE_PATH = ROOT / "scripts" / "verify-tailwind-browser.py"
+#: 会话过期后由表格重新加载发出、应当收到 401 的请求。
+EXPIRED_REQUEST_PATH = "/channels-epg/table"
 
 
 def load_module(path: Path, name: str):
@@ -53,18 +56,11 @@ wait_for_oldman_ready = TAILWIND_GATE.wait_for_oldman_ready
 def main() -> int:
     """启动服务并执行会话过期浏览器门禁。"""
     with tempfile.TemporaryDirectory(prefix="oldman-auth-expiry-gate-") as temp_dir:
-        env = build_env(state_root=Path(temp_dir))
-        host, port = WRAPPER.managed_server_address(env)
-
-        if WRAPPER.port_is_open(host, port):
-            raise RuntimeError(f"auth-expiry 门禁拒绝接管已有服务：{host}:{port}")
-        WRAPPER.ensure_default_admin(env)
-        with WRAPPER.start_service(env) as (service_process, process_tree):
-            try:
-                WRAPPER.wait_for_port(host, port, process=service_process)
-                return run_auth_expiry_browser_gate(env)
-            finally:
-                WRAPPER.stop_service(env, service_process, process_tree)
+        state_root = Path(temp_dir)
+        env = build_env(state_root=state_root)
+        # 与主门禁同一套准备步骤：自带 Redis、门禁设置、静态文件、迁移、示例数据、管理员。
+        with WRAPPER.gate_service(env, state_root):
+            return run_auth_expiry_browser_gate(env)
 
 
 def build_env(*, state_root: Path | None = None) -> dict[str, str]:
@@ -95,7 +91,14 @@ def run_auth_expiry_browser_gate(env: dict[str, str]) -> int:
         env["OLDMAN_ADMIN_PASSWORD"],
         result,
         screenshot=screenshot,
+        session_cookie=session_cookie_name(env),
     )
+    # 会话过期后表格请求收到 401 正是本门禁要制造的情形：只放行这一个请求的 401 和浏览器随之记下的
+    # 资源加载失败，其余的控制台错误、页面错误和异常响应照常算失败。
+    result.badResponses = [
+        response for response in result.badResponses if not (response.get("status") == 401 and urllib.parse.urlparse(str(response.get("url"))).path == EXPIRED_REQUEST_PATH)
+    ]
+    result.consoleErrors = [message for message in result.consoleErrors if not ("401" in message and EXPIRED_REQUEST_PATH in message)]
     result.ok = not result.consoleErrors and not result.pageErrors and not result.badResponses
     payload = result.as_json()
     payload["statusMatrix"] = {
@@ -132,6 +135,7 @@ def verify_auth_expiry(
     result: VerificationResult,
     *,
     screenshot: Path,
+    session_cookie: str,
 ) -> dict[str, object]:
     """登录后删除 session cookie，验证表格 AJAX 触发登录跳转。"""
     port = find_free_port()
@@ -152,7 +156,7 @@ def verify_auth_expiry(
         login(client, base_url, username, password)
         navigate(client, urllib.parse.urljoin(base_url, "/channels-epg"))
         wait_for_oldman_ready(client)
-        clear_session_cookie(client, base_url)
+        clear_session_cookie(client, base_url, session_cookie)
         trigger_channels_table_reload(client)
         state = wait_for_login_redirect(client, seen_paths)
         failures = failure_messages(state.get("failures"))
@@ -176,9 +180,19 @@ def verify_auth_expiry(
         shutil.rmtree(user_data_dir, ignore_errors=True)
 
 
-def clear_session_cookie(client: CDPClient, base_url: str) -> None:
-    """删除浏览器中的后台 session cookie。"""
-    client.command("Network.deleteCookies", {"name": "oldman_session_id", "url": urllib.parse.urljoin(base_url, "/")})
+def session_cookie_name(env: dict[str, str]) -> str:
+    """门禁设置里的 session cookie 名：框架的门禁设置会另起名字，不是示例配置里的那个。"""
+    settings = YAML(typ="safe").load(Path(env["OLDMAN_GATE_CONFIG_FILE"]).read_text(encoding="utf-8"))
+    return str(settings["web"]["session"]["cookie_name"])
+
+
+def clear_session_cookie(client: CDPClient, base_url: str, name: str) -> None:
+    """删除浏览器中的后台 session cookie；删不到就说明名字不对，门禁不能继续。"""
+    url = urllib.parse.urljoin(base_url, "/")
+    present = {cookie["name"] for cookie in client.command("Network.getCookies", {"urls": [url]})["cookies"]}
+    if name not in present:
+        raise RuntimeError(f"浏览器里没有 session cookie {name!r}（现有：{sorted(present)}），无法模拟会话过期")
+    client.command("Network.deleteCookies", {"name": name, "url": url})
 
 
 def trigger_channels_table_reload(client: CDPClient) -> None:

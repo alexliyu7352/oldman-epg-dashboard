@@ -166,20 +166,22 @@ function createPreviewEnvironment(): nunjucks.Environment {
   environment.addGlobal("bundle_asset_url", (_bundleName: string, assetPath: string) => `/${assetPath.replace(/^\/+/, "")}`);
   environment.addGlobal("_", (message: string) => message);
   environment.addGlobal("gettext", (message: string) => message);
-  environment.addGlobal("dashboard_csrf_token", () => "preview-csrf-token");
-  environment.addGlobal("dashboard_current_language", () => previewLanguageDefinitions[0]?.code ?? "en");
-  environment.addGlobal("dashboard_language_items", () =>
+  // The framework's own template globals (oldman.web.template), with the names and shapes the templates call.
+  environment.addGlobal("current_year", () => new Date().getFullYear());
+  environment.addGlobal("csrf_token_for", () => "preview-csrf-token");
+  environment.addGlobal("current_language", () => previewLanguageDefinitions[0]?.code ?? "en");
+  environment.addGlobal("language_menu_items", () =>
     previewLanguageDefinitions.map((language, index) => {
       const flagUrl = language.flagUrl ?? (language.flag ? `/${language.flag.replace(/^\/+/, "")}` : "");
       return {
         aliases: [...language.aliases],
         code: language.code,
         flag: language.flag,
-        flag_asset: flagUrl,
         flagUrl,
         is_current: index === 0,
-        locale: language.locale,
-        name: language.name
+        locale: language.code,
+        name: language.name,
+        url: `?lang=${encodeURIComponent(language.code)}`
       };
     })
   );

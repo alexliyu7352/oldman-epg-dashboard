@@ -37,7 +37,6 @@ export function dashboardPreviewContext(): Record<string, unknown> {
   return {
     active_page: "dashboard_overview",
     active_section: "dashboard",
-    current_year: 2026,
     dashboard_notifications: notifications,
     feed_status_chart: new PreviewChart("/dashboard/charts/feed-status"),
     locale: "zh-CN",
