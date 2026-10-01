@@ -12,6 +12,9 @@ database:
 process:
   pid_dir: pids
 nats:
+  # 框架内置别名：不指定连接的调用用它。
+  DEFAULT:
+    nats_url: nats://127.0.0.1:4222
   TASKIQ:
     nats_url: nats://127.0.0.1:4222
 nats_bus:

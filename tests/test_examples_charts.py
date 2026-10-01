@@ -83,7 +83,7 @@ class ExampleChartI18nTests(unittest.IsolatedAsyncioTestCase):
             "译文:Projects",
             payload["plotOptions"]["radialBar"]["dataLabels"]["total"]["label"],
         )
-        self.assertEqual("译文:Example database", payload["meta"]["source"])
+        self.assertEqual("译文:Example database", payload["meta"]["译文:Source"])
 
 
 class PrefixCatalog:

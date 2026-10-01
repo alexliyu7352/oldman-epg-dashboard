@@ -10038,3 +10038,24 @@ msgstr "Pick one at random"
 
 msgid "What Redis holds"
 msgstr "What Redis holds"
+
+#: apps/dashboard/chart_views.py:50
+msgid "Total Programmes"
+msgstr "Total Programmes"
+
+#: apps/dashboard/chart_views.py:85
+msgid "Total Feeds"
+msgstr "Total Feeds"
+
+#: apps/epg_admin/charts.py:16
+msgid "Metric"
+msgstr "Metric"
+
+#: oldman/web/security/csrf/decorators.py:25
+msgid ""
+"This page has expired, or the request could not be confirmed as coming "
+"from this site. Reload the page and try again."
+msgstr ""
+"This page has expired, or the request could not be confirmed as coming "
+"from this site. Reload the page and try again."
+

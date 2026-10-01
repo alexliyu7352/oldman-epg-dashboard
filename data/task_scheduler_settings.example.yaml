@@ -11,6 +11,9 @@ database:
 process:
   pid_dir: pids
 nats:
+  # 框架内置别名：不指定连接的调用用它。
+  DEFAULT:
+    nats_url: nats://127.0.0.1:4222
   TASKIQ:
     nats_url: nats://127.0.0.1:4222
 nats_bus:
@@ -20,6 +23,9 @@ nats_bus:
   consume: false
   peer_id: task_scheduler
 redis:
+  # 框架内置别名：不指定连接的调用用它。
+  DEFAULT:
+    redis_url: redis://127.0.0.1:6379/3
   TASKIQ:
     redis_url: redis://127.0.0.1:6379/7
 taskiq:

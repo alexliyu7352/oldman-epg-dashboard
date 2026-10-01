@@ -112,9 +112,13 @@ class ExampleChartData(SQLAlchemyChartView):
                 gettext("Unknown example chart", request=chart_request.request)
             )
         result = await handler(chart_request)
-        result.meta.setdefault("range", chart_request.range_key)
+        # meta is shown under the chart as it is, so its labels are translated. These examples echo
+        # which request answered (the latest-wins demo reads the range back), so the range value stays
+        # as it was requested.
+        result.meta.setdefault(gettext("Range", request=chart_request.request), chart_request.range_key)
         result.meta.setdefault(
-            "source", gettext("Example database", request=chart_request.request)
+            gettext("Source", request=chart_request.request),
+            gettext("Example database", request=chart_request.request),
         )
         return result
 
@@ -457,7 +461,7 @@ class ExampleChartData(SQLAlchemyChartView):
                     data=[],
                 ),
             ],
-            meta={"server_id": server_id},
+            meta={gettext("Server", request=self.request): server_id},
             chart={
                 "type": "line",
                 "height": 340,
@@ -474,7 +478,7 @@ class ExampleChartData(SQLAlchemyChartView):
         return ChartResult(
             series=[],
             summary=[ChartSummary(label=gettext("Rows", request=self.request), value=0)],
-            meta={"state": "empty"},
+            meta={gettext("State", request=self.request): gettext("Empty", request=self.request)},
         )
 
     async def _latest_server_metrics(

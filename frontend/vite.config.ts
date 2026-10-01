@@ -58,6 +58,9 @@ export default defineConfig(({ command }) => ({
     emptyOutDir: true,
     manifest: true,
     outDir: resolve(rootDir, "../static/dist"),
+    // ApexCharts alone is about 580 kB; oldman-web loads it only on pages that have a chart.
+    // Any other chunk past 600 kB still gets Vite's warning.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       input: {
         main: resolve(rootDir, "src/main.ts")

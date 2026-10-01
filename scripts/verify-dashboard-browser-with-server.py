@@ -231,6 +231,11 @@ def prepare_gate_static(env: dict[str, str], state_root: Path) -> None:
     )
 
 
+def mail_dir(state_root: Path) -> Path:
+    """门禁服务把邮件写成 .eml 文件的目录。"""
+    return state_root / "mail"
+
+
 def prepare_gate_settings(
     env: dict[str, str],
     state_root: Path,
@@ -251,6 +256,8 @@ def prepare_gate_settings(
         fingerprint["aes_secret_key"] = DEMO_FINGERPRINT_KEY
         # 访问令牌与服务调用方示例页要的密钥不在示例配置里，每次门禁临时生成。
         payload["web"]["auth"] = demo_auth_settings()
+        # 邮件写成文件，找回密码门禁从这里读重置链接。
+        payload["mail"] = {"backend": "oldman.mail.backends.filebased.FileEmailBackend", "file_path": str(mail_dir(state_root))}
 
     host, port = managed_server_address(env)
     return gate_settings(

@@ -8676,3 +8676,21 @@ msgctxt "Rich text editor toolbar"
 msgid "Underline"
 msgstr ""
 
+#: apps/dashboard/chart_views.py:50
+msgid "Total Programmes"
+msgstr ""
+
+#: apps/dashboard/chart_views.py:85
+msgid "Total Feeds"
+msgstr ""
+
+#: apps/epg_admin/charts.py:16
+msgid "Metric"
+msgstr ""
+
+#: oldman/web/security/csrf/decorators.py:25
+msgid ""
+"This page has expired, or the request could not be confirmed as coming "
+"from this site. Reload the page and try again."
+msgstr ""
+

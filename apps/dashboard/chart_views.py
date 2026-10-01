@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from oldman.i18n import gettext as _
 from oldman.web import router
 from oldman.web.components.charts import (
     ChartResult,
@@ -12,6 +13,7 @@ from oldman.web.components.charts import (
 )
 from sqlalchemy import case, func, select
 
+from apps.epg_admin.charts import chart_caption
 from apps.epg_admin.models import CatalogFeed, CatalogLogoAsset, EpgList
 
 
@@ -43,10 +45,10 @@ class DashboardProgrammeTrendChart(SQLAlchemyChartView):
         data = [int(row.total or 0) for row in rows]
         total = sum(data)
         return ChartResult(
-            series=[ChartSeries(name="Programmes", data=data)] if data else [],
+            series=[ChartSeries(name=_("Programmes"), data=data)] if data else [],
             labels=labels,
-            summary=[ChartSummary(label="Total Programmes", value=total, tone="primary")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            summary=[ChartSummary(label=_("Total Programmes"), value=total, tone="primary")],
+            meta=chart_caption(chart_request, _("Programmes")),
             chart={"type": "line", "height": 320, "toolbar": {"show": False}},
         )
 
@@ -78,10 +80,10 @@ class DashboardFeedStatusChart(SQLAlchemyChartView):
         data = [{"x": str(row.status or "unknown"), "y": int(row.total or 0)} for row in rows]
         total = sum(item["y"] for item in data)
         return ChartResult(
-            series=[ChartSeries(name="Feeds", data=data)] if data else [],
+            series=[ChartSeries(name=_("Feeds"), data=data)] if data else [],
             labels=[item["x"] for item in data],
-            summary=[ChartSummary(label="Total Feeds", value=total, tone="success")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            summary=[ChartSummary(label=_("Total Feeds"), value=total, tone="success")],
+            meta=chart_caption(chart_request, _("Feeds")),
             chart={"type": "bar", "height": 320, "toolbar": {"show": False}},
         )
 
@@ -119,13 +121,14 @@ class DashboardLogoQualityChart(SQLAlchemyChartView):
             .order_by("sort_order")
         )
         rows = result.all()
-        data = [{"x": str(row.bucket), "y": int(row.total or 0)} for row in rows]
+        bucket_labels = {"Low": _("Low"), "Medium": _("Medium"), "High": _("High")}
+        data = [{"x": bucket_labels.get(str(row.bucket), str(row.bucket)), "y": int(row.total or 0)} for row in rows]
         total = sum(item["y"] for item in data)
         return ChartResult(
-            series=[ChartSeries(name="Logo Assets", data=data)] if data else [],
+            series=[ChartSeries(name=_("Logo Assets"), data=data)] if data else [],
             labels=[item["x"] for item in data],
-            summary=[ChartSummary(label="Total Logos", value=total, tone="warning")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            summary=[ChartSummary(label=_("Total Logos"), value=total, tone="warning")],
+            meta=chart_caption(chart_request, _("Logo Assets")),
             chart={"type": "bar", "height": 320, "toolbar": {"show": False}},
         )
 

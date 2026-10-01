@@ -340,6 +340,7 @@ pnpm --dir frontend build
 .venv/bin/python scripts/verify-notifications-browser-with-server.py --browser firefox
 .venv/bin/python scripts/verify-dashboard-browser-with-server.py
 .venv/bin/python scripts/verify-auth-expiry-browser.py
+.venv/bin/python scripts/verify-password-reset-browser.py
 ```
 
 浏览器脚本测的是构建并收集好的静态文件：前端或框架的静态文件有改动时，先构建、再收集，门禁测到的才是这次的改动。浏览器脚本会启动隔离的 Redis、数据库和服务，只清理自己创建的进程与临时文件。完整 Dashboard 验收使用真实 Chrome；通知接入同时覆盖 Chrome 和 Firefox。重任务应按上面的顺序执行，不要并发运行。

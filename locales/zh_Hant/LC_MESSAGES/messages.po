@@ -9623,3 +9623,22 @@ msgstr "隨機取一個"
 
 msgid "What Redis holds"
 msgstr "Redis 裡存的內容"
+
+#: apps/dashboard/chart_views.py:50
+msgid "Total Programmes"
+msgstr "節目總數"
+
+#: apps/dashboard/chart_views.py:85
+msgid "Total Feeds"
+msgstr "節目源總數"
+
+#: apps/epg_admin/charts.py:16
+msgid "Metric"
+msgstr "指標"
+
+#: oldman/web/security/csrf/decorators.py:25
+msgid ""
+"This page has expired, or the request could not be confirmed as coming "
+"from this site. Reload the page and try again."
+msgstr "頁面已過期，或無法確認請求來自本站。請重新整理頁面後再試。"
+

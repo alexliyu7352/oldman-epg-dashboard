@@ -35,6 +35,7 @@ from sqlalchemy import case, func, select
 
 from apps.epg_admin import selects as _epg_selects  # noqa: F401
 from apps.epg_admin import services
+from apps.epg_admin.charts import chart_caption
 from apps.epg_admin.forms import (
     CatalogChannelFilterForm,
     CatalogChannelForm,
@@ -111,7 +112,7 @@ class LogoAssetQualityDistributionChart(SQLAlchemyChartView):
             series=[ChartSeries(name=str(_("Logo Assets")), data=data)] if data else [],
             labels=[item["x"] for item in data],
             summary=[ChartSummary(label=str(_("Total Logos")), value=total, tone="warning")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            meta=chart_caption(chart_request, _("Logo Assets")),
             chart={"type": "bar", "height": 280, "toolbar": {"show": False}},
         )
 
@@ -145,7 +146,7 @@ class LogoAssetMimeDistributionChart(SQLAlchemyChartView):
             series=[ChartSeries(name=str(_("Logo Assets")), data=data)] if data else [],
             labels=[item["x"] for item in data],
             summary=[ChartSummary(label=str(_("Total MIME Groups")), value=len(data), tone="info"), ChartSummary(label=str(_("Total Logos")), value=total, tone="primary")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            meta=chart_caption(chart_request, _("Logo Assets")),
             chart={"type": "bar", "height": 280, "toolbar": {"show": False}},
         )
 
@@ -186,7 +187,7 @@ class LogoAssetDimensionScatterChart(SQLAlchemyChartView):
             series=[ChartSeries(name=str(_("Dimensions")), data=data)] if data else [],
             labels=[],
             summary=[ChartSummary(label=str(_("Sampled Logos")), value=len(data), tone="success")],
-            meta={"range": chart_request.range_key, "metric": chart_request.metric},
+            meta=chart_caption(chart_request, _("Dimensions")),
             chart={"type": "scatter", "height": 280, "toolbar": {"show": False}, "zoom": {"enabled": False}},
         )
 
