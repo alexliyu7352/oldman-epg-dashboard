@@ -6,7 +6,7 @@ from oldman.i18n import LazyTranslation
 from oldman.i18n import gettext_lazy as _
 from oldman.web import NotFound, router
 from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_error_response, form_response
-from oldman.web.auth import form_value, staff_required
+from oldman.web.auth import form_value, login_required
 from oldman.web.request import Request
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
 from oldman.web.template import render_fragment, render_template
@@ -57,7 +57,7 @@ def _invalid(field: str, message: LazyTranslation):
 
 @router.get("/examples/config/file", name="example_config_file_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_config_file_page(request: Request):
     """Show the file as the store serves it; the first read writes the defaults if the file is missing."""
     context = _page_context("file")
@@ -67,7 +67,7 @@ async def example_config_file_page(request: Request):
 
 @router.post("/examples/config/file", name="example_config_file_operation")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_config_file_operation(request: Request):
     """Run the operation of the pressed button, then show the value, the hook count and the file."""
     operation = _field(request, "operation")
@@ -108,7 +108,7 @@ async def example_config_file_operation(request: Request):
 
 @router.get("/examples/config/redis", name="example_config_redis_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_config_redis_page(request: Request):
     """Show the Redis value and the device set; reading a missing key gives the defaults and writes nothing."""
     context = _page_context("redis")
@@ -118,7 +118,7 @@ async def example_config_redis_page(request: Request):
 
 @router.post("/examples/config/redis", name="example_config_redis_operation")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_config_redis_operation(request: Request):
     """Run the operation of the pressed button, then show both keys again."""
     operation = _field(request, "operation")

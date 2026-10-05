@@ -4,7 +4,7 @@
   <section class="om-card">
     <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Dashboard staff guard") }}</h2></div>
     <div class="om-card-body">
-      <p class="mb-5 text-default-500">{{ _("This page and the probe below use the same admin_required guard as the real Dashboard. HTML requests redirect anonymous users; structured requests return authentication or permission errors.") }}</p>
+      <p class="mb-5 text-default-500">{{ _("Every Dashboard page, this one included, only requires signing in. The probe below adds the framework's staff_required guard. HTML requests redirect anonymous users; structured requests return authentication or permission errors.") }}</p>
       <div class="om-table-scroll">
         <table class="om-table">
           <thead><tr><th>{{ _("Request identity") }}</th><th>{{ _("Result") }}</th></tr></thead>
@@ -16,6 +16,46 @@
         </table>
       </div>
       <a class="om-button om-button-primary mt-5" href="/examples/auth/probe" data-om-action="get" data-example-auth-probe>{{ _("Run authenticated probe") }}</a>
+    </div>
+  </section>
+
+  <section class="om-card mt-5" data-example-team-guard>
+    <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Class-based data view: check_permission, check_auth and the visible rows") }}</h2></div>
+    <div class="om-card-body">
+      <p class="mb-5 text-default-500">{{ _("The table below inherits the example project table and overrides three hooks of its data endpoint. Each one answers a different question at a different moment; choose a team to watch them answer.") }}</p>
+      <div class="om-table-scroll mb-5">
+        <table class="om-table">
+          <thead><tr><th>{{ _("Request") }}</th><th>{{ _("Hook that answers") }}</th><th>{{ _("Result") }}</th></tr></thead>
+          <tbody>
+            <tr><td>{{ _("Anonymous") }}</td><td><code>require_authenticated</code></td><td><span class="om-badge bg-amber-50 text-amber-700">401 / {{ _("login redirect") }}</span></td></tr>
+            <tr><td>{{ _("Signed in, not staff") }}</td><td><code>check_permission</code>: {{ _("staff only, decided before any query") }}</td><td><span class="om-badge bg-red-50 text-red-700">403</span></td></tr>
+            <tr><td>{{ _("Staff, inactive team") }}</td><td><code>check_auth</code>: {{ _("looks the team up in the database") }}</td><td><span class="om-badge bg-red-50 text-red-700">403</span></td></tr>
+            <tr><td>{{ _("Staff, active team") }}</td><td><code>apply_base_filters</code>: {{ _("only this team's projects") }}</td><td><span class="om-badge bg-green-50 text-green-700">200</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      {% if guard_team %}
+        <form method="get" action="/examples/auth/guards" class="mb-4 flex flex-wrap items-end gap-3" data-example-team-form>
+          <div>
+            <label class="om-form-label" for="example-guard-team">{{ _("Team") }}</label>
+            <select class="om-select" id="example-guard-team" name="team">
+              {% for team in guard_teams %}
+                <option value="{{ team.id }}"{% if team.id == guard_team.id %} selected{% endif %}{% if not team.is_active %} data-inactive{% endif %}>{{ team.name }}{% if not team.is_active %} ({{ _("inactive") }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="om-button om-button-primary">{{ _("Show this team") }}</button>
+        </form>
+        {{ team_project_table.render_shell(
+          html_id="team-projects-table",
+          show_search=false,
+          data_format="json",
+          team_id=guard_team.id,
+        ) }}
+      {% else %}
+        <p class="text-default-500">{{ _("Load the demo fixture to get teams and projects.") }}</p>
+      {% endif %}
+      <pre class="mt-5 mb-0 overflow-x-auto rounded bg-default-100 p-4 text-sm"><code>{{ team_project_table_source }}</code></pre>
     </div>
   </section>
 {% endblock %}

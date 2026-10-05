@@ -11,13 +11,11 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, patch
 
-from apps.auth.session import DashboardSessionData
-from jinja2 import Environment, FileSystemLoader
+from apps.examples.session import DashboardSessionData
 
-import oldman.web
 from oldman.web.session import Session
 from oldman.conf.schemas import AuthConfig
-from oldman.web.authentication import Authentication, record_authentication, session_authentication
+from oldman.web.authentication import Authentication, RequestUser, record_authentication, session_authentication
 from tests.test_web_app import create_test_app
 
 
@@ -25,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def request_with_session(session: DashboardSessionData, path: str, app: Any = None):
-    """Build the request surface consumed by the shared staff guard.
+    """Build the request surface consumed by the shared login guard.
 
     拒绝分支要渲染 403 页面，那需要真实 app 的模板环境和 error_handler；只给一个
     `SimpleNamespace` 的话，断言还没跑到就死在渲染里了。
@@ -132,12 +130,13 @@ class ExampleRouteTests(unittest.TestCase):
         ):
             self.assertIn(f"{self.app.name}.{name}", route_names)
 
-        # 侧边栏 import 了框架的菜单宏，所以渲染需要能同时找到两处模板目录的 loader。
-        framework_templates = Path(oldman.web.__file__).resolve().parent / "templates"
-        sidebar = (
-            Environment(autoescape=True, loader=FileSystemLoader([ROOT / "templates", framework_templates]))
-            .get_template("partials/sidebar.html")
-            .render(_=lambda value: value, active_page="", active_section="")
+        # 由应用的模板环境渲染,account_urls 与 url_for 都在那里;Admin 入口只对 staff 列出,所以用 staff 渲染。
+        staff = RequestUser(id=1, username="admin", is_staff=True, is_superuser=True)
+        request = SimpleNamespace(app=self.app, path="/examples", ctx=SimpleNamespace(user=staff))
+        sidebar = asyncio.run(
+            self.app.ext.environment.get_template("partials/sidebar.html").render_async(
+                request=request, active_page="", active_section=""
+            )
         )
         for category, section in EXAMPLE_SECTIONS.items():
             pages = section["pages"]
@@ -153,12 +152,13 @@ class ExampleRouteTests(unittest.TestCase):
         # The built-in Admin has its own layout: its entry opens as a whole page, not inside the main Frame.
         self.assertIn('href="/admin" data-turbo="false"', sidebar)
 
-    def test_every_page_uses_staff_guard_shared_context_and_examples_entry(
+    def test_every_page_admits_any_signed_in_user_with_the_shared_context_and_examples_entry(
         self,
     ) -> None:
         from apps.examples import views
 
-        staff = DashboardSessionData(user_id=1, is_active=True, is_staff=True)
+        # Every example page only asks for a sign-in: an account without staff opens all of them.
+        staff = DashboardSessionData(user_id=1, is_active=True, is_staff=False)
         rendered = object()
         with patch.object(
             views, "render_template", new=AsyncMock(return_value=rendered)
@@ -350,31 +350,33 @@ class ExampleRouteTests(unittest.TestCase):
         self.assertIn("dashboard", html)
         self.assertIn("[1, 16]", html)
 
-    def test_examples_reject_anonymous_and_non_staff_sessions(self) -> None:
+    def test_examples_send_anonymous_to_login_and_admit_any_signed_in_user(self) -> None:
         from apps.examples import views
 
-        anonymous = asyncio.run(
-            views.examples_page(
-                request_with_session(DashboardSessionData(), "/examples/tables/static"),
-                "tables",
-                "static",
+        rendered = object()
+        with patch.object(views, "render_template", new=AsyncMock(return_value=rendered)):
+            anonymous = asyncio.run(
+                views.examples_page(
+                    request_with_session(DashboardSessionData(), "/examples/tables/static"),
+                    "tables",
+                    "static",
+                )
             )
-        )
-        non_staff = asyncio.run(
-            views.examples_page(
-                request_with_session(
-                    DashboardSessionData(user_id=2, is_active=True, is_staff=False),
-                    "/examples/tables/static",
-                    self.app,
-                ),
-                "tables",
-                "static",
+            non_staff = asyncio.run(
+                views.examples_page(
+                    request_with_session(
+                        DashboardSessionData(user_id=2, is_active=True, is_staff=False),
+                        "/examples/tables/static",
+                        self.app,
+                    ),
+                    "tables",
+                    "static",
+                )
             )
-        )
 
         self.assertEqual(302, anonymous.status)
         self.assertIn("/login?next=", anonymous.headers["location"])
-        self.assertEqual(403, non_staff.status)
+        self.assertIs(rendered, non_staff)
 
     def test_notification_example_uses_current_user_and_fixed_html(self) -> None:
         from apps.examples.views import notifications as notification_views
@@ -467,6 +469,43 @@ class ExampleRouteTests(unittest.TestCase):
         context = render.await_args.kwargs["context"]
         self.assertEqual(context["session"].user_id, 41)
         self.assertEqual(context["session_profile"].display_name, "Current Staff")
+
+    def test_guards_page_shows_the_chosen_team_with_the_table_and_its_source(self) -> None:
+        """Access Guards: every team to pick from (inactive ones too), `?team=` picks one, the first by default."""
+        from contextlib import asynccontextmanager
+
+        from apps.examples.tables import TeamProjectTable
+        from apps.examples.views import auth_session_i18n as example_views
+
+        teams = [SimpleNamespace(id=1, name="Us West", is_active=True), SimpleNamespace(id=8, name="Ca Central", is_active=False)]
+
+        class TeamSession:
+            async def scalars(self, query):
+                return SimpleNamespace(all=lambda: teams)
+
+        @asynccontextmanager
+        async def read_session():
+            yield TeamSession()
+
+        handler = inspect.unwrap(example_views.example_auth_page)
+        member = DashboardSessionData(user_id=5, is_active=True, is_staff=False)
+        contexts = []
+        for args in ({}, {"team": "8"}, {"team": "not-a-team"}):
+            request = request_with_session(member, "/examples/auth/guards")
+            request.args = args
+            with (
+                patch.object(example_views, "db_manager", SimpleNamespace(get_read_session=read_session)),
+                patch.object(example_views, "render_template", new=AsyncMock(return_value=object())) as render,
+            ):
+                asyncio.run(handler(request, "guards"))
+            assert render.await_args is not None
+            contexts.append(render.await_args.kwargs["context"])
+
+        self.assertEqual([1, 8, 1], [context["guard_team"].id for context in contexts])
+        self.assertEqual(teams, contexts[0]["guard_teams"])
+        self.assertIsInstance(contexts[0]["team_project_table"], TeamProjectTable)
+        # The page explains the class with its own source, so the two cannot drift apart.
+        self.assertIn("async def check_auth(self, table_request) -> bool:", contexts[0]["team_project_table_source"])
 
     def test_session_examples_use_the_installed_manager_for_expiry_and_revoke(
         self,

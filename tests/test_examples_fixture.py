@@ -81,8 +81,8 @@ class ExampleFixtureTests(unittest.TestCase):
         self.assertEqual(12, counts["epg_admin.UpstreamSourceRecord"])
         self.assertEqual(12, counts["epg_admin.CatalogLogoAsset"])
         self.assertEqual(12, counts["epg_admin.CatalogMatchDecision"])
-        # One demo role: it grants the permission the example project table checks.
-        self.assertEqual(1, counts["roles.Role"])
+        # Two demo roles: one grants the permission the example project table checks, one the user management pages.
+        self.assertEqual(2, counts["roles.Role"])
 
         logo_paths = {
             record["fields"]["svg_path"]
@@ -218,7 +218,7 @@ class ExampleFixtureTests(unittest.TestCase):
         self.assertEqual(12, counts["upstream_source_record"])
         self.assertEqual(12, counts["catalog_logo_asset"])
         self.assertEqual(12, counts["catalog_match_decision"])
-        self.assertEqual(1, counts["oldman_role"])
+        self.assertEqual(2, counts["oldman_role"])
         self.assertEqual(9, generated_team_id)
         self.assertEqual(team[0], rolled_back_name)
         self.assertEqual(0, rejected_count)

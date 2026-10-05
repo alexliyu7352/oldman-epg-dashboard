@@ -1,4 +1,7 @@
+{#- The menu. Every signed-in account uses every page listed here; User management follows its permission and
+    the Admin entry its own staff floor, as in the skeleton. -#}
 {% from "oldman/dashboard/partials/shell.html" import sidebar_menu_group, sidebar_menu_item with context %}
+{% set urls = account_urls(request) %}
 
 {% macro example_menu_group(slug, title, icon, pages) -%}
   {# 示例区的分组：段名由 slug 推出来，子项的 active 由 active_page 决定。 #}
@@ -33,11 +36,19 @@
         {{ sidebar_menu_item("/logo-assets", _("Logo Assets"), active=active_page == 'logo_assets') }}
       {% endcall %}
 
-      {% call sidebar_menu_group("sidebarSystem", _("System"), "ri-settings-3-line", active=active_section == 'system') %}
-        {{ sidebar_menu_item("/users", _("Users"), active=active_page == 'users') }}
-        {{ sidebar_menu_item("/user-session", _("User Session"), active=active_page == 'user_session') }}
+      {# The account pages are the framework's and pass no active_page: they are matched by address. #}
+      {% set on_users = request.path == urls.users or request.path.startswith(urls.users ~ "/") %}
+      {% set on_profile = request.path == urls.profile or request.path.startswith(urls.profile ~ "/") %}
+      {% call sidebar_menu_group("sidebarSystem", _("System"), "ri-settings-3-line", active=active_section == 'system' or on_users or on_profile) %}
+        {% if can_manage_users(request) %}
+          {{ sidebar_menu_item(urls.users, _("Users"), active=on_users) }}
+        {% endif %}
+        {{ sidebar_menu_item(urls.profile, _("User Session"), active=on_profile) }}
         {{ sidebar_menu_item("/notifications", _("Notifications"), active=active_page == 'notifications') }}
-        {{ sidebar_menu_item("/admin", _("Admin"), turbo=false) }}
+        {% if request.ctx.user.is_staff %}
+          {# The Admin's own floor is staff; by route name, so the entry follows app_settings.admin.prefix. #}
+          {{ sidebar_menu_item(url_for("oldman_admin_index"), _("Admin"), turbo=false) }}
+        {% endif %}
       {% endcall %}
 
       <li class="menu-title oldman-menu-title"><span>{{ _("Examples") }}</span></li>

@@ -2,6 +2,12 @@
 
 这是一个完整的 Oldman 业务 Dashboard 示例，也是可以独立克隆、运行和发布的 Git 仓库。后端只使用公开的 `oldman.*` API，前端只使用 `oldman-web` 的公开入口。
 
+它建立在 `oldman startproject` 选 dashboard 生成的骨架之上：登录、个人页、通知、用户管理、找回密码和令牌接口都是框架的流程（`apps/accounts/`），
+规则与骨架相同——所有启用的账户都能登录，登录后可以使用全部 EPG 页面和示例；用户管理按权限显示，内置 Admin 要求 staff。
+只有演示权限的示例才另加检查：Access Guards 页（`/examples/auth/guards`）的 staff 守卫探针，以及继承表格类、
+用 `check_permission`（只放 staff）、`check_auth`（团队必须启用）、`apply_base_filters`（只看这个团队）控制访问的团队项目表格；
+表格示例里按角色权限保护的项目表格。
+
 ## 安装
 
 ```bash
@@ -46,13 +52,40 @@ pnpm --dir frontend build
 项目级迁移读取全部服务配置，因此先准备上述五份 YAML，再迁移；所有服务使用同一个数据库和 Auth User 模型。
 `loaddata demo` 一次导入组件示例和 EPG 业务页面的真实数据，可以重复执行，但不会删除之后新增的数据。创建超级用户时，命令会交互式读取账号和密码。
 
+## 登录
+
+Demo 不带任何账户，也没有默认密码：上面的 `createsuperuser` 就是创建第一个账户的一步，跳过它就登录不了。
+启动后打开 <http://127.0.0.1:17997/>，会先到登录页，用这个账户登录。
+
+```bash
+./run.sh web createsuperuser       # 交互式输入用户名、邮箱和密码
+# 不想交互时（脚本里）：密码从环境变量读
+OLDMAN_SUPERUSER_PASSWORD='你的密码' ./run.sh web createsuperuser --username admin --noinput
+./run.sh web changepassword admin  # 忘了密码时重设
+```
+
+这样建出的是超级用户：全部页面、用户管理（`/users`）和内置 Admin（`/admin`）都能用。
+其他账户登录后在用户管理里创建；所有启用的账户都能登录。
+
 ## 本地源码调试
 
 ```bash
 python3 scripts/dev.py
 ```
 
-这个入口同时管理 Vite 和 Web 服务。修改 Dashboard 或同级 Oldman 的 Python/TypeScript 源码即可直接调试，不需要在“本地依赖”和“发布依赖”之间手工切换。打开 <http://127.0.0.1:17997/>。
+这个入口同时管理 Vite 和 Web 服务。修改 Dashboard 或同级 Oldman 的 Python/TypeScript 源码即可直接调试，不需要在“本地依赖”和“发布依赖”之间手工切换。打开 <http://127.0.0.1:17997/>。前提与运行 Demo 相同：已完成上面的安装，数据库和 Redis 可用。
+
+调整样式、修改组件时，`/examples/` 下的示例页（侧栏 Examples 分组）覆盖全部前端组件，改完直接在这些页面上看效果：
+
+| 修改 | 页面上何时看到 |
+| --- | --- |
+| 项目或框架的 CSS（`frontend/src/css/`、oldman-web 的样式） | 不刷新页面就更新 |
+| 项目或框架的 TypeScript | 页面自动刷新 |
+| 项目模板（`templates/`） | 页面自动刷新 |
+| 框架模板（关联了同级 Oldman 时） | 页面自动刷新；模板里新用到的 Tailwind 类当场生成 |
+| Python 代码 | 停止后重新运行 `scripts/dev.py` |
+
+框架部分只在关联了同级 Oldman 源码（`.local/oldman`，见上面的安装）时实时生效；使用发布包时改的是项目自己的文件。
 
 ## 产品模式
 
@@ -77,7 +110,7 @@ pnpm --dir frontend build
 
 ## Feedback 的真实确认与输入
 
-完成上述配置、迁移、`loaddata demo` 和前端构建后，启动 Web、用 staff 账户登录，打开
+完成上述配置、迁移、`loaddata demo` 和前端构建后，启动 Web、登录，打开
 `/examples/messages/feedback`。“提交审核”确认后才修改所选 ExampleProject 的状态；取消不发请求，
 重复审核返回可见业务错误。“重命名项目”提供旧值、空白/长度校验和真实保存结果，不改变 slug。
 在 `/examples/tables/json` 可以对照同一条数据库记录。这些按钮会修改 Demo 数据，不是静态提示。
@@ -172,7 +205,7 @@ Redis、不查询数据库。命令结束会删除自己的随机集合和临时
 计算时间相同，1 秒到期后重新计算。源码 `apps/examples/cache_functions.py`；使用根 cache
 配置指向的 Redis，finally 只删除本次随机 prefix 并关闭连接。数据库不写入，不启动 Web。
 
-## 模板预览和验证
+## 示例和验证
 
 ### Core NATS 接收服务
 
@@ -182,7 +215,7 @@ Redis、不查询数据库。命令结束会删除自己的随机集合和临时
 - `/examples/communication/events`：分别发送 10 条竞争事件或广播事件，然后手动查询计数。竞争计数合计增加 10，广播在每个在线节点各增加 10；不要求竞争恰好分成 5/5。
 - `/examples/communication/failures`：实际无接收者、0.5 秒超时和接收函数异常。后两项需要 nats_a 在线；其故意异常写在接收服务日志中，调用者仍只看到超时，不自动重试。
 
-所有按钮走现有 staff 权限、CSRF、普通 Form 和 Actions。通信关闭时仍可打开页面，但操作禁用。
+所有按钮走现有登录检查、CSRF、普通 Form 和 Actions。通信关闭时仍可打开页面，但操作禁用。
 没有数据时按安装步骤加载 fixture，不会因页面展示偷偷生成记录。停止 nats_b 后，RPC 显示无接收者，
 计数页仍保留 monitor_a 的实际结果；公共 Demo 多人操作会共同累计，不能用它保证独占的计数实验。
 
@@ -283,7 +316,7 @@ Demo 的用户归属记录从投递前开始计时，使用同样的 TTL，因�
 - **重新计算**：立即查数据库并覆盖快照，重新计时。可以先在 HTML/JSON Table 示例中编辑一个项目，再回来看变化。
 - **清除本例缓存**：只删除本例的一个 key，下次读取会重新计算，不清库。
 
-页面刚打开不查询统计；没有项目时会缓存并显示零结果。所有 staff 用户共享同一份统计，
+页面刚打开不查询统计；没有项目时会缓存并显示零结果。所有登录用户共享同一份统计，
 因此清除操作也影响其他用户的下一次读取。CRUD 不自动更新本例缓存；它演示的是允许短暂陈旧的统计。
 Redis 或数据库故障会走公共错误提示，不静默伪装成成功。
 
@@ -298,7 +331,7 @@ Redis 或数据库故障会走公共错误提示，不静默伪装成成功。
 这些按钮不修改数据库，也不清除上方的 30 秒统计值缓存。
 
 这两个装饰器使用根 cache.client/namespace；公开 YAML 没有覆盖 cache，默认 client 为 CACHE。GET 先检查
-staff，缓存按当前语言隔离，不含个人数据、CSRF 或 Cookie；POST 仍须通过 CSRF。
+登录，缓存按当前语言隔离，不含个人数据、CSRF 或 Cookie；POST 仍须通过 CSRF。
 装饰器缓存读写故障会 warning 并继续业务，数据库失败则正常报错。这与上方直接 RedisCache
 操作失败不自动降级的示例不同，不能把降级误称为命中。
 
@@ -330,7 +363,6 @@ HTTP 200 不等于上游成功。Demo 自身的权限、CSRF 或程序异常仍�
 ### 验证入口
 
 ```bash
-.venv/bin/python scripts/verify-template-preview.py
 .venv/bin/python scripts/run-python-tests.py
 pnpm --dir frontend typecheck
 pnpm --dir frontend test

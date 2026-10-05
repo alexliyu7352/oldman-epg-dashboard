@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -2854,19 +2855,44 @@ def assert_auth_session_examples(
     guards_path = "/examples/auth/guards"
     support.navigate(client, urllib.parse.urljoin(base_url, guards_path))
     assert_example_page(client, support, guards_path, "auth", "guards", result)
+    bad_response_count = len(result.badResponses)
+    console_error_count = len(result.consoleErrors)
     guards = client.evaluate(
         r"""
 (async () => {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const headers = { Accept: "application/json" };
   const authenticated = await fetch("/examples/auth/probe", { headers });
   const authenticatedBody = await authenticated.json();
+  // The class-based example: the first (active) team's rows reach a staff user; the inactive team is refused by check_auth.
+  let rows = 0;
+  for (let index = 0; index < 80 && rows === 0; index += 1) {
+    rows = document.querySelectorAll("#team-projects-table [data-om-table-row]").length;
+    if (rows === 0) await sleep(100);
+  }
+  const inactiveTeam = document.querySelector("#example-guard-team option[data-inactive]");
+  const refused = inactiveTeam ? await fetch(`/examples/auth/teams/${inactiveTeam.value}/projects/table`, { headers }) : null;
   return { failures: [
-    ...(authenticated.status === 200 && authenticatedBody.data?.username === "oldman_admin" ? [] : [`staff probe returned ${authenticated.status}`])
+    ...(authenticated.status === 200 && authenticatedBody.data?.username === "oldman_admin" ? [] : [`staff probe returned ${authenticated.status}`]),
+    ...(rows > 0 ? [] : ["team table showed no rows for the active team"]),
+    ...(document.querySelector("[data-example-team-guard] pre code")?.textContent?.includes("def check_auth") ? [] : ["team table source was not shown"]),
+    ...(refused?.status === 403 ? [] : [`inactive team table answered ${refused?.status ?? "nothing (no inactive team listed)"}`])
   ] };
 })()
 """,
-        timeout=10.0,
+        timeout=15.0,
     )
+    # The inactive team's 403 is what this example demonstrates; Chrome logs each 4xx it receives.
+    result.badResponses[bad_response_count:] = [
+        response
+        for response in result.badResponses[bad_response_count:]
+        if not (response.get("status") == 403 and re.fullmatch(r"/examples/auth/teams/\d+/projects/table", urllib.parse.urlparse(response.get("url", "")).path))
+    ]
+    result.consoleErrors[console_error_count:] = [
+        error
+        for error in result.consoleErrors[console_error_count:]
+        if not error.startswith("Failed to load resource: the server responded with a status of 403")
+    ]
     result.pageErrors.extend(
         f"Auth/Session: {failure}" for failure in support.assertion_failures(guards)
     )

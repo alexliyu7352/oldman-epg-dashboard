@@ -1,4 +1,4 @@
-"""Sanic Web 服务接入。"""
+"""Sanic Web 服务接入:骨架的接线(CSRF → 通知 → 模板与前端包 → 账户页面 → Admin),加上本项目的令牌、示例与业务通知。"""
 
 from __future__ import annotations
 
@@ -8,64 +8,58 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from oldman.apps.admin import install_admin
+from oldman.auth.user_permissions import VIEW_USERS
 from oldman.i18n import gettext, gettext_noop
 from oldman.runtime.web import WebApplication
+from oldman.web.auth import has_perm
 from oldman.web.i18n import ensure_frontend_catalogs
-from oldman.web.messages.notifications import (
-    NotificationRoutes,
-)
-from oldman.web.messages.notifications import (
-    init_app as install_notifications,
-)
+from oldman.web.messages.notifications import init_app as install_notifications
 from oldman.web.routing import WebApp
 from oldman.web.security.csrf import StatelessCSRFManager
 from oldman.web.session import SessionData
-from oldman.web.staticfiles import DEV_MODE_ENV, app_bundle_registry, dev_mode_requested, register_project_bundle
+from oldman.web.staticfiles import DEV_MODE_ENV, StaticBundleRegistry, app_bundle_registry, dev_mode_requested, register_project_bundle
 from oldman.web.template import install_template_loaders
 
-from apps.auth.session import DashboardSessionData
+from apps.accounts.routes import install_account_pages
+from apps.accounts.tokens import install_token_routes
 from apps.examples.http_example import http_client
+from apps.examples.session import DashboardSessionData
 from config.settings import settings
 
 APP_MAIN_BUNDLE = "app:main"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def install_template_helpers(
-    app: WebApp,
-    *,
-    notification_routes: NotificationRoutes,
-    user_events_url: str | None,
-) -> None:
-    """向 Sanic-Ext Jinja 环境注入 Oldman 模板辅助函数。"""
+async def can_manage_users(request: Any) -> bool:
+    """Whether the menu lists User management: the permission its pages check (a superuser holds it)."""
+    return await has_perm(request, VIEW_USERS)
+
+
+def install_dashboard_templates(app: WebApp) -> StaticBundleRegistry:
+    """Install shared templates, the project's Vite bundle and the template globals the pages use."""
     from apps.epg_admin.services import dashboard_notifications
 
-    bundle_registry = app_bundle_registry(app)
+    registry = app_bundle_registry(app)
     register_project_bundle(
-        bundle_registry,
+        registry,
         name=APP_MAIN_BUNDLE,
         entry_path="src/main.ts",
         static_root=settings.web.static.root,
         static_url=settings.web.static.url,
         dev_mode=dev_mode_requested(),
         dev_server_url=settings.web.frontend.vite_dev_server_url,
+        # 主题自带的图片与字体随前端包发布,模板里按 theme/ 路径引用。
         passthrough_prefixes=("theme/",),
     )
-
-    environment = app.ext.environment
-    install_template_loaders(environment, settings.web.template.dir)
-    bundle_registry.install_template_globals(environment)
-    environment.globals.update(
-        _=gettext,
-        app_main_bundle=APP_MAIN_BUNDLE,
-        dashboard_user_events_url=user_events_url,
-        dashboard_user_notification_urls={
-            "center": notification_routes.center_url,
-            "topbar": notification_routes.topbar_url,
-        },
-        gettext=gettext,
-        topbar_dashboard_notifications=dashboard_notifications,
-    )
+    environment = install_template_loaders(app.ext.environment, settings.web.template.dir)
+    environment.globals.setdefault("_", gettext)
+    environment.globals.setdefault("gettext", gettext)
+    registry.install_template_globals(environment)
+    environment.globals["app_main_bundle"] = APP_MAIN_BUNDLE
+    environment.globals["can_manage_users"] = can_manage_users
+    # 本项目的顶栏业务通知(骨架没有):EPG 数据里的最新动态。
+    environment.globals["topbar_dashboard_notifications"] = dashboard_notifications
+    return registry
 
 
 class WebService(WebApplication):
@@ -81,9 +75,7 @@ class WebService(WebApplication):
         commands = super().get_default_commands()
         commands["dev"] = (
             cls.dev,
-            gettext_noop(
-                "Start the development service with frontend assets from Vite."
-            ),
+            gettext_noop("Start the development service with frontend assets from Vite."),
         )
         return commands
 
@@ -104,21 +96,17 @@ class WebService(WebApplication):
         }
 
     def init(self) -> None:
-        """初始化 Sanic、Session、CSRF 与模板辅助函数。"""
+        """骨架的顺序:CSRF、通知、模板与前端包、账户页面;再装本项目的令牌接口与内置 Admin。"""
         super().init()
         app = self.runtime_app
         if app is None:
             raise RuntimeError("Sanic app was not initialized")
-
         StatelessCSRFManager(app)
         notification_routes = install_notifications(app)
-        install_template_helpers(
-            app,
-            notification_routes=notification_routes,
-            user_events_url="/user-events" if settings.web.sse.enabled else None,
-        )
-        # 内置管理后台挂在 /admin:用户和角色在这里管理。它有自己的布局和前端资源,
-        # 与这里共用登录状态,导航里的入口整页打开。
+        install_dashboard_templates(app)
+        install_account_pages(app, notification_routes=notification_routes)
+        install_token_routes(app)
+        # 内置管理后台挂在 app_settings.admin.prefix(默认 /admin),与这里共用登录状态,导航里的入口整页打开。
         install_admin(app)
 
     async def before_server_start(self, app: WebApp) -> None:

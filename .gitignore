@@ -1,5 +1,6 @@
 # Local runtime state
-/data/web_settings.yaml
+# Every service's local settings (data/<service>_settings.yaml), copied from its .example file.
+/data/*_settings.yaml
 /data/.web_settings.yaml.lock
 /data/.settings.yaml.lock
 /data/*.db
@@ -10,11 +11,20 @@
 /logs/
 /pids/
 /static/dist/
+# What `static collect` copies in: the framework's and the Admin's files, apps.examples' own, and the manifest.
+/static/oldman/
+/static/examples/
+/.static.oldman-static.json
 /.local/
 /.venv/
 
 # Local dependency and Python artifacts
 /frontend/node_modules/
+# Built from the PO files by `pnpm generate:i18n` before build, dev and the template preview, as in the skeleton.
+/frontend/public/i18n/
+# A demo follows the framework's version ranges; it keeps no lock file.
+/frontend/pnpm-lock.yaml
+/uv.lock
 /.ruff_cache/
 __pycache__/
 *.py[cod]

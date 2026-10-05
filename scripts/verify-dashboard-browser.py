@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -4728,10 +4729,16 @@ def assert_user_password_login_result(base_url: str, result: VerificationResult)
         result.pageErrors.append(f"users password new password login failed: {new_login}")
 
 
-def submit_login_form(base_url: str, username: str, password: str) -> dict[str, Any]:
-    """使用独立 cookie jar 提交登录表单，避免污染当前浏览器会话。"""
-    cookie_jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+def submit_login_form(
+    base_url: str,
+    username: str,
+    password: str,
+    *,
+    opener: urllib.request.OpenerDirector | None = None,
+) -> dict[str, Any]:
+    """使用独立 cookie jar 提交登录表单，避免污染当前浏览器会话；传入 opener 时登录状态留在它的 cookie jar 里。"""
+    if opener is None:
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     login_url = urllib.parse.urljoin(base_url, "/login")
     try:
         login_html = opener.open(login_url, timeout=10).read().decode("utf-8", errors="replace")
@@ -4761,6 +4768,82 @@ def submit_login_form(base_url: str, username: str, password: str) -> dict[str, 
         return {"ok": final_path != "/login" and "invalid_credentials" not in final_query, "url": response.geturl()}
     except Exception as exc:  # noqa: BLE001 - 门禁需要把 HTTP 失败转为结构化错误。
         return {"ok": False, "error": str(exc)}
+
+
+#: A seeded account without staff (ensure_user_gate_records); the Users checks later never pick it.
+MEMBER_USERNAME = "browser_gate_page_user_01"
+MEMBER_PASSWORD = "PageUserPass!2026"
+#: Every signed-in account uses the EPG pages, their data and the examples.
+MEMBER_OPEN_PATHS = (
+    "/channels-epg",
+    "/channels-epg/table",
+    "/catalog-channels",
+    "/upstream-records",
+    "/notifications",
+    "/examples/http/client",
+    "/examples/auth/guards",
+    "/user-session",
+)
+#: What asks for more than a sign-in: user management (its permission), the staff guard probe, the role-guarded
+#: project table and the class-based guard example's team table (staff, in its check_permission).
+MEMBER_REFUSED_PATHS = ("/users", "/examples/auth/probe", "/examples/tables/projects/table", "/examples/auth/teams/1/projects/table")
+
+
+def assert_member_uses_the_pages_but_not_the_guarded_ones(client: CDPClient, base_url: str, result: VerificationResult) -> None:
+    """Every active account signs in and uses every EPG page; only user management, the Admin and the permission examples refuse it.
+
+    The statuses are checked over HTTP with the account's own cookie jar: a browser visit to a 403 would be recorded as a bad response.
+    """
+    login(client, base_url, MEMBER_USERNAME, MEMBER_PASSWORD)
+    navigate(client, base_url)
+    page = client.evaluate(
+        r"""
+(() => {
+  const failures = [];
+  if (location.pathname !== "/") failures.push(`member landed on ${location.pathname}`);
+  if (!document.querySelector("#oldman-sidebar-nav")) failures.push("member has no dashboard shell");
+  const listed = ["/channels-epg", "/channel-names", "/epg-list", "/catalog-channels", "/catalog-feeds", "/match-decisions",
+    "/upstream-records", "/logo-assets", "/notifications", "/user-session"];
+  for (const href of listed) {
+    if (!document.querySelector(`#oldman-sidebar-nav a[href="${href}"]`)) failures.push(`member's menu has no link to ${href}`);
+  }
+  if (!document.querySelector('#oldman-sidebar-nav a[href^="/examples/"]')) failures.push("member's menu has no examples");
+  for (const href of ["/admin", "/users"]) {
+    if (document.querySelector(`a[href="${href}"], a[href^="${href}/"]`)) failures.push(`member sees a link to ${href}`);
+  }
+  if (!document.body.textContent.includes("Browser Gate Page User 01")) failures.push("topbar does not name the member");
+  return { failures };
+})()
+""",
+        timeout=10.0,
+    )
+    result.pageErrors.extend(f"member: {failure}" for failure in assertion_failures(page))
+
+    statuses = member_http_statuses(base_url, (*MEMBER_OPEN_PATHS, *MEMBER_REFUSED_PATHS))
+    for path in MEMBER_OPEN_PATHS:
+        if statuses.get(path) != 200:
+            result.pageErrors.append(f"member: {path} answered {statuses.get(path)}, not 200")
+    for path in MEMBER_REFUSED_PATHS:
+        if statuses.get(path) != 403:
+            result.pageErrors.append(f"member: {path} answered {statuses.get(path)}, not 403")
+
+
+def member_http_statuses(base_url: str, paths: tuple[str, ...]) -> dict[str, Any]:
+    """Sign the member in with its own cookie jar and GET each path; the status, or the error."""
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    signed_in = submit_login_form(base_url, MEMBER_USERNAME, MEMBER_PASSWORD, opener=opener)
+    if not signed_in.get("ok"):
+        return {"login": signed_in}
+    statuses: dict[str, Any] = {}
+    for path in paths:
+        try:
+            with opener.open(urllib.request.Request(urllib.parse.urljoin(base_url, path), headers={"Accept": "text/html"}), timeout=10) as response:
+                statuses[path] = response.status
+        except urllib.error.HTTPError as exc:
+            statuses[path] = exc.code
+        except Exception as exc:  # noqa: BLE001 - reported as the path's result.
+            statuses[path] = str(exc)
+    return statuses
 
 
 def assert_catalog_feed_upload_preview(client: CDPClient, label: str, result: VerificationResult) -> None:
@@ -6835,17 +6918,17 @@ async def ensure_user_gate_records() -> None:
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
 
-    from apps.auth.models import OldmanUser
+    from apps.accounts.models import User
     from sqlalchemy import select
 
     from oldman.db import db_manager
 
     now = dt.datetime.now(dt.UTC).replace(tzinfo=None)
     async with db_manager.get_session() as session:
-        normal_result = await session.execute(select(OldmanUser).where(OldmanUser.username == "browser_gate_user"))
+        normal_result = await session.execute(select(User).where(User.username == "browser_gate_user"))
         normal_user = normal_result.scalars().one_or_none()
         if normal_user is None:
-            normal_user = OldmanUser(
+            normal_user = User(
                 username="browser_gate_user",
                 email="browser-gate-user@example.test",
                 display_name="Browser Gate User",
@@ -6864,10 +6947,10 @@ async def ensure_user_gate_records() -> None:
         normal_user.last_login_at = normal_user.last_login_at or now
         normal_user.set_password("UserGateOldPass!2026")
 
-        super_result = await session.execute(select(OldmanUser).where(OldmanUser.username == "browser_gate_superuser"))
+        super_result = await session.execute(select(User).where(User.username == "browser_gate_superuser"))
         super_user = super_result.scalars().one_or_none()
         if super_user is None:
-            super_user = OldmanUser(
+            super_user = User(
                 username="browser_gate_superuser",
                 email="browser-gate-superuser@example.test",
                 display_name="Browser Gate Superuser",
@@ -6888,10 +6971,10 @@ async def ensure_user_gate_records() -> None:
 
         for index in range(1, 13):
             username = f"browser_gate_page_user_{index:02d}"
-            page_result = await session.execute(select(OldmanUser).where(OldmanUser.username == username))
+            page_result = await session.execute(select(User).where(User.username == username))
             page_user = page_result.scalars().one_or_none()
             if page_user is None:
-                page_user = OldmanUser(
+                page_user = User(
                     username=username,
                     email=f"{username}@example.test",
                     display_name=f"Browser Gate Page User {index:02d}",
@@ -7133,6 +7216,8 @@ def verify_dashboard(url: str, result: VerificationResult) -> None:
         configure_viewport(client, 1440, 1000, mobile=False)
         assert_preloader_critical_first_paint(client, url, result)
         asyncio.run(ensure_dashboard_browser_gate_records())
+        # Before the Users checks, which change other accounts' passwords and status.
+        assert_member_uses_the_pages_but_not_the_guarded_ones(client, url, result)
         login(
             client,
             url,

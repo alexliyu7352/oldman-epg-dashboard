@@ -6,7 +6,7 @@ from oldman.cache import cache_response
 from oldman.i18n import gettext_lazy as _
 from oldman.web import NotFound, router
 from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_error_response, form_response
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import replace_html_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
@@ -23,7 +23,7 @@ RESPONSE_TTL = 5
 
 @router.get("/examples/cache/redis", name="example_cache_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_cache_page(request: Request):
     """Render the controls without reading project data or warming the cache."""
     section = EXAMPLE_SECTIONS["cache"]
@@ -47,7 +47,7 @@ async def example_cache_page(request: Request):
 
 @router.post("/examples/cache/redis/<operation:str>", name="example_cache_operation")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_cache_operation(request: Request, operation: str):
     """Replace the result panel using the existing ordered Action protocol."""
     if operation not in {"read", "refresh", "clear"}:
@@ -64,18 +64,18 @@ async def example_cache_operation(request: Request, operation: str):
 
 
 @router.get("/examples/cache/response", name="example_cached_response")
-@staff_required()
+@login_required()
 @cache_response(key_prefix=RESPONSE_PREFIX, expiration=RESPONSE_TTL, use_pickle=False,
                 vary_by=lambda request: getattr(request.ctx, "locale", ""))
 async def example_cached_response(request: Request):
-    """Cache only this cookie-free, language-specific statistics response after staff checks."""
+    """Cache only this cookie-free, language-specific statistics response after the login check."""
     statistics = await calculate_project_statistics()
     return replace_html_response(await render_fragment(request, "pages/examples/cache/_response_result.html", statistics=statistics))
 
 
 @router.post("/examples/cache/response", name="example_invalidate_response")
 @csrf_protect()
-@staff_required()
+@login_required()
 @cache_response(key_prefix=RESPONSE_PREFIX, use_pickle=False)
 async def example_invalidate_response(request: Request):
     """The decorator invalidates every cached query/language variant after this returns."""
@@ -87,7 +87,7 @@ MODEL_CACHE_OPERATIONS = {"read", "rename", "rename_other", "rename_sql", "renam
 
 @router.get("/examples/cache/models", name="example_model_cache_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_model_cache_page(request: Request):
     """Render the project choices; nothing is read through the cache until an operation asks."""
     section = EXAMPLE_SECTIONS["cache"]
@@ -110,7 +110,7 @@ async def example_model_cache_page(request: Request):
 
 @router.post("/examples/cache/models", name="example_model_cache_operation")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_model_cache_operation(request: Request):
     """Run one read or write chosen by the pressed button and describe what the cache did."""
     form = request.form or {}

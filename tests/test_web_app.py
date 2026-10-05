@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, patch
 
-from apps.auth.session import DashboardSessionData
+from apps.examples.session import DashboardSessionData
 from apps.epg_admin.forms import (
     CatalogFeedForm,
     ChannelsEpgForm,
@@ -25,7 +25,7 @@ from sanic import Sanic
 from sanic.exceptions import SanicException
 from services.web import (
     WebService,
-    install_template_helpers,
+    install_dashboard_templates,
 )
 
 from oldman.web.api import accepts_html_form_response, accepts_json_form_response, form_invalid_response
@@ -33,7 +33,8 @@ from oldman.runtime.discovery import (
     discover_service_definitions,
     load_service_class,
 )
-from oldman.web.auth import UserPasswordForm, UserSessionProfile
+from oldman.web.auth import UserPasswordForm
+from oldman.web.authentication import RequestUser
 from oldman.web.components.forms import AjaxSelectField, AjaxSelectWidget
 from oldman.web.components.selects import select_registry
 from oldman.web.components.tables import TableResult
@@ -76,7 +77,6 @@ class WebAppTest(unittest.TestCase):
     def test_table_summary_without_i18n_formats_parameters(self) -> None:
         """关闭 i18n 后仍使用真实 Demo 接线渲染参数化摘要，包括空表。"""
         from oldman.i18n.translations import current_translations
-        from oldman.web.messages.notifications import NotificationRoutes
 
         environment = self.app.ext.environment
         token = current_translations.set(None)
@@ -87,16 +87,7 @@ class WebAppTest(unittest.TestCase):
                 patch.dict(environment.globals),
                 patch.object(self.app.ctx, "static_bundle_registry", self.app.ctx.static_bundle_registry),
             ):
-                install_template_helpers(
-                    self.app,
-                    notification_routes=NotificationRoutes(
-                        topbar_url="/notifications/topbar",
-                        read_url="/notifications/read",
-                        delete_url="/notifications/delete",
-                        center_url="/notifications",
-                    ),
-                    user_events_url=None,
-                )
+                install_dashboard_templates(self.app)
                 template = environment.get_template("oldman/tables/default/summary.html")
                 for total, rows, expected in (
                     (25, [None] * 10, "Showing 1 to 10 of 25 entries"),
@@ -199,38 +190,30 @@ class WebAppTest(unittest.TestCase):
 
         self.assertEqual(response.status, 200)
         self.assertIn('data-om-page="login"', response.text)
-        self.assertIn("Use your administrator account to continue", response.text)
+        # The framework's sign-in page: every active account signs in, as in the skeleton.
+        self.assertIn("Sign in with your account to continue.", response.text)
         self.assertIn('name="next" value="/"', response.text)
 
-    def test_password_reset_pages_reuse_the_framework_cards_and_the_login_card_links_to_them(self) -> None:
-        template_dir = settings.web.template.dir
-        login = (template_dir / "pages" / "login.html").read_text(encoding="utf-8")
-        self.assertIn('href="/password-reset"', login)
-        self.assertIn('{{ _("Forgot password?") }}', login)
-        for page in ("request", "sent", "confirm", "invalid", "done"):
-            source = (template_dir / "pages" / "password_reset" / f"{page}.html").read_text(encoding="utf-8")
-            self.assertIn('{% extends "pages/password_reset/base.html" %}', source)
-            self.assertIn(f'{{% include "oldman/auth/password_reset/{page}.html" %}}', source)
-        base = (template_dir / "pages" / "password_reset" / "base.html").read_text(encoding="utf-8")
-        # The login page class mounts the auth shell (dropdown, form, language switcher, preloader).
-        self.assertIn('data-om-page="login"', base)
-        self.assertIn("{% block auth_card %}{% endblock %}", base)
-
-        from apps.auth import views
-
-        self.assertEqual("/password-reset", views.password_reset_flow.request_path)
-        self.assertEqual("/password-reset/x/y", views.password_reset_flow.confirm_path("x", "y"))
+    def test_password_reset_is_installed_at_its_setting_and_the_sign_in_page_links_it(self) -> None:
+        """web.account.password_reset_url turns the framework's reset flow on (apps/accounts/routes.py)."""
+        self.assertEqual("/password-reset", settings.web.account.password_reset_url)
+        _request, response = self.app.test_client.get("/login")
+        self.assertIn('href="/password-reset"', response.text)
+        self.assertIn("Forgot password?", response.text)
+        _request, response = self.app.test_client.get("/password-reset")
+        self.assertEqual(200, response.status)
+        self.assertIn('data-om-page="login"', response.text)
         route_paths = {route.path for route in self.app.router.routes}
         for path in ("password-reset", "password-reset/sent", "password-reset/done", "password-reset/<uidb64:str>/<token:str>"):
             self.assertIn(path, route_paths)
 
-    def test_token_routes_hand_tokens_to_staff_only(self) -> None:
-        """令牌接口和登录页一样只认 staff，三个接口都只收 POST。"""
-        from oldman.auth import has_staff_access
+    def test_token_routes_hand_tokens_to_every_active_account(self) -> None:
+        """令牌接口和登录页一样认所有启用的账户(启用是登录的底线),三个接口都只收 POST。"""
+        from apps.accounts.models import User
+        from apps.accounts.tokens import token_flow
 
-        from apps.auth import views
-
-        self.assertIs(has_staff_access, views.token_flow.accept_user)
+        member = User(id=5, username="member", password_hash="", is_active=True, is_staff=False, is_superuser=False)
+        self.assertTrue(token_flow.accept_user(member))
         route_methods = {route.path: route.methods for route in self.app.router.routes}
         for path in ("api/token", "api/token/refresh", "api/token/revoke"):
             self.assertEqual({"POST"}, route_methods.get(path))
@@ -244,7 +227,7 @@ class WebAppTest(unittest.TestCase):
         self.assertIn('<link rel="icon" href="data:,">', response.text)
         self.assertIn('data-om-page="login"', response.text)
         self.assertIn("oldman-brand-mark", response.text)
-        self.assertIn("EPG management dashboard", response.text)
+        self.assertIn(str(settings.core.site_name or settings.core.app_name), response.text)
         self.assertIn('action="/login"', response.text)
         self.assertIn('name="csrfmiddlewaretoken"', response.text)
         self.assertIn('name="username"', response.text)
@@ -254,7 +237,7 @@ class WebAppTest(unittest.TestCase):
         """服务端 HTML language 必须来自统一请求语言，而不是模板 fallback。"""
         _request, response = self.app.test_client.get(
             "/login",
-            headers={"Cookie": "lang=zh-hans; preferred_language=zh-hans"},
+            headers={"Cookie": "preferred_language=zh-hans"},
         )
 
         self.assertEqual(response.status, 200)
@@ -330,7 +313,7 @@ class WebAppTest(unittest.TestCase):
         self.assertIn('class="om-card', epg_form)
 
     def test_base_and_login_templates_mount_standard_preloader(self) -> None:
-        """基础后台页和登录页都应该挂载标准 preloader 组件。"""
+        """基础后台页挂载标准 preloader 组件(登录页是框架的,它的 head 在框架测试里)。"""
         base_template = (settings.web.template.dir / "base.html").read_text(encoding="utf-8")
         shared_base_template = (package_template_dir() / "oldman" / "dashboard" / "base.html").read_text(encoding="utf-8")
         shared_shell_template = (
@@ -340,7 +323,6 @@ class WebAppTest(unittest.TestCase):
             / "partials"
             / "shell.html"
         ).read_text(encoding="utf-8")
-        login_template = (settings.web.template.dir / "pages" / "login.html").read_text(encoding="utf-8")
         sidebar_template = (settings.web.template.dir / "partials" / "sidebar.html").read_text(encoding="utf-8")
         partial = (package_template_dir() / "oldman" / "dashboard" / "partials" / "preloader.html").read_text(encoding="utf-8")
         critical_css = (
@@ -353,8 +335,6 @@ class WebAppTest(unittest.TestCase):
 
         self.assertIn('{% extends "oldman/dashboard/base.html" %}', base_template)
         self.assertIn('data-preloader="enable"', shared_base_template)
-        self.assertIn('data-preloader="enable"', login_template)
-        self.assertIn('<meta name="turbo-visit-control" content="reload">', login_template)
         self.assertIn('id="oldman-sidebar-nav"', shared_shell_template)
         self.assertIn('target="oldman-main"', shared_shell_template)
         self.assertIn('id="oldman-main"', shared_shell_template)
@@ -366,20 +346,9 @@ class WebAppTest(unittest.TestCase):
             shared_shell_template.index('id="oldman-main"'),
         )
         self.assertNotIn('data-turbo-frame="oldman-main"', sidebar_template)
-        self.assertNotIn('id="oldman-main"', login_template)
         self.assertNotIn("turbo-cache-control", base_template)
         self.assertIn('{% include "oldman/dashboard/partials/preloader_critical_css.html" %}', shared_base_template)
-        self.assertIn('{% include "oldman/dashboard/partials/preloader_critical_css.html" %}', login_template)
-        self.assertLess(
-            login_template.index('oldman/dashboard/partials/preloader_critical_css.html'),
-            login_template.index("bundle_client(app_main_bundle)"),
-        )
-        self.assertLess(
-            login_template.index('oldman/dashboard/partials/preloader_critical_css.html'),
-            login_template.index("bundle_script(app_main_bundle)"),
-        )
         self.assertIn('{% include "oldman/dashboard/partials/preloader.html" %}', shared_base_template)
-        self.assertIn('{% include "oldman/dashboard/partials/preloader.html" %}', login_template)
         self.assertIn('data-om-component="preloader"', partial)
         self.assertNotIn("data-turbo-temporary", partial)
         self.assertIn("data-om-preloader-status", partial)
@@ -393,19 +362,14 @@ class WebAppTest(unittest.TestCase):
     def test_templates_expose_oldman_asset_base_before_main_entry(self) -> None:
         """模板必须在前端主入口执行前暴露静态资源基础地址。"""
         base_template = (settings.web.template.dir / "base.html").read_text(encoding="utf-8")
-        login_template = (settings.web.template.dir / "pages" / "login.html").read_text(encoding="utf-8")
 
         self.assertIn('name="oldman-asset-base"', base_template)
-        self.assertIn('name="oldman-asset-base"', login_template)
         self.assertIn('bundle_asset_base_url(app_main_bundle)', base_template)
-        self.assertIn('bundle_asset_base_url(app_main_bundle)', login_template)
         self.assertLess(base_template.index('name="oldman-asset-base"'), base_template.index("bundle_entry(app_main_bundle"))
-        self.assertLess(login_template.index('name="oldman-asset-base"'), login_template.index("bundle_script(app_main_bundle)"))
 
     def test_templates_use_static_bundle_helpers(self) -> None:
         """模板不得继续绑定单一 Vite manifest helper。"""
         base_template = (settings.web.template.dir / "base.html").read_text(encoding="utf-8")
-        login_template = (settings.web.template.dir / "pages" / "login.html").read_text(encoding="utf-8")
         topbar_template = (settings.web.template.dir / "partials" / "topbar.html").read_text(encoding="utf-8")
         shared_language_template = (
             package_template_dir()
@@ -415,14 +379,11 @@ class WebAppTest(unittest.TestCase):
             / "language_switcher.html"
         ).read_text(encoding="utf-8")
         combined = "\n".join(
-            [base_template, login_template, topbar_template, shared_language_template]
+            [base_template, topbar_template, shared_language_template]
         )
 
         # The shell base renders the whole entry through the framework helper (client, preload, CSS, script in order).
         self.assertIn("bundle_entry(app_main_bundle, include_dev_client=true)", base_template)
-        for template in (login_template,):
-            self.assertLess(template.index("bundle_modulepreload(app_main_bundle)"), template.index("bundle_styles(app_main_bundle)"))
-            self.assertLess(template.index("bundle_styles(app_main_bundle)"), template.index("bundle_script(app_main_bundle)"))
         self.assertIn("bundle_asset_url(app_main_bundle", topbar_template)
         self.assertIn('include "oldman/dashboard/partials/language_switcher.html"', topbar_template)
         # The shared switcher lists languages by name with a check mark; flags stay out of the mono system.
@@ -432,37 +393,6 @@ class WebAppTest(unittest.TestCase):
         self.assertNotIn("vite_asset_url(", combined)
         self.assertNotIn("vite_asset_base_url(", combined)
         self.assertNotIn("/static/dist", combined)
-
-    def test_users_template_uses_real_user_management_components(self) -> None:
-        """Users 页面必须是真实 OldmanUser 管理页，不再是 dashboard 临时弹窗。"""
-        users_index = (settings.web.template.dir / "pages" / "users" / "index.html").read_text(encoding="utf-8")
-        user_form = (settings.web.template.dir / "pages" / "users" / "form.html").read_text(encoding="utf-8")
-        password_form = (
-            package_template_dir()
-            / "oldman"
-            / "auth"
-            / "partials"
-            / "password_form.html"
-        ).read_text(encoding="utf-8")
-        base_page_source = Path("frontend/src/pages/base-page.ts").read_text(encoding="utf-8")
-
-        self.assertIn("filter_form.render", users_index)
-        self.assertIn("table.render_shell", users_index)
-        self.assertIn('id="users-feedback"', users_index)
-        self.assertIn('"user-password-modal"', users_index)
-        self.assertIn('component="modal"', users_index)
-        self.assertIn("remote_content=true", users_index)
-        self.assertNotIn('data-om-modal-close>{{ _("Close") }}</button>', users_index)
-        self.assertIn("form.render", user_form)
-        self.assertIn("validate=True", user_form)
-        self.assertIn('form_mode="json"', user_form)
-        self.assertIn("users-form-feedback", user_form)
-        self.assertIn("feedback_target", user_form)
-        self.assertIn('data-om-component="form-validator"', password_form)
-        self.assertIn('name="confirm_password"', password_form)
-        self.assertFalse(Path("frontend/src/components/user-edit-modal.ts").exists())
-        self.assertNotIn("user-edit-modal", base_page_source)
-        self.assertNotIn("UserEditModal", base_page_source)
 
     def test_notifications_template_uses_real_notification_center_components(self) -> None:
         """Notifications 页面必须用真实通知中心组件覆盖 topbar/table/modal/feedback。"""
@@ -506,97 +436,45 @@ class WebAppTest(unittest.TestCase):
                 }
             ]
 
+        def render(user: RequestUser) -> str:
+            request = SimpleNamespace(ctx=SimpleNamespace(user=user))
+            return asyncio.run(self.app.ext.environment.get_template("partials/topbar.html").render_async(request=request))
+
         original = self.app.ext.environment.globals["topbar_dashboard_notifications"]
         self.app.ext.environment.globals["topbar_dashboard_notifications"] = fake_notifications
-        request = SimpleNamespace(ctx=SimpleNamespace(session=DashboardSessionData(display_name="Tester")))
         try:
-            html = asyncio.run(self.app.ext.environment.get_template("partials/topbar.html").render_async(request=request))
+            html = render(RequestUser(id=1, username="tester", display_name="Tester", is_staff=True))
+            member = render(RequestUser(id=2, username="member"))
         finally:
             self.app.ext.environment.globals["topbar_dashboard_notifications"] = original
 
-        self.assertIn("Global Topbar Notification", html)
-        self.assertIn('href="/notifications"', html)
+        # Every signed-in account uses the EPG pages, so an account without staff sees the activity too.
+        for page in (html, member):
+            self.assertIn("Global Topbar Notification", page)
+            self.assertIn('href="/notifications"', page)
+        # Without a display name the account shows its username.
+        self.assertIn('<span class="oldman-account-name">member</span>', member)
 
-    def test_user_session_template_uses_current_session_components(self) -> None:
-        """项目页面和顶栏只能为框架共享 Session 组件提供外壳与路径。"""
-        session_index = (settings.web.template.dir / "pages" / "user_session" / "index.html").read_text(encoding="utf-8")
+    def test_user_session_links_come_from_the_account_settings(self) -> None:
+        """个人页是框架的(AccountFlow);菜单与顶栏只取 account_urls 给的地址。"""
         sidebar_source = (settings.web.template.dir / "partials" / "sidebar.html").read_text(encoding="utf-8")
         topbar_source = (settings.web.template.dir / "partials" / "topbar.html").read_text(encoding="utf-8")
 
-        self.assertIn(
-            '{% include "oldman/auth/user_session_content.html" %}',
-            session_index,
-        )
-        self.assertNotIn("current_user", session_index)
-        self.assertNotIn("session_data", session_index)
-        self.assertIn("/user-session", sidebar_source)
+        self.assertIn("urls.profile", sidebar_source)
+        self.assertIn("session_path=urls.profile", topbar_source)
         self.assertIn(
             'from "oldman/auth/partials/account_controls.html" import user_account_controls',
             topbar_source,
         )
         self.assertIn("user_account_controls(", topbar_source)
 
-    def test_user_session_page_reads_the_typed_snapshot_without_querying_user(self) -> None:
-        """会话展示是 Session 热路径，只有修改密码时才允许读取数据库。"""
-        import asyncio
-
-        from apps.auth import views as auth_views
-
-        request = SimpleNamespace(
-            app=self.app,
-            args={},
-            cookies={},
-            ctx=SimpleNamespace(
-                session=DashboardSessionData(
-                    user_id=7,
-                    username="alice",
-                    display_name="Alice",
-                    login_ip="127.0.0.1",
-                    login_time=1_690_000_000,
-                    is_active=True,
-                    is_staff=True,
-                )
-            ),
-            form={},
-            headers={"accept": "text/html"},
-            method="GET",
-            path="/user-session",
-            query_string="",
-        )
-        rendered = object()
-        with (
-            patch.object(
-                auth_views,
-                "get_user_by_id",
-                new=AsyncMock(return_value=SimpleNamespace(username="database-user")),
-            ) as get_user,
-            patch.object(
-                auth_views,
-                "render_template",
-                new=AsyncMock(return_value=rendered),
-            ) as render_template,
-        ):
-            response = asyncio.run(cast(Any, auth_views.user_session)(request))
-
-        self.assertIs(rendered, response)
-        get_user.assert_not_awaited()
-        render_call = render_template.await_args
-        assert render_call is not None
-        context = render_call.kwargs["context"]
-        self.assertIsInstance(context["session_profile"], UserSessionProfile)
-        self.assertEqual("Alice", context["session_profile"].display_name)
-        self.assertEqual(
-            "/user-session/password-modal",
-            context["password_modal_path"],
-        )
-
     def test_user_session_routes_are_registered(self) -> None:
-        """会话页、远程密码弹窗和当前用户密码保存 endpoint 必须注册。"""
+        """AccountFlow 的会话页、密码弹窗和密码保存 endpoint 都已注册。"""
         route_names = set(self.app.router.name_index)
 
         self.assertIn(f"{self.app.name}.user_session", route_names)
         self.assertIn(f"{self.app.name}.user_session_password_modal", route_names)
-        self.assertIn(f"{self.app.name}.user_session_password_update", route_names)
+        self.assertIn(f"{self.app.name}.user_session_password_submit", route_names)
 
     def test_user_session_password_form_can_target_session_endpoint(self) -> None:
         """Dashboard 与 Admin 必须渲染同一个框架密码表单片段。"""
@@ -870,21 +748,12 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("/channels-epg/1/edit", html)
 
     def test_epg_admin_routes_are_registered(self) -> None:
-        """频道和节目单后台 CRUD 路由应该注册到 Sanic。"""
+        """频道和节目单后台 CRUD 路由应该注册到 Sanic;用户管理是框架的 UserManagementFlow,这里只确认它装上了。"""
         route_names = set(self.app.router.name_index)
 
         for name in (
             "users",
             "users_table",
-            "users_new",
-            "users_edit_page",
-            "users_update",
-            "users_password_modal",
-            "users_password_update",
-            "users_status_modal",
-            "users_status_update",
-            "users_delete_modal",
-            "users_delete",
             "catalog_channels",
             "catalog_channels_table",
             "catalog_channels_new",
@@ -986,13 +855,24 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("/match-decisions", sidebar)
         self.assertIn("match_decisions", sidebar)
 
-    def test_users_sidebar_is_registered(self) -> None:
-        """Users 用户管理页面应该出现在 System 侧边栏分组。"""
-        sidebar = (settings.web.template.dir / "partials" / "sidebar.html").read_text(encoding="utf-8")
+    def render_sidebar(self, user: RequestUser) -> str:
+        request = SimpleNamespace(app=self.app, path="/dashboard", ctx=SimpleNamespace(user=user))
+        template = self.app.ext.environment.get_template("partials/sidebar.html")
+        return asyncio.run(template.render_async(request=request, active_section="dashboard", active_page="dashboard"))
 
-        self.assertIn("/users", sidebar)
-        self.assertIn("users", sidebar)
-        self.assertIn("System", sidebar)
+    def test_the_menu_lists_every_page_and_keeps_the_admin_for_staff(self) -> None:
+        """所有启用账户都能登录并使用全部 EPG 页面与示例;Admin 入口只给 staff(Admin 自己要求 staff)。"""
+        staff = self.render_sidebar(RequestUser(id=1, username="admin", is_staff=True, is_superuser=True))
+        member = self.render_sidebar(RequestUser(id=2, username="member"))
+
+        for html in (staff, member):
+            for href in ("/dashboard", settings.web.account.profile_url, "/channels-epg", "/catalog-channels", "/upstream-records", "/notifications", "/examples/"):
+                self.assertIn(f'href="{href}', html)
+        self.assertIn('href="/admin', staff)
+        self.assertNotIn('href="/admin', member)
+        # User management follows its permission, which a superuser holds and a member without roles does not.
+        self.assertIn(f'href="{settings.web.account.users_url}"', staff)
+        self.assertNotIn(f'href="{settings.web.account.users_url}"', member)
 
 
 class WebServiceStartupChecksTest(unittest.TestCase):

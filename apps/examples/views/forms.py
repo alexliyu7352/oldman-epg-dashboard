@@ -15,7 +15,7 @@ from oldman.web.api import (
     form_invalid_response,
     modal_response,
 )
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import html_response, json_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
@@ -37,7 +37,7 @@ DUAL_MODE_FORM_PAGES = frozenset(
 
 @router.get("/examples/forms/<page:str>", name="example_forms_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_forms_page(request: Request, page: str):
     """Render one concrete Form example page."""
     if page not in OWNED_FORM_PAGES:
@@ -113,7 +113,7 @@ async def example_forms_page(request: Request, page: str):
 
 @router.get("/examples/forms/color-picker/modal", name="example_color_picker_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_color_picker_modal(request: Request):
     """Load the same ColorPicker Form through the shared dynamic Modal lifecycle."""
     form = FORM_PAGE_FORMS["color-picker"](request=request, prefix="json")
@@ -127,7 +127,7 @@ async def example_color_picker_modal(request: Request):
 
 @router.get("/examples/forms/rich-text/modal", name="example_rich_text_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_rich_text_modal(request: Request):
     """Load the Rich Text Form through the shared dynamic Modal lifecycle."""
     form = FORM_PAGE_FORMS["rich-text"](request=request, prefix="json")
@@ -141,7 +141,7 @@ async def example_rich_text_modal(request: Request):
 
 @router.post("/examples/forms/<page:str>/submit/<mode:str>", name="example_form_submit")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_form_submit(request: Request, page: str, mode: str):
     """Validate one ordinary example Form through HTML or JSON mode."""
     form_class = FORM_PAGE_FORMS.get(page)
@@ -172,7 +172,7 @@ async def example_form_submit(request: Request, page: str, mode: str):
 
 @router.post("/examples/forms/json-list/create", name="example_stream_profile_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_stream_profile_create(request: Request):
     """Create a real Text-backed StreamProfile from the HTML Form path."""
     async with db_manager.get_session() as session:
@@ -185,7 +185,7 @@ async def example_stream_profile_create(request: Request):
 
 @router.post("/examples/forms/json-list/<profile_id:int>/edit", name="example_stream_profile_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_stream_profile_update(request: Request, profile_id: int):
     """Update a real StreamProfile and replace the JSON Form in place."""
     async with db_manager.get_session() as session:
@@ -205,7 +205,7 @@ async def example_stream_profile_update(request: Request, profile_id: int):
 
 @router.get("/examples/forms/containers/modal", name="example_form_container_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_form_container_modal(request: Request):
     """Load the same ordinary Form into the shared remote Modal component."""
     form = ContainerExampleForm(request=request, prefix="modal")
@@ -219,7 +219,7 @@ async def example_form_container_modal(request: Request):
 
 @router.post("/examples/forms/containers/modal", name="example_form_container_modal_submit")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_form_container_modal_submit(request: Request):
     """Validate the remote Modal's ordinary Form with the shared JSON protocol."""
     form = ContainerExampleForm.from_request(request, prefix="modal")

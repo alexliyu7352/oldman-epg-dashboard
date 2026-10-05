@@ -3,7 +3,7 @@
 
 {% block example_content %}
 {{ prerequisites() }}
-<p class="mb-5 text-default-600">{{ _("Counters belong to the two receiving processes, are shared by all staff users, and reset on restart. This example writes no database or Redis records.") }}</p>
+<p class="mb-5 text-default-600">{{ _("Counters belong to the two receiving processes, are shared by all signed-in users, and reset on restart. This example writes no database or Redis records.") }}</p>
 <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
   <section class="om-card">
     <div class="om-card-header"><h2 class="om-card-title mb-0">{{ _("Same queue: one receiver per message") }}</h2></div>

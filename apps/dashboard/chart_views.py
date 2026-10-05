@@ -24,22 +24,19 @@ class DashboardProgrammeTrendChart(SQLAlchemyChartView):
     route_name = "dashboard_programme_trend_chart"
     route_path = "/dashboard/charts/programme-trend"
     chart_type = "line"
-    default_range = "30d"
+    default_range = "all"
     default_metric = "programmes"
-    allowed_ranges = ("7d", "30d", "90d")
+    allowed_ranges = ("all", "7d", "30d", "90d")
     allowed_metrics = ("programmes",)
     allowed_chart_types = ("line",)
 
     async def get_result(self, chart_request):
         """按日期聚合节目数量，并返回 ApexCharts 配置。"""
-        start_at = chart_request.range_start()
         date_expr = func.date(EpgList.start_date)
-        result = await self.require_db_session().execute(
-            select(date_expr.label("day"), func.count(EpgList.id).label("total"))
-            .where(EpgList.start_date >= start_at)
-            .group_by(date_expr)
-            .order_by(date_expr.asc())
-        )
+        statement = select(date_expr.label("day"), func.count(EpgList.id).label("total"))
+        if chart_request.range_key != "all":
+            statement = statement.where(EpgList.start_date >= chart_request.range_start())
+        result = await self.require_db_session().execute(statement.group_by(date_expr).order_by(date_expr.asc()))
         rows = result.all()
         labels = [str(row.day) for row in rows]
         data = [int(row.total or 0) for row in rows]
@@ -60,21 +57,20 @@ class DashboardFeedStatusChart(SQLAlchemyChartView):
     route_name = "dashboard_feed_status_chart"
     route_path = "/dashboard/charts/feed-status"
     chart_type = "bar"
-    default_range = "30d"
+    default_range = "all"
     default_metric = "feed_status"
-    allowed_ranges = ("7d", "30d", "90d")
+    allowed_ranges = ("all", "7d", "30d", "90d")
     allowed_metrics = ("feed_status",)
     allowed_chart_types = ("bar",)
 
     async def get_result(self, chart_request):
         """按 CatalogFeed.status 聚合 feed 数量。"""
-        start_at = chart_request.range_start()
         status_expr = func.coalesce(CatalogFeed.status, "unknown")
+        statement = select(status_expr.label("status"), func.count(CatalogFeed.id).label("total"))
+        if chart_request.range_key != "all":
+            statement = statement.where(CatalogFeed.updated_at >= chart_request.range_start())
         result = await self.require_db_session().execute(
-            select(status_expr.label("status"), func.count(CatalogFeed.id).label("total"))
-            .where(CatalogFeed.updated_at >= start_at)
-            .group_by(status_expr)
-            .order_by(func.count(CatalogFeed.id).desc(), status_expr.asc())
+            statement.group_by(status_expr).order_by(func.count(CatalogFeed.id).desc(), status_expr.asc())
         )
         rows = result.all()
         data = [{"x": str(row.status or "unknown"), "y": int(row.total or 0)} for row in rows]
@@ -95,15 +91,14 @@ class DashboardLogoQualityChart(SQLAlchemyChartView):
     route_name = "dashboard_logo_quality_chart"
     route_path = "/dashboard/charts/logo-quality"
     chart_type = "bar"
-    default_range = "30d"
+    default_range = "all"
     default_metric = "logo_quality"
-    allowed_ranges = ("7d", "30d", "90d")
+    allowed_ranges = ("all", "7d", "30d", "90d")
     allowed_metrics = ("logo_quality",)
     allowed_chart_types = ("bar",)
 
     async def get_result(self, chart_request):
         """按质量分桶聚合当前 logo 资源。"""
-        start_at = chart_request.range_start()
         bucket_expr = case(
             (CatalogLogoAsset.quality_score < 40, "Low"),
             (CatalogLogoAsset.quality_score < 70, "Medium"),
@@ -114,12 +109,10 @@ class DashboardLogoQualityChart(SQLAlchemyChartView):
             (CatalogLogoAsset.quality_score < 70, 2),
             else_=3,
         )
-        result = await self.require_db_session().execute(
-            select(bucket_expr.label("bucket"), func.count(CatalogLogoAsset.id).label("total"), func.min(order_expr).label("sort_order"))
-            .where(CatalogLogoAsset.updated_at >= start_at)
-            .group_by(bucket_expr)
-            .order_by("sort_order")
-        )
+        statement = select(bucket_expr.label("bucket"), func.count(CatalogLogoAsset.id).label("total"), func.min(order_expr).label("sort_order"))
+        if chart_request.range_key != "all":
+            statement = statement.where(CatalogLogoAsset.updated_at >= chart_request.range_start())
+        result = await self.require_db_session().execute(statement.group_by(bucket_expr).order_by("sort_order"))
         rows = result.all()
         bucket_labels = {"Low": _("Low"), "Medium": _("Medium"), "High": _("High")}
         data = [{"x": bucket_labels.get(str(row.bucket), str(row.bucket)), "y": int(row.total or 0)} for row in rows]

@@ -7,7 +7,7 @@ from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.web import BadRequest, router
 from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction, FeedbackMode, ReplaceHtmlAction
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.messages import MessageFormat, MessageLevel, add_message, error, info, success, warning
 from oldman.web.request import Request
 from oldman.web.response import api_response, redirect_response
@@ -25,7 +25,7 @@ OWNED_MESSAGE_PAGES = frozenset({"page", "feedback"})
 
 @router.get("/examples/messages/<page:str>", name="example_messages_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_messages_page(request: Request, page: str):
     """Render one concrete Message or Feedback example page."""
     if page not in OWNED_MESSAGE_PAGES:
@@ -44,7 +44,7 @@ async def example_messages_page(request: Request, page: str):
 
 @router.post("/examples/messages/page/single", name="example_message_single")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_message_single(request: Request):
     """Store one user-supplied message as escaped text, then redirect."""
     form_data = request.form
@@ -64,7 +64,7 @@ async def example_message_single(request: Request):
 
 @router.post("/examples/messages/page/multiple", name="example_message_multiple")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_message_multiple(request: Request):
     """Store all four levels in insertion order, then redirect."""
     success(request, str(_("The database changes were saved.")))
@@ -76,7 +76,7 @@ async def example_message_multiple(request: Request):
 
 @router.post("/examples/messages/page/trusted-html", name="example_message_trusted_html")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_message_trusted_html(request: Request):
     """Store one fixed server-authored HTML message, never browser input."""
     content = "<strong>{}</strong> {}".format(
@@ -93,7 +93,7 @@ async def example_message_trusted_html(request: Request):
 
 
 @router.get("/examples/messages/feedback/default", name="example_feedback_default")
-@staff_required()
+@login_required()
 async def example_feedback_default(request: Request):
     """Resolve one Feedback Action through the Page's default Feedback."""
     del request
@@ -105,7 +105,7 @@ async def example_feedback_default(request: Request):
 
 
 @router.get("/examples/messages/feedback/target", name="example_feedback_target")
-@staff_required()
+@login_required()
 async def example_feedback_target(request: Request):
     """Resolve one alert through an explicitly targeted Feedback component."""
     del request
@@ -124,7 +124,7 @@ async def example_feedback_target(request: Request):
 
 
 @router.get("/examples/messages/feedback/message", name="example_feedback_message")
-@staff_required()
+@login_required()
 async def example_feedback_message(request: Request):
     """Use the response message as Feedback when no Feedback Action exists."""
     del request
@@ -132,7 +132,7 @@ async def example_feedback_message(request: Request):
 
 
 @router.get("/examples/messages/feedback/no-duplicate", name="example_feedback_no_duplicate")
-@staff_required()
+@login_required()
 async def example_feedback_no_duplicate(request: Request):
     """Prove an explicit Feedback Action suppresses the message fallback."""
     del request
@@ -151,7 +151,7 @@ async def example_feedback_no_duplicate(request: Request):
 
 
 @router.get("/examples/messages/feedback/error", name="example_feedback_error")
-@staff_required()
+@login_required()
 async def example_feedback_error(request: Request):
     """Render a business error message through the default Feedback alert."""
     del request
@@ -165,7 +165,7 @@ async def example_feedback_error(request: Request):
 
 @router.post("/examples/messages/feedback/project", name="example_feedback_project")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_feedback_project(request: Request):
     """Save only the operation explicitly confirmed in the browser dialog."""
     data = request.form or {}

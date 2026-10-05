@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from oldman.i18n import gettext_lazy as _
 from oldman.web import NotFound, router
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import redirect_response
 from oldman.web.template import render_template
@@ -188,14 +188,14 @@ EXAMPLE_SECTIONS: dict[str, dict[str, object]] = {
 
 
 @router.get("/examples", name="examples_index")
-@staff_required()
+@login_required()
 async def examples_index(request: Request):
     """Open the first concrete example page."""
     return redirect_response("/examples/tables/static")
 
 
 @router.get("/examples/plugins", name="examples_plugins")
-@staff_required()
+@login_required()
 async def examples_plugins(request: Request):
     """Render the plugin capability index."""
     section = EXAMPLE_SECTIONS["plugins"]
@@ -216,7 +216,7 @@ async def examples_plugins(request: Request):
 
 
 @router.get("/examples/<category:str>/<page:str>", name="examples_page")
-@staff_required()
+@login_required()
 async def examples_page(request: Request, category: str, page: str):
     """Render a documented example route or return a real 404."""
     return await _render_example(request, category, page)

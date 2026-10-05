@@ -70,9 +70,10 @@ class ExampleChartData(SQLAlchemyChartView):
         self._chart_key = chart_key
         return await super().get(request, chart_key=chart_key)
 
-    async def check_auth(self, request: Request) -> bool:
-        """Retain one deliberate 403 state; the staff guard itself is the base class's."""
-        return self._chart_key != "forbidden"
+    async def check_permission(self, request: Request, *, method_name: str, route_kwargs: dict[str, object]) -> tuple[bool, str | None]:
+        """Retain one deliberate 403 state, decided from the route alone before any query."""
+        del request, method_name
+        return route_kwargs.get("chart_key") != "forbidden", None
 
     async def filter_delay(self, _value: str) -> None:
         """Declare the states-page delay filter used to prove latest-wins loading."""

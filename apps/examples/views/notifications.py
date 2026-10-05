@@ -5,7 +5,7 @@ from __future__ import annotations
 from oldman.i18n import gettext_lazy as _
 from oldman.web import router
 from oldman.web.api import ApiErrorCode, DefaultApiResponse
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.messages import MessageFormat, MessageLevel
 from oldman.web.messages.notifications import NotificationPresentation, notifications
 from oldman.web.request import Request
@@ -25,7 +25,7 @@ _TRUSTED_BODY = (
 
 @router.get("/examples/notifications/<page:str>", name="example_notifications_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_notifications_page(request: Request, page: str):
     """Render one notification example without adding another user event stream."""
     if page not in OWNED_NOTIFICATION_PAGES:
@@ -41,7 +41,7 @@ async def example_notifications_page(request: Request, page: str):
 
 @router.post("/examples/notifications/send", name="example_notification_send")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_notification_send(request: Request):
     """Create or push one notification for the current authenticated user only."""
     form = request.form
@@ -111,10 +111,10 @@ def _optional(value: object) -> str | None:
 
 
 def _user_id(request: Request) -> int:
-    """Require the integer identity guaranteed by the staff guard."""
+    """Require the integer identity guaranteed by the login guard."""
     user_id = request.ctx.user.id
     if user_id is None:
-        raise RuntimeError("The staff guard admits only signed-in users")
+        raise RuntimeError("The login guard admits only signed-in users")
     return user_id
 
 

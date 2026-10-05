@@ -10,7 +10,7 @@ const CHART_SELECTORS = ["#programme-trend-chart", "#feed-status-chart", "#logo-
 export class DashboardOverview extends Component {
   static readonly componentName = "dashboard-overview";
 
-  private currentRange = "30d";
+  private currentRange = "all";
 
   /**
    * 绑定时间范围、刷新和失败反馈按钮。

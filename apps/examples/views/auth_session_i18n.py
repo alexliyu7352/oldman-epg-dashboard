@@ -2,17 +2,23 @@
 
 from __future__ import annotations
 
+import inspect
+
+from oldman.db import db_manager
 from oldman.web import router
 from oldman.web.api import DefaultApiResponse
-from oldman.web.auth import authenticated_by, session_profile, staff_required
+from oldman.web.auth import authenticated_by, login_required, session_profile, staff_required
 from oldman.web.authentication import API_KEY_HEADER, API_KEY_METHOD, JWT_METHOD
 from oldman.web.request import Request
 from oldman.web.response import api_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
 from oldman.web.session import Session
 from oldman.web.template import render_template
+from sqlalchemy import select
 
-from apps.auth.session import dashboard_session
+from apps.examples.models import ExampleTeam
+from apps.examples.session import dashboard_session
+from apps.examples.tables import TeamProjectTable
 from config.settings import settings
 
 from . import EXAMPLE_SECTIONS, _render_example
@@ -20,6 +26,9 @@ from . import EXAMPLE_SECTIONS, _render_example
 OWNED_AUTH_PAGES = frozenset({"login", "guards", "identity", "tokens", "callers"})
 OWNED_SESSION_PAGES = frozenset({"lifecycle", "revoke", "expiry"})
 OWNED_I18N_PAGES = frozenset({"server", "browser", "coverage"})
+
+# The Access Guards page's class-based example: its data endpoint, guarded by the table's own hooks.
+router.add_route(TeamProjectTable.as_view(), TeamProjectTable.route_path, name=TeamProjectTable.route_name)
 
 
 
@@ -54,7 +63,7 @@ async def example_service_probe(request: Request):
 
 
 @router.get("/examples/auth/<page:str>", name="example_auth_page")
-@staff_required()
+@login_required()
 async def example_auth_page(request: Request, page: str):
     """Render login, guard, or current-identity behavior without duplicating Auth."""
     if page not in OWNED_AUTH_PAGES:
@@ -67,13 +76,14 @@ async def example_auth_page(request: Request, page: str):
             "session": session,
             "session_profile": session_profile(session),
             **_caller_context(request, page),
+            **(await _guards_context(request) if page == "guards" else {}),
         },
     )
 
 
 @router.get("/examples/session/<page:str>", name="example_session_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_session_page(request: Request, page: str):
     """Render the current Redis-backed Session lifecycle."""
     if page not in OWNED_SESSION_PAGES:
@@ -99,7 +109,7 @@ async def example_session_page(request: Request, page: str):
 
 @router.post("/examples/session/revoke/submit", name="example_session_revoke")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_session_revoke(request: Request):
     """Revoke every current-user Session and let the shared SSE guard report it."""
     session = dashboard_session(request)
@@ -111,7 +121,7 @@ async def example_session_revoke(request: Request):
 
 @router.post("/examples/session/expiry/submit", name="example_session_expire")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_session_expire(request: Request):
     """Remove the current Redis record so the shared SSE expiry UI can be observed."""
     manager = Session.get_session_manager(request)
@@ -120,7 +130,7 @@ async def example_session_expire(request: Request):
 
 
 @router.get("/examples/i18n/<page:str>", name="example_i18n_page")
-@staff_required()
+@login_required()
 async def example_i18n_page(request: Request, page: str):
     """Render the shared server and browser translation pipeline."""
     if page not in OWNED_I18N_PAGES:
@@ -129,6 +139,24 @@ async def example_i18n_page(request: Request, page: str):
         f"pages/examples/i18n/{page}.html",
         context=_page_context("i18n", page),
     )
+
+
+async def _guards_context(request: Request) -> dict[str, object]:
+    """The team the class-based example shows (`?team=`, the first team by default) and every team to pick from.
+
+    Inactive teams are listed too: choosing one is how the page shows check_auth refusing.
+    """
+    async with db_manager.get_read_session() as session:
+        teams = list((await session.scalars(select(ExampleTeam).order_by(ExampleTeam.id))).all())
+    requested = str(request.args.get("team", ""))
+    selected = next((team for team in teams if str(team.id) == requested), teams[0] if teams else None)
+    return {
+        "guard_teams": teams,
+        "guard_team": selected,
+        "team_project_table": TeamProjectTable(request=request),
+        # The page shows the class itself, so what it explains is always the code that runs.
+        "team_project_table_source": inspect.getsource(TeamProjectTable),
+    }
 
 
 def _caller_context(request: Request, page: str) -> dict[str, object]:

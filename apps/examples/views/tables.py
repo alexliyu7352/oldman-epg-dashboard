@@ -9,7 +9,7 @@ from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.web import router
 from oldman.web.api import modal_response, modal_success_response
-from oldman.web.auth import require_perm, staff_required
+from oldman.web.auth import login_required, require_perm
 from oldman.web.components.tables import TableResult
 from oldman.web.request import Request
 from oldman.web.response import json_response
@@ -33,7 +33,7 @@ router.add_route(ExampleProjectTable.as_view(), ExampleProjectTable.route_path, 
 
 
 @router.get("/examples/tables/<page:str>", name="example_tables_page")
-@staff_required()
+@login_required()
 async def example_tables_page(request: Request, page: str):
     """Render one concrete Table example page."""
     if page not in OWNED_TABLE_PAGES:
@@ -86,7 +86,7 @@ async def example_tables_page(request: Request, page: str):
 
 
 @router.get("/examples/tables/realtime/events", name="example_realtime_table_events")
-@staff_required()
+@login_required()
 @sse.streaming(queue_mode=SSEQueueMode.LATEST, session_guard=True, login_url="/login")
 async def example_realtime_table_events(request: Request, stream: SSEStream) -> None:
     """Replay database-backed server samples through one page-owned SSE stream."""
@@ -102,7 +102,7 @@ async def example_realtime_table_events(request: Request, stream: SSEStream) -> 
 
 @router.get("/examples/tables/projects/new-modal", name="example_project_create_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_project_create_modal(request: Request):
     """Load a create Form into the shared remote Modal."""
     await require_perm(request, ExamplePermissions.change_projects)
@@ -119,7 +119,7 @@ async def example_project_create_modal(request: Request):
 
 @router.post("/examples/tables/projects/create", name="example_project_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_project_create(request: Request):
     """Create one Project and reload the mounted HTML or JSON Table."""
     await require_perm(request, ExamplePermissions.change_projects)
@@ -133,7 +133,7 @@ async def example_project_create(request: Request):
 
 @router.get("/examples/tables/projects/<project_id:int>/edit-modal", name="example_project_edit_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_project_edit_modal(request: Request, project_id: int):
     """Load an existing Project Form into the shared remote Modal: reading it needs only view_projects."""
     await require_perm(request, ExamplePermissions.view_projects)
@@ -151,7 +151,7 @@ async def example_project_edit_modal(request: Request, project_id: int):
 
 @router.post("/examples/tables/projects/<project_id:int>/update", name="example_project_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_project_update(request: Request, project_id: int):
     """Update one Project through the ordinary ModelForm transaction."""
     await require_perm(request, ExamplePermissions.change_projects)
@@ -166,7 +166,7 @@ async def example_project_update(request: Request, project_id: int):
 
 @router.get("/examples/tables/projects/<project_id:int>/delete-modal", name="example_project_delete_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_project_delete_modal(request: Request, project_id: int):
     """Render a real confirmation Form for one Project."""
     await require_perm(request, ExamplePermissions.change_projects)
@@ -178,7 +178,7 @@ async def example_project_delete_modal(request: Request, project_id: int):
 
 @router.post("/examples/tables/projects/<project_id:int>/delete", name="example_project_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_project_delete(request: Request, project_id: int):
     """Delete one Project and its fixture-owned child rows."""
     await require_perm(request, ExamplePermissions.change_projects)

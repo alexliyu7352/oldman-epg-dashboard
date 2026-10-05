@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
-{% block title %}{{ _("Analytics") }} · Oldman{% endblock %}
+{% block title %}{{ _("Analytics") }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <section class="om-page-section" data-om-component="dashboard-overview">
     {% call page_head(_("Analytics")) %}
       <div class="om-segmented" role="group" aria-label="{{ _('Range') }}">
+        <button class="om-segment active" type="button" data-om-dashboard-range="all" aria-pressed="true">{{ _("All") }}</button>
         <button class="om-segment" type="button" data-om-dashboard-range="7d" aria-pressed="false">7 {{ _("Days") }}</button>
-        <button class="om-segment active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+        <button class="om-segment" type="button" data-om-dashboard-range="30d" aria-pressed="false">30 {{ _("Days") }}</button>
         <button class="om-segment" type="button" data-om-dashboard-range="90d" aria-pressed="false">90 {{ _("Days") }}</button>
       </div>
       <button class="om-button om-button-secondary" type="button" data-om-dashboard-refresh>

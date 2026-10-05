@@ -1,39 +1,23 @@
-"""Oldman 后端 Chart 组件测试。"""
+"""EPG 业务图表测试；框架图表本身的行为由框架仓库的测试覆盖。"""
 
 from __future__ import annotations
 
 import asyncio
 import importlib.util
-import json
 import unittest
 from pathlib import Path
-from typing import cast
 
 from sanic import Sanic
 from sanic.exceptions import SanicException
 
-import oldman
-from oldman.db import DatabaseManager
-from oldman.web.api.enums import ApiErrorCode
 from oldman.web.components.charts import (
     BaseChartView,
-    ChartConfig,
-    ChartField,
     ChartRequest,
     ChartResult,
     ChartSeries,
-    ChartSummary,
-    SQLAlchemyChartView,
 )
 
 EXAMPLE_ROOT = Path(__file__).resolve().parents[1]
-
-
-def response_body(response: object) -> bytes:
-    body = getattr(response, "body", None)
-    if not isinstance(body, bytes):
-        raise AssertionError("response has no byte body")
-    return body
 
 
 class DemoChartView(BaseChartView):
@@ -52,50 +36,6 @@ class DemoChartView(BaseChartView):
             meta={"range": chart_request.range_key},
             chart={"type": chart_request.chart_type},
         )
-
-
-class StrictChartView(DemoChartView):
-    """测试用严格参数白名单图表视图。"""
-
-    allowed_ranges = ("7d", "30d")
-    allowed_group_by = ("day",)
-    allowed_metrics = ("programmes",)
-    allowed_chart_types = ("line",)
-
-
-class DeniedChartView(DemoChartView):
-    """拒绝访问的测试图表。"""
-
-    async def check_auth(self, request) -> bool:
-        """拒绝当前请求访问图表。"""
-        return False
-
-
-class DeniedSQLAlchemyChartView(SQLAlchemyChartView):
-    """拒绝访问的 SQLAlchemy 图表。"""
-
-    async def check_auth(self, request) -> bool:
-        """拒绝当前请求访问图表。"""
-        return False
-
-
-class FakeReadSession:
-    """不访问真实数据库的异步 session 上下文。"""
-
-    async def __aenter__(self):
-        """进入假的只读 session。"""
-        return object()
-
-    async def __aexit__(self, exc_type, exc, traceback) -> None:
-        """离开假的只读 session。"""
-
-
-class FakeDbManager:
-    """提供 SQLAlchemyChartView 测试用只读 session。"""
-
-    def get_read_session(self) -> FakeReadSession:
-        """返回假的只读 session 上下文。"""
-        return FakeReadSession()
 
 
 class CapturingChartSession:
@@ -119,151 +59,6 @@ class EmptyChartRows:
         return []
 
 
-class ChartRequestResultTest(unittest.TestCase):
-    """验证 Chart 请求和结果协议。"""
-
-    def test_chart_request_normalizes_sanic_multivalue_args(self) -> None:
-        """Sanic 多值查询参数必须规范为首个值。"""
-        request = make_chart_request(args={"range": ["30d"], "group_by": ["day"], "chart_type": ["line"], "metric": ["programmes"]})
-
-        chart_request = DemoChartView().build_chart_request(request, route_kwargs={})
-
-        self.assertEqual(chart_request.range_key, "30d")
-        self.assertEqual(chart_request.group_by, "day")
-        self.assertEqual(chart_request.chart_type, "line")
-        self.assertEqual(chart_request.metric, "programmes")
-
-    def test_chart_config_is_exported_as_component_contract(self) -> None:
-        """Chart 配置对象必须作为后端组件协议导出。"""
-        config = ChartConfig(
-            chart_type="bar",
-            default_range="30d",
-            default_group_by="status",
-            default_metric="feeds",
-            fields=(ChartField(key="status", label="Status"),),
-        )
-
-        self.assertEqual(config.chart_type, "bar")
-        self.assertEqual(config.fields[0].key, "status")
-
-    def test_chart_result_converts_to_apex_payload(self) -> None:
-        """ChartResult 必须转换成前端 ApexChart 可消费的 JSON 配置。"""
-        result = ChartResult(
-            series=[ChartSeries(name="Programmes", data=[1, 2, 3])],
-            labels=["2026-06-08", "2026-06-09", "2026-06-10"],
-            summary=[ChartSummary(label="Total", value=6)],
-            meta={"range": "3d"},
-            chart={"type": "line", "height": 320},
-        )
-
-        payload = result.to_apex_options()
-
-        self.assertEqual(payload["series"], [{"name": "Programmes", "data": [1, 2, 3]}])
-        self.assertEqual(payload["labels"], ["2026-06-08", "2026-06-09", "2026-06-10"])
-        self.assertEqual(payload["chart"], {"type": "line", "height": 320})
-        self.assertEqual(payload["meta"], {"range": "3d"})
-        self.assertEqual(payload["summary"], [{"label": "Total", "value": 6, "tone": "secondary"}])
-
-
-class ChartRendererTest(unittest.TestCase):
-    """验证 Chart 模板 renderer。"""
-
-    def test_bootstrap_chart_renderer_outputs_oldman_apex_shell(self) -> None:
-        """Bootstrap Chart renderer 必须输出 Oldman ApexChart shell。"""
-        chart = DemoChartView(request=make_chart_request())
-
-        html = str(asyncio.run(chart.render_shell(html_id="programme-trend-chart")))
-
-        self.assertIn('id="programme-trend-chart"', html)
-        self.assertIn('data-om-component="apex-chart"', html)
-        self.assertIn('data-om-chart-src="/dashboard/charts/programme-trend"', html)
-        self.assertIn("data-om-chart-target", html)
-        self.assertIn("data-om-chart-loading", html)
-        self.assertNotIn("data-om-scoped-preloader", html)
-        self.assertIn("data-om-chart-empty", html)
-        self.assertIn("data-om-chart-error", html)
-
-    def test_tailwind_chart_shell_keeps_protocol_in_template(self) -> None:
-        """Tailwind Chart shell 必须在模板中声明协议节点。"""
-        package_root = Path(oldman.__file__ or "").resolve().parent
-        template = (package_root / "web/templates/oldman/charts/default/shell.html").read_text()
-
-        self.assertIn("data-om-chart-target", template)
-        self.assertIn("data-om-chart-loading", template)
-        self.assertNotIn("data-om-scoped-preloader", template)
-        self.assertIn("data-om-chart-empty", template)
-        self.assertIn("data-om-chart-error", template)
-        self.assertNotIn("data-om-chart-config", template)
-
-
-class ChartViewLifecycleTest(unittest.TestCase):
-    """验证 ChartView HTTP 生命周期。"""
-
-    def test_chart_view_returns_json_payload(self) -> None:
-        """ChartView GET 必须返回 ApexCharts JSON 配置。"""
-        response = asyncio.run(DemoChartView().get(make_chart_request(headers={"accept": "application/json"})))
-
-        self.assertEqual(response.status, 200)
-        body = response_body(response)
-        self.assertIn(b'"series"', body)
-        self.assertIn(b'"Programmes"', body)
-
-    def test_chart_view_rejects_unknown_filter(self) -> None:
-        """未知 filter 参数必须返回 400。"""
-        response = asyncio.run(DemoChartView().get(make_chart_request(args={"filter.unknown": ["1"]})))
-
-        self.assertEqual(response.status, 400)
-        self.assertIn(b"Unknown chart filter", response_body(response))
-
-    def test_chart_view_rejects_values_outside_declared_whitelists(self) -> None:
-        """图表声明参数白名单后，非法 range、group_by、metric 和 chart_type 必须返回 400。"""
-        cases = (
-            {"range": ["365d"]},
-            {"group_by": ["month"]},
-            {"metric": ["users"]},
-            {"chart_type": ["pie"]},
-        )
-
-        for args in cases:
-            with self.subTest(args=args):
-                response = asyncio.run(StrictChartView().get(make_chart_request(args=args)))
-
-                self.assertEqual(response.status, 400)
-                self.assertIn(b"Invalid chart parameter", response_body(response))
-
-    def test_chart_view_rejects_non_default_parameter_when_no_whitelist_is_declared(self) -> None:
-        """图表未声明白名单时，只允许默认参数值，不能放行任意 group_by。"""
-        response = asyncio.run(DemoChartView().get(make_chart_request(args={"group_by": ["month"]})))
-
-        self.assertEqual(response.status, 400)
-        self.assertIn(b"Invalid chart parameter: group_by", response_body(response))
-
-    def test_chart_view_permission_denied_returns_403(self) -> None:
-        """权限检查失败必须返回 403。"""
-        response = asyncio.run(DeniedChartView().get(make_chart_request()))
-
-        self.assertEqual(response.status, 403)
-        self.assertIn(b"Permission denied", response_body(response))
-
-    def test_sqlalchemy_chart_view_is_exported(self) -> None:
-        """SQLAlchemyChartView 必须作为正式 adapter 导出。"""
-        self.assertTrue(issubclass(SQLAlchemyChartView, BaseChartView))
-
-    def test_sqlalchemy_chart_view_permission_denied_uses_permission_code(self) -> None:
-        """SQLAlchemyChartView 权限失败必须返回统一权限错误码。"""
-        manager = FakeDbManager()
-
-        class CustomDatabaseChart(DeniedSQLAlchemyChartView):
-            """显式绑定测试数据库 manager。"""
-
-            database_manager = cast(DatabaseManager, manager)
-
-        response = asyncio.run(CustomDatabaseChart().get(make_chart_request()))
-
-        self.assertEqual(response.status, 403)
-        self.assertEqual(json.loads(response_body(response))["error_code"], ApiErrorCode.PERMISSION_DENIED)
-
-
 class DashboardChartIntegrationContractTest(unittest.TestCase):
     """验证 Dashboard 图表接入边界。"""
 
@@ -282,7 +77,7 @@ class DashboardChartIntegrationContractTest(unittest.TestCase):
         self.assertIn("DashboardFeedStatusChart.as_view()", source)
         self.assertIn("DashboardLogoQualityChart.as_view()", source)
         self.assertIn("async def get_result", source)
-        self.assertIn('allowed_ranges = ("7d", "30d", "90d")', source)
+        self.assertIn('allowed_ranges = ("all", "7d", "30d", "90d")', source)
         self.assertIn('allowed_metrics = ("programmes",)', source)
         self.assertIn('allowed_metrics = ("feed_status",)', source)
         self.assertIn('allowed_metrics = ("logo_quality",)', source)
@@ -333,6 +128,25 @@ class DashboardChartIntegrationContractTest(unittest.TestCase):
 
                 statement = str(session.statement)
                 self.assertIn(f"WHERE {table_name}.updated_at >=", statement)
+
+    def test_dashboard_charts_default_to_every_record(self) -> None:
+        """演示数据的时间是固定的，过一段时间就落在任何"最近 N 天"之外；默认的"全部"不按时间过滤。"""
+        chart_views = load_dashboard_chart_views_module()
+
+        for chart_class in (
+            chart_views.DashboardProgrammeTrendChart,
+            chart_views.DashboardFeedStatusChart,
+            chart_views.DashboardLogoQualityChart,
+        ):
+            with self.subTest(chart=chart_class.__name__):
+                session = CapturingChartSession()
+                chart = chart_class()
+                chart.db_session = session
+
+                self.assertEqual("all", chart.default_range)
+                asyncio.run(chart.get_result(dashboard_chart_request(range_key="all", metric=chart.default_metric, chart_type=chart.chart_type)))
+
+                self.assertNotIn("WHERE", str(session.statement))
 
     def test_epg_admin_models_include_dashboard_catalog_tables(self) -> None:
         """Dashboard Overview 需要的 Catalog 表必须在当前后台模型层映射。"""

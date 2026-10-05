@@ -17,7 +17,7 @@ from oldman.web.api import (
     form_response,
     modal_response,
 )
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import api_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
@@ -45,7 +45,7 @@ class _ExampleUnknownAction(ResponseAction, tag="example_unknown", kw_only=True)
 
 @router.get("/examples/modals/<page:str>", name="example_modals_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_modals_page(request: Request, page: str):
     """Render one concrete Modal or response Action example page."""
     if page not in OWNED_MODAL_PAGES:
@@ -62,7 +62,7 @@ async def example_modals_page(request: Request, page: str):
 
 
 @router.get("/examples/modals/remote/parts/<step:int>", name="example_modal_remote_part")
-@staff_required()
+@login_required()
 async def example_modal_remote_part(request: Request, step: int):
     """Return replaceable title, body and footer parts for one open Modal."""
     if step not in {1, 2}:
@@ -76,7 +76,7 @@ async def example_modal_remote_part(request: Request, step: int):
 
 @router.get("/examples/modals/workflow/parts/<step:int>", name="example_modal_workflow_part")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_modal_workflow_part(request: Request, step: int):
     """Load one ordinary JSON Form as the current workflow step."""
     if step not in {1, 2}:
@@ -90,7 +90,7 @@ async def example_modal_workflow_part(request: Request, step: int):
 
 @router.post("/examples/modals/workflow/<step:int>", name="example_modal_workflow_submit")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_modal_workflow_submit(request: Request, step: int):
     """Validate a workflow step, replace the Form, then close on completion."""
     if step not in {1, 2}:
@@ -104,7 +104,7 @@ async def example_modal_workflow_submit(request: Request, step: int):
 
 
 @router.get("/examples/modals/actions/feedback", name="example_action_feedback")
-@staff_required()
+@login_required()
 async def example_action_feedback(request: Request):
     """Return the built-in Feedback Action."""
     del request
@@ -112,7 +112,7 @@ async def example_action_feedback(request: Request):
 
 
 @router.get("/examples/modals/actions/replace-html", name="example_action_replace_html")
-@staff_required()
+@login_required()
 async def example_action_replace_html(request: Request):
     """Let the trigger choose where a target-less Replace HTML Action renders."""
     del request
@@ -120,7 +120,7 @@ async def example_action_replace_html(request: Request):
 
 
 @router.get("/examples/modals/actions/close-modal", name="example_action_close_modal")
-@staff_required()
+@login_required()
 async def example_action_close_modal(request: Request):
     """Close the Modal nearest to the Action source."""
     del request
@@ -128,7 +128,7 @@ async def example_action_close_modal(request: Request):
 
 
 @router.get("/examples/modals/actions/reload-table", name="example_action_reload_table")
-@staff_required()
+@login_required()
 async def example_action_reload_table(request: Request):
     """Reload only the explicitly targeted mounted Table."""
     del request
@@ -136,7 +136,7 @@ async def example_action_reload_table(request: Request):
 
 
 @router.get("/examples/modals/actions/redirect", name="example_action_redirect")
-@staff_required()
+@login_required()
 async def example_action_redirect(request: Request):
     """Terminate the Action chain with a real browser navigation."""
     del request
@@ -144,7 +144,7 @@ async def example_action_redirect(request: Request):
 
 
 @router.get("/examples/modals/actions/private", name="example_action_private")
-@staff_required()
+@login_required()
 async def example_action_private(request: Request):
     """Return one Demo-owned Action handled by ExamplesPage."""
     del request
@@ -154,7 +154,7 @@ async def example_action_private(request: Request):
 
 
 @router.get("/examples/modals/actions/missing-target", name="example_action_missing_target")
-@staff_required()
+@login_required()
 async def example_action_missing_target(request: Request):
     """Exercise visible failure when an explicit target is absent."""
     del request
@@ -164,7 +164,7 @@ async def example_action_missing_target(request: Request):
 
 
 @router.get("/examples/modals/actions/unknown", name="example_action_unknown")
-@staff_required()
+@login_required()
 async def example_action_unknown(request: Request):
     """Exercise visible failure for an Action no Page owns."""
     del request
@@ -172,7 +172,7 @@ async def example_action_unknown(request: Request):
 
 
 @router.get("/examples/modals/actions/chain-failure", name="example_action_chain_failure")
-@staff_required()
+@login_required()
 async def example_action_chain_failure(request: Request):
     """Prove a failed middle Action stops every later Action."""
     del request

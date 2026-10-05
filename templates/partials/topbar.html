@@ -11,11 +11,13 @@
   {% include "oldman/dashboard/partials/language_switcher.html" %}
 {% endmacro %}
 
+{% set urls = account_urls(request) %}
+
 {% macro dashboard_account_controls() %}
   {{ user_account_controls(
-    display_name=request.ctx.session.display_name or _("Administrator"),
-    session_path="/user-session",
-    logout_path="/logout",
+    display_name=request.ctx.user.display_name or request.ctx.user.username,
+    session_path=urls.profile,
+    logout_path=urls.logout,
     subtitle=_("Dashboard"),
     avatar_url=bundle_asset_url(app_main_bundle, "theme/assets/images/users/avatar-1.jpg")
   ) }}
@@ -24,7 +26,7 @@
 {{ dashboard_topbar(
   activity_notifications=topbar_notifications,
   activity_href="/notifications",
-  user_notification_urls=dashboard_user_notification_urls,
+  user_notification_urls=urls.notifications,
   language_switcher=dashboard_language_switcher,
   account_controls=dashboard_account_controls
 ) }}

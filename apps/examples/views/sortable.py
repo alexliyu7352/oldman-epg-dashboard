@@ -6,7 +6,7 @@ from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.web import router
 from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction, HtmlSwap, ReplaceHtmlAction
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import api_response
 from oldman.web.security.csrf import csrf_protect
@@ -33,7 +33,7 @@ MOVE_ERRORS = {
 
 
 @router.get("/examples/sortable/<page:str>", name="example_sortable_page")
-@staff_required()
+@login_required()
 async def example_sortable_page(request: Request, page: str):
     """Render the real task board or delegate an unknown future page."""
     if page not in OWNED_SORTABLE_PAGES:
@@ -46,7 +46,7 @@ async def example_sortable_page(request: Request, page: str):
 
 @router.post("/examples/sortable/tasks/move", name="example_sortable_move")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_sortable_move(request: Request):
     """Apply one drag or keyboard move through the same domain service."""
     try:

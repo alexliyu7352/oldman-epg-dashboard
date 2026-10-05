@@ -1,4 +1,8 @@
-"""Run the example Python suite with an isolated tracked settings template."""
+"""Run the example Python suite with an isolated tracked settings template and its own Redis.
+
+The example settings point every Redis alias at 127.0.0.1:6379, the developer's own Redis; the
+suite runs against a Redis it starts and stops itself instead, so no test can reach that one.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +14,7 @@ import tempfile
 import textwrap
 from pathlib import Path
 
+from oldman.testing import owned_redis_server, use_owned_redis
 from ruamel.yaml import YAML
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +25,10 @@ from scripts.demo_auth import demo_auth_settings  # noqa: E402
 
 def main() -> int:
     """Bootstrap the suite with one isolated service settings file."""
-    with tempfile.TemporaryDirectory(prefix="oldman-epg-tests-") as temporary_directory:
+    with (
+        tempfile.TemporaryDirectory(prefix="oldman-epg-tests-") as temporary_directory,
+        owned_redis_server(Path(temporary_directory) / "redis", environment=os.environ) as redis_url,
+    ):
         state_root = Path(temporary_directory)
         settings_file = state_root / "web_settings.yaml"
         shutil.copy2(
@@ -30,6 +38,7 @@ def main() -> int:
         payload = YAML(typ="safe", pure=True).load(settings_file.read_text(encoding="utf-8"))
         payload["database"]["url"] = f"sqlite+aiosqlite:///{state_root / 'epg-tests.db'}"
         payload["web"]["auth"] = demo_auth_settings()
+        use_owned_redis(payload, redis_url)
         yaml = YAML()
         with settings_file.open("w", encoding="utf-8") as file:
             yaml.dump(payload, file)
@@ -47,6 +56,9 @@ def main() -> int:
             cwd=ROOT,
             check=True,
         )
+        synced = settings_file.read_text(encoding="utf-8")
+        if "127.0.0.1:6379" in synced or "localhost:6379" in synced:
+            raise SystemExit(f"{settings_file} still points a Redis alias at the developer's Redis on 6379")
         runner = textwrap.dedent(
             """
             import sys

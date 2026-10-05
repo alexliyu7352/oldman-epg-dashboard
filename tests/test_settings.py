@@ -48,7 +48,7 @@ class SettingsTest(unittest.TestCase):
         """Authentication and Admin must target the same project User table."""
         self.assertEqual(
             auth_app.settings.user_model,
-            "apps.auth.models.OldmanUser",
+            "apps.accounts.models.User",
         )
 
     def test_session_uses_named_redis_with_the_dashboard_contract(self) -> None:
@@ -80,7 +80,7 @@ class SettingsTest(unittest.TestCase):
         self.assertEqual(registry.resolve("zh_Hans"), "")
 
     def test_settings_yaml_is_local_runtime_config(self) -> None:
-        """本地配置和 SQLite 运行数据不能被加入 Git 仓库。"""
+        """本地配置和 SQLite 运行数据不能被加入 Git 仓库;每个服务的示例配置照常跟踪。"""
         gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
         example_settings = (ROOT / "data" / "web_settings.example.yaml").read_text(encoding="utf-8")
         tracked_files = subprocess.run(
@@ -91,10 +91,27 @@ class SettingsTest(unittest.TestCase):
             text=True,
         )
 
-        self.assertIn("/data/web_settings.yaml", gitignore)
+        def ignored(path: str) -> bool:
+            return subprocess.run(["git", "check-ignore", "-q", "--no-index", path], cwd=ROOT, check=False).returncode == 0
+
+        # README 让使用者为每个服务从示例复制一份本地配置(db migrate 要求它们都在)。
+        for example in sorted((ROOT / "data").glob("*_settings.example.yaml")):
+            local = example.name.replace(".example.yaml", ".yaml")
+            self.assertTrue(ignored(f"data/{local}"), local)
+            self.assertFalse(ignored(f"data/{example.name}"), example.name)
+        # Generated, never committed: what `static collect` copies in, the browser catalogs built from the PO
+        # files, and a lock file (the demo follows the framework's version ranges).
+        for generated in (
+            "static/oldman/admin/app.js",
+            "static/examples/logos/atlas.svg",
+            ".static.oldman-static.json",
+            "frontend/public/i18n/en.json",
+            "frontend/pnpm-lock.yaml",
+        ):
+            self.assertTrue(ignored(generated), generated)
         self.assertIn("/data/*.db", gitignore)
         self.assertIn("sqlite+aiosqlite:///data/epg_dashboard.db", example_settings)
-        self.assertIn("user_model: apps.auth.models.OldmanUser", example_settings)
+        self.assertIn("user_model: apps.accounts.models.User", example_settings)
         self.assertNotIn("mysql+aiomysql", example_settings)
         self.assertEqual(tracked_files.stdout.strip(), "")
 

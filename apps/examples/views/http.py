@@ -1,9 +1,9 @@
-"""Staff-only controls for the backend HTTP example."""
+"""Controls for the backend HTTP example, open to every signed-in user."""
 
 from __future__ import annotations
 
 from oldman.web import NotFound, router
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import replace_html_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
@@ -17,7 +17,7 @@ from . import EXAMPLE_SECTIONS
 
 @router.get("/examples/http/client", name="example_http_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_http_page(request: Request):
     """Show the configured upstream without sending a network request."""
     section = EXAMPLE_SECTIONS["http"]
@@ -41,7 +41,7 @@ async def example_http_page(request: Request):
 
 @router.post("/examples/http/client/<operation:str>", name="example_http_operation")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_http_operation(request: Request, operation: str):
     """Deliver diagnostics, without confusing upstream errors with Demo errors."""
     if operation not in OPERATION_PATHS:

@@ -1,113 +1,53 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-describe("startOldmanApp", () => {
-  it("starts the runtime after page entry registration and mounts the page", async () => {
-    document.head.innerHTML = '<meta name="oldman-asset-base" content="http://localhost:5173/">';
-    document.documentElement.removeAttribute("data-om-ready");
-    document.body.innerHTML = '<main data-om-page="main-test"></main>';
-    const fetch = vi.fn(async (url: RequestInfo | URL) => {
-      return new Response(JSON.stringify({ locale: "en", messages: { menu: "Menu" } }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    });
-    vi.stubGlobal("fetch", fetch);
+const emptyCatalog = () => new Response(JSON.stringify({ locale: "en", messages: {} }), { headers: { "Content-Type": "application/json" } });
 
-    vi.resetModules();
-    const { Page, setupPage } = await import("oldman-web/core");
+/** Import main.ts, which starts the dashboard, and wait until the page is mounted. */
+async function startMain(): Promise<void> {
+  vi.resetModules();
+  await import("./main");
+  await vi.waitFor(() => expect(document.documentElement.dataset.omReady).toBe("true"));
+}
 
-    /**
-     * 最小测试页面，用于证明 main.ts 会启动 Oldman 页面生命周期。
-     */
-    class MainTestPage extends Page {
-      override async mount(): Promise<void> {
-        this.root.dataset.mainTestMounted = "true";
-      }
-    }
-
-    setupPage("main-test", MainTestPage);
-    const { startOldmanApp, stopOldmanApp } = await import("./main");
-
-    await startOldmanApp();
-    expect(fetch).toHaveBeenCalledWith("http://localhost:5173/i18n/en.json", expect.any(Object));
-    expect(document.documentElement.dataset.omReady).toBe("true");
-    expect(document.querySelector("[data-om-page]")).not.toBeNull();
-    expect(document.querySelector<HTMLElement>("[data-om-page]")?.dataset.mainTestMounted).toBe("true");
-
-    await stopOldmanApp();
+// What main.ts wires into the framework's startDashboard (tested in oldman-web): the fallback page and the page entries.
+describe("main.ts", () => {
+  afterEach(async () => {
+    const { stopDashboard } = await import("oldman-web/dashboard");
+    await stopDashboard();
+    delete document.body.dataset.omPage;
+    delete document.body.dataset.omExamplesReady;
+    document.head.innerHTML = "";
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
-  it("mounts the dashboard base page when an entry name is not registered", async () => {
+  it("mounts this project's base page for an entry name nothing registered", async () => {
     document.head.innerHTML = '<meta name="oldman-asset-base" content="http://localhost:5173/">';
-    document.documentElement.removeAttribute("data-om-ready");
     document.body.innerHTML = '<main data-om-page="never-registered"></main>';
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ locale: "en", messages: {} }), { headers: { "Content-Type": "application/json" } })));
+    vi.stubGlobal("fetch", vi.fn(async () => emptyCatalog()));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
-    vi.resetModules();
-    const { startOldmanApp, stopOldmanApp } = await import("./main");
+    await startMain();
     const { BasePage } = await import("./pages/base-page");
     const { getOldmanContext } = await import("oldman-web/core");
 
-    await startOldmanApp();
-    try {
-      expect(document.documentElement.dataset.omReady).toBe("true");
-      expect(getOldmanContext().pageRegistry.current).toBeInstanceOf(BasePage);
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("No page registered for never-registered"));
-    } finally {
-      await stopOldmanApp();
-      warn.mockRestore();
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it("resolves relative asset base before loading i18n catalogs", async () => {
-    document.head.innerHTML = '<meta name="oldman-asset-base" content="/static/dist/">';
-    document.documentElement.removeAttribute("data-om-ready");
-    document.body.innerHTML = '<main data-om-page="main-test"></main>';
-    const fetch = vi.fn(async () => {
-      return new Response(JSON.stringify({ locale: "en", messages: {} }), {
-        headers: { "Content-Type": "application/json" }
-      });
-    });
-    vi.stubGlobal("fetch", fetch);
-
-    vi.resetModules();
-    const { Page, setupPage } = await import("oldman-web/core");
-
-    class MainTestPage extends Page {}
-
-    setupPage("main-test", MainTestPage);
-    const { startOldmanApp, stopOldmanApp } = await import("./main");
-
-    await startOldmanApp();
-    expect(fetch).toHaveBeenCalledWith(new URL("/static/dist/i18n/en.json", window.location.href).toString(), expect.any(Object));
-
-    await stopOldmanApp();
-    vi.unstubAllGlobals();
+    expect(getOldmanContext().pageRegistry.current).toBeInstanceOf(BasePage);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("No page registered for never-registered"));
   });
 
   it("loads the dedicated examples page entry", async () => {
     document.head.innerHTML = '<meta name="oldman-asset-base" content="http://localhost:5173/">';
-    document.documentElement.removeAttribute("data-om-ready");
     document.body.dataset.omPage = "examples";
     document.body.innerHTML = `
       <aside data-om-sidebar></aside>
       <header id="page-topbar"></header>
       <main data-examples-shell></main>
     `;
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ locale: "en", messages: {} }))));
+    vi.stubGlobal("fetch", vi.fn(async () => emptyCatalog()));
 
-    vi.resetModules();
-    const { startOldmanApp, stopOldmanApp } = await import("./main");
+    await startMain();
 
-    await startOldmanApp();
     expect(document.body.dataset.omExamplesReady).toBe("true");
-
-    await stopOldmanApp();
-    delete document.body.dataset.omPage;
-    delete document.body.dataset.omExamplesReady;
-    vi.unstubAllGlobals();
   });
-
 });

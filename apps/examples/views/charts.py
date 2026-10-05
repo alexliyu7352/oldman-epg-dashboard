@@ -8,7 +8,7 @@ from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.web import BadRequest, router
 from oldman.web.api import ApiErrorCode, DefaultApiResponse, FeedbackAction
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import api_response
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
@@ -40,7 +40,7 @@ router.add_route(
 
 @router.get("/examples/charts/<page:str>", name="example_charts_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_charts_page(request: Request, page: str):
     """Render one concrete database-backed Chart page."""
     if page not in OWNED_CHART_PAGES:
@@ -70,7 +70,7 @@ async def example_charts_page(request: Request, page: str):
 
 
 @router.get("/examples/charts/realtime/events", name="example_realtime_chart_events")
-@staff_required()
+@login_required()
 @sse.streaming(queue_mode=SSEQueueMode.LATEST, session_guard=True, login_url="/login")
 async def example_realtime_chart_events(request: Request, stream: SSEStream) -> None:
     """Replay database rows locally, then wait on the shared Redis stream."""
@@ -87,7 +87,7 @@ async def example_realtime_chart_events(request: Request, stream: SSEStream) -> 
 
 @router.post("/examples/charts/realtime/publish", name="example_realtime_chart_publish")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_realtime_chart_publish(request: Request):
     """Commit one metric, then publish it through the configured SSE Redis channel."""
     server_id = _server_id(request)

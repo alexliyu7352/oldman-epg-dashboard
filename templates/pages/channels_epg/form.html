@@ -2,7 +2,7 @@
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% set is_edit = channel is not none %}
-{% block title %}{{ _("Edit Channel") if is_edit else _("New Channel") }} · Oldman{% endblock %}
+{% block title %}{{ _("Edit Channel") if is_edit else _("New Channel") }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <div class="page-content">

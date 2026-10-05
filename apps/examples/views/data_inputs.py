@@ -8,7 +8,7 @@ from oldman.db import db_manager
 from oldman.i18n import gettext_lazy as _
 from oldman.web import NotFound, router
 from oldman.web.api import ReplaceHtmlAction, feedback_response
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.components.selects import SelectProviderView
 from oldman.web.request import Request
 from oldman.web.response import json_response
@@ -36,7 +36,7 @@ router.add_route(
 
 @router.get("/examples/data-inputs/<page:str>", name="example_data_inputs_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_data_inputs_page(request: Request, page: str):
     """Render the three data-input pages from real fixture rows."""
     if page not in {"lists", "autocomplete", "providers"}:
@@ -92,7 +92,7 @@ async def render_remote_form_page(request: Request, page: str, context: dict[str
 
 @router.post("/examples/forms/selects/<profile_id:int>/edit", name="example_logo_select_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_logo_select_update(request: Request, profile_id: int):
     """Persist a provider-selected Logo foreign key."""
     return await _update_logo(request, profile_id, mode="selects")
@@ -100,7 +100,7 @@ async def example_logo_select_update(request: Request, profile_id: int):
 
 @router.post("/examples/forms/autocomplete/<profile_id:int>/edit", name="example_logo_autocomplete_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_logo_autocomplete_update(request: Request, profile_id: int):
     """Persist an autocomplete-selected Logo foreign key."""
     return await _update_logo(request, profile_id, mode="autocomplete")
@@ -108,7 +108,7 @@ async def example_logo_autocomplete_update(request: Request, profile_id: int):
 
 @router.post("/examples/data-inputs/autocomplete/<profile_id:int>/edit", name="example_data_input_autocomplete_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_data_input_autocomplete_update(request: Request, profile_id: int):
     """Use the same autocomplete contract from the Data inputs section."""
     return await _update_logo(request, profile_id, mode="data-inputs-autocomplete")

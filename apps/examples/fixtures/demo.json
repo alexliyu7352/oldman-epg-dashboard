@@ -17513,5 +17513,19 @@
         "examples.view_projects"
       ]
     }
+  },
+  {
+    "model": "roles.Role",
+    "pk": 2,
+    "fields": {
+      "name": "User managers",
+      "description": "Views, adds, changes and deletes ordinary user accounts; staff and superuser accounts stay with superusers.",
+      "permissions": [
+        "auth.users.view",
+        "auth.users.add",
+        "auth.users.change",
+        "auth.users.delete"
+      ]
+    }
   }
 ]

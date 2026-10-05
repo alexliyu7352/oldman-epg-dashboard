@@ -1,11 +1,11 @@
 # Copy to task_scheduler_settings.yaml. Run only one Scheduler per namespace.
 apps:
   - oldman.auth
-  - apps.auth
+  - apps.accounts
   - apps.examples
 app_settings:
   auth:
-    user_model: apps.auth.models.OldmanUser
+    user_model: apps.accounts.models.User
 database:
   url: sqlite+aiosqlite:///data/epg_dashboard.db
 process:
@@ -28,6 +28,11 @@ redis:
     redis_url: redis://127.0.0.1:6379/3
   TASKIQ:
     redis_url: redis://127.0.0.1:6379/7
+  # 框架内置别名：settings sync 会补出它们，写在这里和其他地址一起改。
+  CACHE:
+    redis_url: redis://127.0.0.1:6379/2
+  SESSION:
+    redis_url: redis://127.0.0.1:6379/5
 taskiq:
   enabled: true
   namespace: epg_demo

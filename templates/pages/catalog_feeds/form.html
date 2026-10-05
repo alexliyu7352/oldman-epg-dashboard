@@ -2,7 +2,7 @@
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% set is_edit = catalog_feed is not none %}
-{% block title %}{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }} · Oldman{% endblock %}
+{% block title %}{{ _("Edit Catalog Feed") if is_edit else _("New Catalog Feed") }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <div class="page-content">

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
-{% block title %}{{ example_page_title }} · {{ example_section.title }} · Oldman{% endblock %}
+{% block title %}{{ example_page_title }} · {{ example_section.title }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <div class="page-content" data-examples-shell data-example-category="{{ example_category }}" data-example-page="{{ example_page }}">

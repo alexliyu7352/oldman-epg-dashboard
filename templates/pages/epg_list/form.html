@@ -2,7 +2,7 @@
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
 {% set is_edit = item is not none %}
-{% block title %}{{ _("Edit Programme") if is_edit else _("New Programme") }} · Oldman{% endblock %}
+{% block title %}{{ _("Edit Programme") if is_edit else _("New Programme") }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <div class="page-content">

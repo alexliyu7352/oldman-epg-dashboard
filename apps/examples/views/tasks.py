@@ -1,4 +1,4 @@
-"""Staff-only task demonstrations using Form and ordered response actions."""
+"""Task demonstrations for signed-in users, using Form and ordered response actions."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from oldman.i18n import gettext_lazy as _
 from oldman.providers.redis import redis_client
 from oldman.web import NotFound, router
 from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_error_response, form_response
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.security.csrf import add_csrf_token, csrf_protect
 from oldman.web.template import render_fragment, render_template
@@ -36,7 +36,7 @@ def _user_id(request: Request) -> int:
     """Narrow the signed-in user's identity without querying another User."""
     user_id = request.ctx.user.id
     if user_id is None:
-        raise RuntimeError("The staff guard must supply an authenticated user")
+        raise RuntimeError("The login guard must supply an authenticated user")
     return user_id
 
 
@@ -64,7 +64,7 @@ async def _result(request: Request, **context):
 
 @router.get("/examples/tasks/<page:str>", name="example_tasks_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_tasks_page(request: Request, page: str):
     """Read choices and owned plans only; GET never publishes or schedules work."""
     if page not in PAGES:
@@ -91,7 +91,7 @@ async def example_tasks_page(request: Request, page: str):
 
 @router.post("/examples/tasks/run/<operation:str>", name="example_task_run")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_task_run(request: Request, operation: str):
     """Publish fixed Demo operations only, preserving unknown delivery outcomes."""
     if operation not in OPERATIONS:
@@ -158,7 +158,7 @@ async def example_task_run(request: Request, operation: str):
 
 @router.post("/examples/tasks/result/<task_id:str>", name="example_task_result")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_task_result(request: Request, task_id: str):
     """Read only IDs owned by this user; missing ownership never grants access."""
     if not settings.taskiq.enabled or re.fullmatch(r"[a-f0-9]{32}", task_id) is None:
@@ -182,7 +182,7 @@ async def example_task_result(request: Request, task_id: str):
 
 @router.post("/examples/tasks/cancel/<schedule_id:str>", name="example_task_cancel")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_task_cancel(request: Request, schedule_id: str):
     """Cancel an owned plan, not already queued work or another user's schedule."""
     if not settings.taskiq.enabled:

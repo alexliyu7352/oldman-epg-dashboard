@@ -7,12 +7,13 @@ from decimal import Decimal
 from markupsafe import Markup, escape
 from oldman.i18n import gettext_lazy as _
 from oldman.web.auth import has_perm
+from oldman.web.authentication import request_user
 from oldman.web.components.tables import Column, SQLAlchemyTableView, TailwindTableRenderer, badge, date_cell
 from oldman.web.components.tables.views import TableValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from .models import ExampleProject
+from .models import ExampleProject, ExampleTeam
 from .permissions import ExamplePermissions
 
 PROJECT_STATUSES = frozenset({"planned", "active", "review", "paused", "completed"})
@@ -45,9 +46,13 @@ class ExampleProjectTable(SQLAlchemyTableView):
         Column("action", _("Actions"), field_path=None, callback="get_column_action_data", exportable=False),
     )
 
-    async def check_auth(self, request) -> bool:
-        """Staff alone is not enough here: the data needs a role granting examples.view_projects."""
-        return await has_perm(request, ExamplePermissions.view_projects)
+    async def check_permission(self, request, *, method_name: str, route_kwargs: dict[str, object]) -> tuple[bool, str | None]:
+        """Signing in is not enough here: the data needs a role granting examples.view_projects.
+
+        A plain permission needs no parameters and no query, so it is checked before either.
+        """
+        del method_name, route_kwargs
+        return await has_perm(request, ExamplePermissions.view_projects), None
 
     async def get_queryset(self):
         """Return projects with the team needed by both render paths."""
@@ -136,4 +141,42 @@ class ExampleProjectTable(SQLAlchemyTableView):
         )
 
 
-__all__ = ["ExampleProjectTable", "PROJECT_PRIORITIES", "PROJECT_STATUSES"]
+class TeamProjectTable(ExampleProjectTable):
+    """One team's projects, read-only: how a data endpoint decides who gets what, one hook per question.
+
+    The Access Guards example page mounts it. Each hook answers at its own moment:
+
+    - ``check_permission`` — before the parameters are parsed or a session is opened: staff only. It
+      replaces the parent's role check; a subclass states its own rule.
+    - ``check_auth`` — after the parameters, with the read session open: the team in the path must
+      exist and be active, which only the database knows. It can refuse the whole request, nothing less.
+    - ``apply_base_filters`` — which rows: this team's projects. It refuses nothing; totals, pages and
+      search all count within it.
+    """
+
+    route_name = "example_team_projects_table"
+    route_path = "/examples/auth/teams/<team_id:int>/projects/table"
+    selectable = False
+    export_formats = ()
+    empty_message = _("This team has no projects.")
+    # Read-only: no team column (it is the one in the path) and no edit or delete buttons.
+    columns = tuple(
+        column for column in ExampleProjectTable.columns if isinstance(column, Column) and column.name not in {"team", "action"}
+    )
+
+    async def check_permission(self, request, *, method_name: str, route_kwargs: dict[str, object]) -> tuple[bool, str | None]:
+        """Staff only, decided from the signed-in user alone."""
+        del method_name, route_kwargs
+        return request_user(request).is_staff, None
+
+    async def check_auth(self, table_request) -> bool:
+        """The team in the path must exist and be active."""
+        team = await self.require_db_session().get(ExampleTeam, table_request.route_kwargs["team_id"])
+        return team is not None and team.is_active
+
+    async def apply_base_filters(self, query, table_request):
+        """Only this team's projects."""
+        return query.where(ExampleProject.team_id == table_request.route_kwargs["team_id"])
+
+
+__all__ = ["ExampleProjectTable", "PROJECT_PRIORITIES", "PROJECT_STATUSES", "TeamProjectTable"]

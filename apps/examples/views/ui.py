@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from oldman.web import router
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.template import render_template
 
@@ -16,7 +16,7 @@ OWNED_UI_PAGES = frozenset(EXAMPLE_SECTIONS["ui"]["pages"])
 
 
 @router.get("/examples/ui/<page:str>", name="example_ui_page")
-@staff_required()
+@login_required()
 async def example_ui_page(request: Request, page: str):
     """Render one reference page using the live Dashboard design system."""
     if page not in OWNED_UI_PAGES:

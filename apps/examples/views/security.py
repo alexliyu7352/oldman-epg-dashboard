@@ -10,7 +10,7 @@ from __future__ import annotations
 from oldman.conf import settings
 from oldman.i18n import gettext_lazy as _
 from oldman.web import router
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.response import json_response
 from oldman.web.security import fingerprint_required
@@ -23,7 +23,7 @@ PROBE_ENDPOINT = "/examples/security/fingerprint/probe"
 
 
 @router.get("/examples/security/fingerprint", name="example_security_fingerprint_page")
-@staff_required()
+@login_required()
 async def example_security_fingerprint_page(request: Request):
     """Render the four probes and the notes on what this does and does not prove."""
     section = EXAMPLE_SECTIONS["security"]
@@ -48,7 +48,7 @@ async def example_security_fingerprint_page(request: Request):
 
 
 @router.get(PROBE_ENDPOINT, name="example_security_fingerprint_probe")
-@staff_required()
+@login_required()
 @fingerprint_required(endpoint=PROBE_ENDPOINT)
 async def example_security_fingerprint_probe(request: Request):
     """Reached only by a request whose fingerprint decrypted, was fresh, and passed the limiter."""

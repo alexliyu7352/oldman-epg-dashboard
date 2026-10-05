@@ -3,14 +3,13 @@ apps:
   - oldman.apps.admin
   - oldman.web.messages.notifications
   - oldman.apps.roles
-  - apps.auth
+  - apps.accounts
   - apps.dashboard
   - apps.epg_admin
   - apps.examples
-  - apps.web
 app_settings:
   auth:
-    user_model: apps.auth.models.OldmanUser
+    user_model: apps.accounts.models.User
   admin:
     require_superuser: false
   examples:
@@ -22,6 +21,9 @@ web:
   listen_port: 17997
   # 找回密码邮件这类在请求之外生成的链接用这个地址；改端口时一起改。
   domain: http://127.0.0.1:17997
+  # 账户页面的地址:其余都用默认值。找回密码默认不装,这里打开它(登录页随之出现入口)。
+  account:
+    password_reset_url: /password-reset
   auto_reload: false
   workers: 1
   access_log: false
@@ -116,7 +118,7 @@ redis:
   TASKIQ:
     redis_url: redis://127.0.0.1:6379/7
   CACHE:
-    redis_url: redis://localhost:6379/2
+    redis_url: redis://127.0.0.1:6379/2
   SESSION:
     redis_url: redis://127.0.0.1:6379/5
   SSE:
@@ -156,6 +158,8 @@ i18n:
       flag: tw
 core:
   app_name: oldman
+  # The name people see (page brand, error pages, password reset mail); unset, app_name.
+  site_name: Oldman
   # Every Redis key and channel of this service starts with it; app_name "oldman" is too generic to share a Redis with.
   namespace: oldman_epg_dashboard
   debug: false

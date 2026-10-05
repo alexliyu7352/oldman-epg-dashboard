@@ -33,7 +33,7 @@ class ObservationRequest(MsgspecModel):
 
 
 class ObservationReply(MsgspecModel):
-    """A bounded snapshot, shared by all staff users since this process started."""
+    """A bounded snapshot, shared by every signed-in user since this process started."""
 
     peer_id: str
     pid: int

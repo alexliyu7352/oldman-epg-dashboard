@@ -50,9 +50,11 @@ def verify_example_pages(client: FirefoxBiDi, context: str, base_url: str, evide
         )
     deadline = time.monotonic() + 15
     while time.monotonic() < deadline:
+        # The switch reloads the page; its runtime must finish starting before the next navigation, or
+        # Firefox reports the startup's interrupted dynamic imports as console errors.
         language = client.evaluate(
             context,
-            "document.documentElement.lang",
+            "document.documentElement.dataset.omReady === 'true' ? document.documentElement.lang : ''",
         )
         if isinstance(language, str) and language.casefold() == "zh-hans":
             evidence["language"] = language

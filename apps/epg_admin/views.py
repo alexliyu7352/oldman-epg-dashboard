@@ -16,7 +16,7 @@ from oldman.web.api import (
     modal_response,
     modal_success_response,
 )
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.components.charts import (
     ChartResult,
     ChartSeries,
@@ -242,7 +242,7 @@ def render_logo_compare_card(asset: CatalogLogoAsset, attr_name: str, label: str
 
 
 @router.get("/channels-epg", name="channels_epg")
-@staff_required()
+@login_required()
 async def channels_epg_index(request: Request):
     """渲染 ChannelsEpg 列表。"""
     table = ChannelsEpgTable(request=request, initial_query=request.args.get("q", "").strip())
@@ -259,7 +259,7 @@ async def channels_epg_index(request: Request):
 
 @router.get("/channels-epg/new", name="channels_epg_new")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def channels_epg_new(request: Request):
     """渲染 ChannelsEpg 新建表单。"""
     form = ChannelsEpgForm(request=request)
@@ -268,7 +268,7 @@ async def channels_epg_new(request: Request):
 
 @router.post("/channels-epg/new", name="channels_epg_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channels_epg_create(request: Request):
     """创建 ChannelsEpg。"""
     form = ChannelsEpgForm.from_request(request)
@@ -285,7 +285,7 @@ async def channels_epg_create(request: Request):
 
 @router.get("/channels-epg/<channel_id:int>/edit", name="channels_epg_edit")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def channels_epg_edit(request: Request, channel_id: int):
     """渲染 ChannelsEpg 编辑表单。"""
     channel = await services.get_channel(channel_id)
@@ -295,7 +295,7 @@ async def channels_epg_edit(request: Request, channel_id: int):
 
 @router.post("/channels-epg/<channel_id:int>/edit", name="channels_epg_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channels_epg_update(request: Request, channel_id: int):
     """更新 ChannelsEpg。"""
     channel = await services.get_channel(channel_id)
@@ -313,7 +313,7 @@ async def channels_epg_update(request: Request, channel_id: int):
 
 @router.post("/channels-epg/<channel_id:int>/delete", name="channels_epg_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channels_epg_delete(request: Request, channel_id: int):
     """删除 ChannelsEpg。"""
     await services.delete_channel(channel_id)
@@ -321,7 +321,7 @@ async def channels_epg_delete(request: Request, channel_id: int):
 
 
 @router.get("/channel-names", name="channel_names")
-@staff_required()
+@login_required()
 async def channel_names_index(request: Request):
     """渲染 ChannelName 列表。"""
     published = request.args.get("published", "").strip()
@@ -351,7 +351,7 @@ async def channel_names_index(request: Request):
 
 @router.get("/channel-names/new", name="channel_names_new")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def channel_names_new(request: Request):
     """渲染 ChannelName 新建表单。"""
     reference_ids = await services.channel_name_reference_defaults()
@@ -364,7 +364,7 @@ async def channel_names_new(request: Request):
 
 @router.post("/channel-names/new", name="channel_names_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channel_names_create(request: Request):
     """创建 ChannelName。"""
     reference_ids = await services.channel_name_reference_defaults()
@@ -382,7 +382,7 @@ async def channel_names_create(request: Request):
 
 @router.get("/channel-names/<channel_name_id:int>/edit", name="channel_names_edit")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def channel_names_edit(request: Request, channel_name_id: int):
     """渲染 ChannelName 编辑表单。"""
     channel_name = await services.get_channel_name(channel_name_id)
@@ -395,7 +395,7 @@ async def channel_names_edit(request: Request, channel_name_id: int):
 
 @router.post("/channel-names/<channel_name_id:int>/edit", name="channel_names_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channel_names_update(request: Request, channel_name_id: int):
     """更新 ChannelName。"""
     channel_name = await services.get_channel_name(channel_name_id)
@@ -414,7 +414,7 @@ async def channel_names_update(request: Request, channel_name_id: int):
 
 @router.post("/channel-names/<channel_name_id:int>/delete", name="channel_names_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def channel_names_delete(request: Request, channel_name_id: int):
     """删除 ChannelName。"""
     await services.delete_channel_name(channel_name_id)
@@ -422,7 +422,7 @@ async def channel_names_delete(request: Request, channel_name_id: int):
 
 
 @router.get("/catalog-channels", name="catalog_channels")
-@staff_required()
+@login_required()
 async def catalog_channels_index(request: Request):
     """渲染 CatalogChannel 列表。"""
     status = request.args.get("status", "").strip()
@@ -452,7 +452,7 @@ async def catalog_channels_index(request: Request):
 
 @router.get("/catalog-channels/new", name="catalog_channels_new")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def catalog_channels_new(request: Request):
     """渲染 CatalogChannel 新建表单。"""
     form = CatalogChannelForm(request=request)
@@ -469,7 +469,7 @@ async def catalog_channels_new(request: Request):
 
 @router.post("/catalog-channels/new", name="catalog_channels_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_channels_create(request: Request):
     """创建 CatalogChannel。"""
     form = CatalogChannelForm.from_request(request)
@@ -491,7 +491,7 @@ async def catalog_channels_create(request: Request):
 
 @router.get("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_edit")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def catalog_channels_edit(request: Request, catalog_channel_id: int):
     """渲染 CatalogChannel 编辑表单。"""
     catalog_channel = await services.get_catalog_channel(catalog_channel_id)
@@ -509,7 +509,7 @@ async def catalog_channels_edit(request: Request, catalog_channel_id: int):
 
 @router.post("/catalog-channels/<catalog_channel_id:int>/edit", name="catalog_channels_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_channels_update(request: Request, catalog_channel_id: int):
     """更新 CatalogChannel。"""
     catalog_channel = await services.get_catalog_channel(catalog_channel_id)
@@ -532,7 +532,7 @@ async def catalog_channels_update(request: Request, catalog_channel_id: int):
 
 @router.post("/catalog-channels/<catalog_channel_id:int>/delete", name="catalog_channels_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_channels_delete(request: Request, catalog_channel_id: int):
     """删除 CatalogChannel。"""
     await services.delete_catalog_channel(catalog_channel_id)
@@ -540,7 +540,7 @@ async def catalog_channels_delete(request: Request, catalog_channel_id: int):
 
 
 @router.get("/catalog-feeds", name="catalog_feeds")
-@staff_required()
+@login_required()
 async def catalog_feeds_index(request: Request):
     """渲染 CatalogFeed 列表。"""
     filter_names = (
@@ -572,7 +572,7 @@ async def catalog_feeds_index(request: Request):
 
 @router.get("/catalog-feeds/new", name="catalog_feeds_new")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def catalog_feeds_new(request: Request):
     """渲染 CatalogFeed 新建表单。"""
     form = CatalogFeedForm(request=request, select_secret_key=SELECT_BINDING_SECRET)
@@ -584,7 +584,7 @@ async def catalog_feeds_new(request: Request):
 
 @router.post("/catalog-feeds/new", name="catalog_feeds_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_feeds_create(request: Request):
     """创建 CatalogFeed。"""
     form = CatalogFeedForm.from_request(request, select_secret_key=SELECT_BINDING_SECRET)
@@ -601,7 +601,7 @@ async def catalog_feeds_create(request: Request):
 
 @router.get("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_edit")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def catalog_feeds_edit(request: Request, catalog_feed_id: int):
     """渲染 CatalogFeed 编辑表单。"""
     catalog_feed = await services.get_catalog_feed(catalog_feed_id)
@@ -614,7 +614,7 @@ async def catalog_feeds_edit(request: Request, catalog_feed_id: int):
 
 @router.post("/catalog-feeds/<catalog_feed_id:int>/edit", name="catalog_feeds_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_feeds_update(request: Request, catalog_feed_id: int):
     """更新 CatalogFeed。"""
     catalog_feed = await services.get_catalog_feed(catalog_feed_id)
@@ -632,7 +632,7 @@ async def catalog_feeds_update(request: Request, catalog_feed_id: int):
 
 @router.post("/catalog-feeds/<catalog_feed_id:int>/delete", name="catalog_feeds_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def catalog_feeds_delete(request: Request, catalog_feed_id: int):
     """删除 CatalogFeed。"""
     await services.delete_catalog_feed(catalog_feed_id)
@@ -640,7 +640,7 @@ async def catalog_feeds_delete(request: Request, catalog_feed_id: int):
 
 
 @router.get("/upstream-records", name="upstream_records")
-@staff_required()
+@login_required()
 async def upstream_records_index(request: Request):
     """渲染上游原始记录审计列表。"""
     filter_names = (
@@ -670,7 +670,7 @@ async def upstream_records_index(request: Request):
 
 
 @router.get("/upstream-records/<record_id:int>/raw-modal", name="upstream_records_raw_modal")
-@staff_required()
+@login_required()
 async def upstream_record_raw_modal(request: Request, record_id: int):
     """按需返回上游记录 raw payload 的 om-modal 片段，避免列表响应携带大字段。"""
     record = await services.get_upstream_record(record_id)
@@ -687,7 +687,7 @@ async def upstream_record_raw_modal(request: Request, record_id: int):
 
 
 @router.get("/logo-assets", name="logo_assets")
-@staff_required()
+@login_required()
 async def logo_assets_index(request: Request):
     """渲染 Logo 资产质量工作台。"""
     filter_names = (
@@ -717,7 +717,7 @@ async def logo_assets_index(request: Request):
 
 
 @router.get("/logo-assets/<logo_asset_id:int>/compare-modal", name="logo_assets_compare_modal")
-@staff_required()
+@login_required()
 async def logo_asset_compare_modal(request: Request, logo_asset_id: int):
     """按需返回 Logo 原图、归一化图和特征图对比 om-modal 片段。"""
     asset = await services.get_logo_asset(logo_asset_id)
@@ -750,7 +750,7 @@ async def logo_asset_compare_modal(request: Request, logo_asset_id: int):
 
 
 @router.get("/match-decisions", name="match_decisions")
-@staff_required()
+@login_required()
 async def match_decisions_index(request: Request):
     """渲染人工匹配决策审计列表。"""
     filter_names = (
@@ -779,7 +779,7 @@ async def match_decisions_index(request: Request):
 
 @router.get("/match-decisions/<decision_id:int>/edit-modal", name="match_decisions_edit_modal")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def match_decisions_edit_modal(request: Request, decision_id: int):
     """返回人工匹配决策编辑弹窗的远程 JSON 片段。"""
     decision = await services.get_match_decision(decision_id)
@@ -793,7 +793,7 @@ async def match_decisions_edit_modal(request: Request, decision_id: int):
 
 @router.post("/match-decisions/<decision_id:int>/edit", name="match_decisions_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def match_decisions_update(request: Request, decision_id: int):
     """处理人工匹配决策弹窗编辑提交。"""
     async with db_manager.get_session() as session:
@@ -825,7 +825,7 @@ def match_decision_label(decision: CatalogMatchDecision) -> str:
 
 
 @router.get("/notifications", name="notifications")
-@staff_required()
+@login_required()
 async def notifications_index(request: Request):
     """渲染通知中心列表页。"""
     filter_names = ("notification_type", "severity", "created_from", "created_to")
@@ -849,7 +849,7 @@ async def notifications_index(request: Request):
 
 
 @router.get("/notifications/detail/<notification_id:path>", name="notification_detail_modal")
-@staff_required()
+@login_required()
 async def notification_detail_modal(request: Request, notification_id: str):
     """返回通知关联对象详情弹窗片段。"""
     item = await find_notification_item(notification_id)
@@ -899,7 +899,7 @@ async def find_notification_item(notification_id: str):
 
 
 @router.get("/epg-list", name="epg_list")
-@staff_required()
+@login_required()
 async def epg_list_index(request: Request):
     """渲染 EpgList 列表。"""
     channel_id = request.args.get("channel_id", "").strip()
@@ -928,7 +928,7 @@ async def epg_list_index(request: Request):
 
 @router.get("/epg-list/new", name="epg_list_new")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def epg_list_new(request: Request):
     """渲染 EpgList 新建表单。"""
     form = EpgListForm(request=request, select_secret_key=SELECT_BINDING_SECRET)
@@ -940,7 +940,7 @@ async def epg_list_new(request: Request):
 
 @router.post("/epg-list/new", name="epg_list_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def epg_list_create(request: Request):
     """创建 EpgList。"""
     form = EpgListForm.from_request(request, select_secret_key=SELECT_BINDING_SECRET)
@@ -957,7 +957,7 @@ async def epg_list_create(request: Request):
 
 @router.get("/epg-list/<item_id:int>/edit", name="epg_list_edit")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def epg_list_edit(request: Request, item_id: int):
     """渲染 EpgList 编辑表单。"""
     item = await services.get_epg_item(item_id)
@@ -970,7 +970,7 @@ async def epg_list_edit(request: Request, item_id: int):
 
 @router.post("/epg-list/<item_id:int>/edit", name="epg_list_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def epg_list_update(request: Request, item_id: int):
     """更新 EpgList。"""
     item = await services.get_epg_item(item_id)
@@ -988,7 +988,7 @@ async def epg_list_update(request: Request, item_id: int):
 
 @router.post("/epg-list/<item_id:int>/delete", name="epg_list_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def epg_list_delete(request: Request, item_id: int):
     """删除 EpgList。"""
     await services.delete_epg_item(item_id)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from oldman.web import router
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.request import Request
 from oldman.web.template import render_template
 
@@ -33,14 +33,14 @@ async def dashboard_page_context(request: Request, active_page: str) -> dict[str
 
 @router.get("/", name="dashboard")
 @router.get("/dashboard", name="dashboard_alias")
-@staff_required()
+@login_required()
 async def dashboard(request: Request):
-    """渲染真实业务统计首页。"""
+    """渲染真实业务统计首页:和骨架首页一样,所有登录的账户都能看(统计不含个人数据)。"""
     return await render_template("pages/dashboard.html", context=await dashboard_page_context(request, "dashboard_overview"))
 
 
 @router.get("/dashboard/analytics", name="dashboard_analytics")
-@staff_required()
+@login_required()
 async def dashboard_analytics(request: Request):
     """渲染 Dashboard 分析图表页。"""
     return await render_template("pages/dashboard_analytics.html", context=await dashboard_page_context(request, "dashboard_analytics"))

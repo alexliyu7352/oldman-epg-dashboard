@@ -102,14 +102,13 @@ class EpgDashboardMigrationTests(unittest.TestCase):
                 "oldman.apps.admin",
                 "oldman.web.messages.notifications",
                 "oldman.apps.roles",
-                "apps.auth",
+                "apps.accounts",
                 "apps.dashboard",
                 "apps.epg_admin",
                 "apps.examples",
-                "apps.web",
             ],
         )
-        for package in ("auth", "dashboard", "epg_admin", "examples", "web"):
+        for package in ("accounts", "dashboard", "epg_admin", "examples"):
             self.assertTrue((EPG_DASHBOARD / "apps" / package / "apps.py").is_file())
 
         epg_migrations = tuple(path for path in (EPG_DASHBOARD / "apps" / "epg_admin" / "migrations").glob("*.py") if path.name != "__init__.py")

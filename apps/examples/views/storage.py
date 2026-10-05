@@ -7,7 +7,7 @@ from oldman.i18n import gettext_lazy as _
 from oldman.storage import storages
 from oldman.web import NotFound, router
 from oldman.web.api import FeedbackAction, ReplaceHtmlAction, feedback_response, form_response, form_saved_response
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.components.forms import TailwindForm
 from oldman.web.request import Request
 from oldman.web.response import json_response
@@ -28,7 +28,7 @@ class _ExpectedRollback(Exception):
 
 @router.get("/examples/storage/<page:str>", name="example_storage_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_storage_page(request: Request, page: str):
     """Render one concrete Storage example page."""
     if page == "upload":
@@ -52,7 +52,7 @@ async def render_upload_page(request: Request, *, category: str):
 
 @router.post("/examples/storage/assets/create", name="example_asset_create")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_asset_create(request: Request):
     """Save both uploaded fields through the framework write session."""
     async with db_manager.get_session() as session:
@@ -66,7 +66,7 @@ async def example_asset_create(request: Request):
 
 @router.post("/examples/storage/assets/<asset_id:int>/update", name="example_asset_update")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_asset_update(request: Request, asset_id: int):
     """Replace only files submitted by the edit Form and keep missing uploads."""
     async with db_manager.get_session() as session:
@@ -80,7 +80,7 @@ async def example_asset_update(request: Request, asset_id: int):
 
 @router.post("/examples/storage/assets/<asset_id:int>/clear-preview", name="example_asset_clear_preview")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_asset_clear_preview(request: Request, asset_id: int):
     """Explicitly clear the nullable preview field through the model lifecycle."""
     del request
@@ -92,7 +92,7 @@ async def example_asset_clear_preview(request: Request, asset_id: int):
 
 @router.post("/examples/storage/assets/<asset_id:int>/delete", name="example_asset_delete")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_asset_delete(request: Request, asset_id: int):
     """Delete the model so the framework cleans both unreferenced files."""
     del request
@@ -104,7 +104,7 @@ async def example_asset_delete(request: Request, asset_id: int):
 
 @router.post("/examples/storage/assets/<asset_id:int>/rollback", name="example_asset_rollback")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_asset_rollback(request: Request, asset_id: int):
     """Roll back one real replacement and prove its newly stored file is cleaned."""
     candidate = ""
@@ -127,7 +127,7 @@ async def example_asset_rollback(request: Request, asset_id: int):
 
 @router.post("/examples/storage/api/run", name="example_storage_api_run")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_storage_api_run(request: Request):
     """Run the fixed-prefix Storage API sequence and replace its result panel."""
     result = await services.run_storage_api_demo()

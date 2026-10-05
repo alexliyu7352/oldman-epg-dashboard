@@ -1,4 +1,4 @@
-"""Staff-only Core communication using ordinary Forms and response actions."""
+"""Core communication for signed-in users, using ordinary Forms and response actions."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from oldman.i18n import gettext_lazy as _
 from oldman.providers.nats import bus
 from oldman.web import NotFound, router
 from oldman.web.api import ApiErrorCode, ReplaceHtmlAction, form_response
-from oldman.web.auth import staff_required
+from oldman.web.auth import login_required
 from oldman.web.components.forms import TailwindForm
 from oldman.web.request import Request
 from oldman.web.response import api_response
@@ -49,7 +49,7 @@ async def project_choices() -> list[tuple[int, str]]:
 
 @router.get("/examples/communication/<page:str>", name="example_communication_page")
 @add_csrf_token()
-@staff_required()
+@login_required()
 async def example_communication_page(request: Request, page: str):
     """Opening a page reads only its choices/configuration, never contacts peers."""
     if page not in {"rpc", "events", "failures"}:
@@ -83,7 +83,7 @@ async def communication_result(request: Request, *, error=None, **context):
 
 @router.post("/examples/communication/run/<operation:str>", name="example_communication_run")
 @csrf_protect()
-@staff_required()
+@login_required()
 async def example_communication_run(request: Request, operation: str):
     """Only fixed operations are accepted; shared HTTP/Form loading needs no patch."""
     if operation not in OPERATIONS:

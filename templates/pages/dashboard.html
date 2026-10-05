@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% from "oldman/dashboard/components/page_head.html" import page_head with context %}
 
-{% block title %}{{ _("Dashboard") }} · Oldman{% endblock %}
+{% block title %}{{ _("Dashboard") }} · {{ site_name() }}{% endblock %}
 
 {% block content %}
 <section class="om-page-section" data-om-component="dashboard-overview">
   {% call page_head(_("Dashboard")) %}
     <div class="om-segmented" role="group" aria-label="{{ _('Range') }}">
+      <button class="om-segment active" type="button" data-om-dashboard-range="all" aria-pressed="true">{{ _("All") }}</button>
       <button class="om-segment" type="button" data-om-dashboard-range="7d" aria-pressed="false">7 {{ _("Days") }}</button>
-      <button class="om-segment active" type="button" data-om-dashboard-range="30d" aria-pressed="true">30 {{ _("Days") }}</button>
+      <button class="om-segment" type="button" data-om-dashboard-range="30d" aria-pressed="false">30 {{ _("Days") }}</button>
       <button class="om-segment" type="button" data-om-dashboard-range="90d" aria-pressed="false">90 {{ _("Days") }}</button>
     </div>
     <button class="om-button om-button-secondary" type="button" data-om-dashboard-refresh>
@@ -16,42 +17,36 @@
     </button>
   {% endcall %}
 
-  <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
-    <div class="lg:col-span-1">
-      <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2">
-        <div class="om-stat-card">
-          <span class="om-stat-icon" aria-hidden="true"><i class="ri-tv-2-line" aria-hidden="true"></i></span>
-          <p class="om-stat-label">{{ _("Total Channels") }}</p>
-          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.channel_count }}">0</span></p>
-        </div>
-        <div class="om-stat-card">
-          <span class="om-stat-icon" aria-hidden="true"><i class="ri-calendar-event-line" aria-hidden="true"></i></span>
-          <p class="om-stat-label">{{ _("Programmes") }}</p>
-          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.epg_count }}">0</span></p>
-        </div>
-        <div class="om-stat-card">
-          <span class="om-stat-icon" aria-hidden="true"><i class="ri-image-line" aria-hidden="true"></i></span>
-          <p class="om-stat-label">{{ _("Logo Coverage") }}</p>
-          <p class="om-stat-value">{{ stats.logo_coverage_percent }}%</p>
-        </div>
-        <div class="om-stat-card">
-          <span class="om-stat-icon" aria-hidden="true"><i class="ri-cloud-line" aria-hidden="true"></i></span>
-          <p class="om-stat-label">{{ _("Upstream Records") }}</p>
-          <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.upstream_record_count }}">0</span></p>
-        </div>
-      </div>
+  <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <div class="om-stat-card">
+      <span class="om-stat-icon" aria-hidden="true"><i class="ri-tv-2-line" aria-hidden="true"></i></span>
+      <p class="om-stat-label">{{ _("Total Channels") }}</p>
+      <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.channel_count }}">0</span></p>
     </div>
+    <div class="om-stat-card">
+      <span class="om-stat-icon" aria-hidden="true"><i class="ri-calendar-event-line" aria-hidden="true"></i></span>
+      <p class="om-stat-label">{{ _("Programmes") }}</p>
+      <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.epg_count }}">0</span></p>
+    </div>
+    <div class="om-stat-card">
+      <span class="om-stat-icon" aria-hidden="true"><i class="ri-image-line" aria-hidden="true"></i></span>
+      <p class="om-stat-label">{{ _("Logo Coverage") }}</p>
+      <p class="om-stat-value">{{ stats.logo_coverage_percent }}%</p>
+    </div>
+    <div class="om-stat-card">
+      <span class="om-stat-icon" aria-hidden="true"><i class="ri-cloud-line" aria-hidden="true"></i></span>
+      <p class="om-stat-label">{{ _("Upstream Records") }}</p>
+      <p class="om-stat-value"><span class="counter-value" data-target="{{ stats.upstream_record_count }}">0</span></p>
+    </div>
+  </div>
 
-    <div class="lg:col-span-2">
-      <div class="om-card h-full">
-        <div class="om-card-header">
-          <h2 class="om-card-title">{{ _("Platform Perspective") }}</h2>
-          <a href="/epg-list" class="om-button om-button-soft-primary om-button-sm">{{ _("Review programmes") }} <i class="ri-arrow-right-line"></i></a>
-        </div>
-        <div class="om-card-body min-h-[260px]" data-om-loading-initial="true">
-          {{ programme_trend_chart.render_shell(html_id="programme-trend-chart") }}
-        </div>
-      </div>
+  <div class="om-card">
+    <div class="om-card-header">
+      <h2 class="om-card-title">{{ _("Platform Perspective") }}</h2>
+      <a href="/epg-list" class="om-button om-button-soft-primary om-button-sm">{{ _("Review programmes") }} <i class="ri-arrow-right-line"></i></a>
+    </div>
+    <div class="om-card-body min-h-[260px]" data-om-loading-initial="true">
+      {{ programme_trend_chart.render_shell(html_id="programme-trend-chart") }}
     </div>
   </div>
 

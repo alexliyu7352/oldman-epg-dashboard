@@ -93,7 +93,7 @@ class ExampleTableTests(unittest.TestCase):
         )
 
 class ProjectTablePermissionTests(unittest.IsolatedAsyncioTestCase):
-    """The one RBAC example: staff alone does not open the project table, a role granting view_projects does."""
+    """The one RBAC example: signing in (even as staff) does not open the project table, a role granting view_projects does."""
 
     async def test_the_project_table_needs_a_role_granting_view_projects(self) -> None:
         from oldman.web.authentication import RequestUser
@@ -107,13 +107,110 @@ class ProjectTablePermissionTests(unittest.IsolatedAsyncioTestCase):
             return SimpleNamespace(app=app, ctx=SimpleNamespace(user=RequestUser(id=7, username="ops", is_staff=True, **user)))  # type: ignore[arg-type]
 
         table = ExampleProjectTable()
-        self.assertFalse(await table.check_auth(request_for()))
-        self.assertTrue(await table.check_auth(request_for(is_superuser=True)))
+        def allowed(request):
+            return table.check_permission(request, method_name="get", route_kwargs={})
+
+        self.assertEqual((False, None), await allowed(request_for()))
+        self.assertEqual((True, None), await allowed(request_for(is_superuser=True)))
         grants = AsyncMock(return_value=frozenset({"examples.view_projects"}))
         with patch("oldman.apps.roles.store.role_permissions", grants):
-            self.assertTrue(await table.check_auth(request_for(role_ids=(1,))))
+            self.assertEqual((True, None), await allowed(request_for(role_ids=(1,))))
         # Roles missing from the cache are read through the given db_manager; None means the process's own.
         grants.assert_awaited_once_with((1,), db_manager=None)
+
+
+class TeamProjectTableAccessTests(unittest.IsolatedAsyncioTestCase):
+    """The class-based guard example: each hook of the team table's data endpoint answers its own question."""
+
+    async def asyncSetUp(self) -> None:
+        from typing import cast
+
+        from sqlalchemy import Table, insert
+        from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+        from apps.examples.models import ExampleProject, ExampleTeam
+
+        teams, projects = cast(Table, ExampleTeam.__table__), cast(Table, ExampleProject.__table__)
+
+        self.engine = create_async_engine("sqlite+aiosqlite://")
+        self.sessions = async_sessionmaker(self.engine, expire_on_commit=False)
+        async with self.engine.begin() as connection:
+            for table in (teams, projects):
+                await connection.run_sync(table.create)
+            await connection.execute(
+                insert(teams),
+                [
+                    {"id": 1, "name": "Active", "slug": "active", "region": "eu", "is_active": True},
+                    {"id": 2, "name": "Other", "slug": "other", "region": "us", "is_active": True},
+                    {"id": 3, "name": "Gone", "slug": "gone", "region": "ca", "is_active": False},
+                ],
+            )
+            await connection.execute(
+                insert(projects),
+                [
+                    {"id": 11, "team_id": 1, "name": "Alpha", "slug": "alpha"},
+                    {"id": 12, "team_id": 1, "name": "Beta", "slug": "beta"},
+                    {"id": 21, "team_id": 2, "name": "Gamma", "slug": "gamma"},
+                    {"id": 31, "team_id": 3, "name": "Delta", "slug": "delta"},
+                ],
+            )
+
+    async def asyncTearDown(self) -> None:
+        await self.engine.dispose()
+
+    async def fetch(self, user, team_id: int, *, database=None):
+        """Dispatch the data endpoint the way its route does, with a JSON client."""
+        from typing import Any, cast
+
+        from apps.examples.tables import TeamProjectTable
+
+        table = TeamProjectTable()
+        table.database_manager = cast(Any, database or SimpleNamespace(get_read_session=self.sessions))
+        request = SimpleNamespace(
+            app=SimpleNamespace(ctx=SimpleNamespace()),
+            args={},
+            headers={"accept": "application/json"},
+            method="GET",
+            path=f"/examples/auth/teams/{team_id}/projects/table",
+            ctx=SimpleNamespace(user=user),
+        )
+        return await table.dispatch_request(request, team_id=team_id)
+
+    async def test_an_anonymous_request_is_asked_to_sign_in(self) -> None:
+        from oldman.web.authentication import ANONYMOUS_USER
+
+        self.assertEqual(401, (await self.fetch(ANONYMOUS_USER, 1)).status)
+
+    async def test_check_permission_refuses_a_member_before_any_query(self) -> None:
+        from oldman.web.authentication import RequestUser
+
+        no_database = SimpleNamespace(get_read_session=Mock(side_effect=AssertionError("a refusal decided from the user opens no session")))
+        response = await self.fetch(RequestUser(id=5, username="member"), 1, database=no_database)
+
+        self.assertEqual(403, response.status)
+        no_database.get_read_session.assert_not_called()
+
+    async def test_check_auth_refuses_staff_an_inactive_or_missing_team(self) -> None:
+        from oldman.web.authentication import RequestUser
+
+        staff = RequestUser(id=1, username="ops", is_staff=True)
+        for team_id in (3, 99):
+            with self.subTest(team_id=team_id):
+                self.assertEqual(403, (await self.fetch(staff, team_id)).status)
+
+    async def test_apply_base_filters_shows_staff_only_the_team_in_the_path(self) -> None:
+        import json
+
+        from oldman.web.authentication import RequestUser
+
+        response = await self.fetch(RequestUser(id=1, username="ops", is_staff=True), 1)
+        payload = json.loads(response.body)
+
+        self.assertEqual(200, response.status)
+        self.assertEqual({"Alpha", "Beta"}, {row["raw_values"]["name"] for row in payload["rows"]})
+        # The rows it leaves out are not counted either: totals and pages stay within the team.
+        self.assertEqual(2, payload["pagination"]["total"])
+        self.assertNotIn("action", {column["name"] for column in payload["columns"]})
 
 
 class ProjectEndpointPermissionTests(unittest.IsolatedAsyncioTestCase):
