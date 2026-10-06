@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-04 06:13-0700\n"
+"POT-Creation-Date: 2026-10-06 12:53-0700\n"
 "PO-Revision-Date: 2026-08-28 15:43-0700\n"
 "Last-Translator: Oldman Contributors <noreply@oldman.dev>\n"
 "Language: en\n"
@@ -48,44 +48,44 @@ msgstr "Service communication"
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: apps/dashboard/chart_views.py:48 apps/dashboard/chart_views.py:51
-#: templates/pages/dashboard.html:29
-#: templates/pages/dashboard_analytics.html:23
+#: apps/dashboard/chart_views.py:45 apps/dashboard/chart_views.py:48
+#: templates/pages/dashboard.html:28
+#: templates/pages/dashboard_analytics.html:24
 #: templates/pages/epg_list/index.html:4 templates/pages/epg_list/index.html:9
 #: templates/partials/sidebar.html:25
 msgid "Programmes"
 msgstr "Programmes"
 
-#: apps/dashboard/chart_views.py:50
+#: apps/dashboard/chart_views.py:47
 msgid "Total Programmes"
 msgstr "Total Programmes"
 
-#: apps/dashboard/chart_views.py:83 apps/dashboard/chart_views.py:86
+#: apps/dashboard/chart_views.py:79 apps/dashboard/chart_views.py:82
 #: apps/epg_admin/tables.py:299
 msgid "Feeds"
 msgstr "Feeds"
 
-#: apps/dashboard/chart_views.py:85
+#: apps/dashboard/chart_views.py:81
 msgid "Total Feeds"
 msgstr "Total Feeds"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 #: apps/examples/chart_views.py:535 apps/examples/forms.py:72
 #: apps/examples/forms.py:212
 msgid "Low"
 msgstr "Low"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 msgid "Medium"
 msgstr "Medium"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 #: apps/examples/chart_views.py:534 apps/examples/forms.py:74
 #: apps/examples/forms.py:212
 msgid "High"
 msgstr "High"
 
-#: apps/dashboard/chart_views.py:128 apps/dashboard/chart_views.py:131
+#: apps/dashboard/chart_views.py:121 apps/dashboard/chart_views.py:124
 #: apps/epg_admin/models.py:263 apps/epg_admin/views.py:112
 #: apps/epg_admin/views.py:115 apps/epg_admin/views.py:146
 #: apps/epg_admin/views.py:149 templates/pages/logo_assets/index.html:5
@@ -93,7 +93,7 @@ msgstr "High"
 msgid "Logo Assets"
 msgstr "Logo Assets"
 
-#: apps/dashboard/chart_views.py:130 apps/epg_admin/views.py:114
+#: apps/dashboard/chart_views.py:123 apps/epg_admin/views.py:114
 #: apps/epg_admin/views.py:148
 msgid "Total Logos"
 msgstr "Total Logos"
@@ -104,14 +104,16 @@ msgstr "EPG Management"
 
 #: apps/epg_admin/charts.py:15 oldman/web/auth/forms.py:106
 #: oldman/web/templates/oldman/messages/notifications/center_content.html:15
+#: templates/pages/dashboard.html:10
+#: templates/pages/dashboard_analytics.html:10
 msgid "All"
 msgstr "All"
 
-#: apps/epg_admin/charts.py:15 templates/pages/dashboard.html:10
-#: templates/pages/dashboard.html:11 templates/pages/dashboard.html:12
-#: templates/pages/dashboard_analytics.html:10
+#: apps/epg_admin/charts.py:15 templates/pages/dashboard.html:11
+#: templates/pages/dashboard.html:12 templates/pages/dashboard.html:13
 #: templates/pages/dashboard_analytics.html:11
 #: templates/pages/dashboard_analytics.html:12
+#: templates/pages/dashboard_analytics.html:13
 #: templates/pages/examples/ui/countdown.html:22
 msgid "Days"
 msgstr "Days"
@@ -464,7 +466,7 @@ msgstr "Search source, key, payload, feed"
 #: apps/epg_admin/forms.py:448 apps/epg_admin/tables.py:634
 #: apps/epg_admin/tables.py:780 apps/epg_admin/tables.py:920
 #: apps/epg_admin/tables.py:1063 apps/epg_admin/views.py:882
-#: apps/examples/chart_views.py:121 templates/pages/dashboard.html:70
+#: apps/examples/chart_views.py:121 templates/pages/dashboard.html:65
 #: templates/pages/examples/i18n/coverage.html:10
 #: templates/pages/upstream_records/index.html:44
 msgid "Source"
@@ -474,14 +476,14 @@ msgstr "Source"
 #: apps/examples/forms.py:66 apps/examples/forms.py:137
 #: apps/examples/forms.py:207 apps/examples/forms.py:237
 #: apps/examples/forms.py:504 oldman/web/auth/forms.py:147
-#: oldman/web/auth/forms.py:397 oldman/web/auth/tables.py:45
+#: oldman/web/auth/forms.py:399 oldman/web/auth/tables.py:45
 #: oldman/web/templates/oldman/auth/user_session_content.html:29
 #: templates/pages/examples/auth/identity.html:12
 msgid "Active"
 msgstr "Active"
 
 #: apps/epg_admin/forms.py:454 apps/epg_admin/tables.py:642
-#: templates/pages/dashboard.html:72
+#: templates/pages/dashboard.html:67
 msgid "Disappeared"
 msgstr "Disappeared"
 
@@ -546,13 +548,13 @@ msgid "Search scope, reason, operator, feed"
 msgstr "Search scope, reason, operator, feed"
 
 #: apps/epg_admin/forms.py:523 apps/epg_admin/tables.py:919
-#: templates/pages/dashboard.html:103
+#: templates/pages/dashboard.html:98
 msgid "Scope"
 msgstr "Scope"
 
 #: apps/epg_admin/forms.py:525 apps/epg_admin/forms.py:604
 #: apps/epg_admin/tables.py:923 apps/epg_admin/tables.py:1100
-#: templates/pages/dashboard.html:104
+#: templates/pages/dashboard.html:99
 msgid "Decision"
 msgstr "Decision"
 
@@ -591,8 +593,8 @@ msgstr "All types"
 msgid "Decisions"
 msgstr "Decisions"
 
-#: apps/epg_admin/forms.py:570 templates/pages/dashboard.html:138
-#: templates/pages/dashboard_analytics.html:94
+#: apps/epg_admin/forms.py:570 templates/pages/dashboard.html:133
+#: templates/pages/dashboard_analytics.html:95
 msgid "Logo Quality"
 msgstr "Logo Quality"
 
@@ -640,7 +642,7 @@ msgid "Info"
 msgstr "Info"
 
 #: apps/epg_admin/forms.py:609 apps/epg_admin/tables.py:924
-#: templates/pages/dashboard.html:105
+#: templates/pages/dashboard.html:100
 msgid "Reason"
 msgstr "Reason"
 
@@ -737,7 +739,7 @@ msgstr "Channel Names"
 msgid "Upstream Record"
 msgstr "Upstream Record"
 
-#: apps/epg_admin/models.py:138 templates/pages/dashboard.html:39
+#: apps/epg_admin/models.py:138 templates/pages/dashboard.html:38
 #: templates/pages/upstream_records/index.html:5
 #: templates/pages/upstream_records/index.html:10
 #: templates/partials/sidebar.html:35
@@ -752,8 +754,8 @@ msgstr "Catalog Channels"
 
 #: apps/epg_admin/models.py:219 templates/pages/catalog_feeds/index.html:4
 #: templates/pages/catalog_feeds/index.html:9
-#: templates/pages/dashboard.html:154
-#: templates/pages/dashboard_analytics.html:34
+#: templates/pages/dashboard.html:149
+#: templates/pages/dashboard_analytics.html:35
 #: templates/partials/sidebar.html:30
 msgid "Catalog Feeds"
 msgstr "Catalog Feeds"
@@ -1435,7 +1437,7 @@ msgstr "Enable notifications"
 msgid "Submit layout"
 msgstr "Submit layout"
 
-#: apps/examples/forms.py:237 oldman/web/auth/forms.py:397
+#: apps/examples/forms.py:237 oldman/web/auth/forms.py:399
 msgid "Can sign in"
 msgstr "Can sign in"
 
@@ -1675,7 +1677,7 @@ msgstr "Review the optional schedule and description before saving."
 msgid "Create project"
 msgstr "Create project"
 
-#: apps/examples/forms.py:463 oldman/cli/_main.py:306
+#: apps/examples/forms.py:463 oldman/cli/_main.py:314
 #: templates/pages/examples/config/_file_result.html:18
 msgid "Display name"
 msgstr "Display name"
@@ -1864,7 +1866,7 @@ msgstr "Actions"
 msgid "Delete"
 msgstr "Delete"
 
-#: apps/examples/tables.py:162
+#: apps/examples/tables.py:161
 msgid "This team has no projects."
 msgstr "This team has no projects."
 
@@ -2806,64 +2808,64 @@ msgstr "Start the development service with frontend assets from Vite."
 msgid "Menu"
 msgstr "Menu"
 
-#: templates/pages/dashboard.html:15
-#: templates/pages/dashboard_analytics.html:15
+#: templates/pages/dashboard.html:16
+#: templates/pages/dashboard_analytics.html:16
 msgid "Refresh"
 msgstr "Refresh"
 
-#: templates/pages/dashboard.html:24
+#: templates/pages/dashboard.html:23
 msgid "Total Channels"
 msgstr "Total Channels"
 
-#: templates/pages/dashboard.html:34
-#: templates/pages/dashboard_analytics.html:45
+#: templates/pages/dashboard.html:33
+#: templates/pages/dashboard_analytics.html:46
 msgid "Logo Coverage"
 msgstr "Logo Coverage"
 
-#: templates/pages/dashboard.html:48
+#: templates/pages/dashboard.html:45
 msgid "Platform Perspective"
 msgstr "Platform Perspective"
 
-#: templates/pages/dashboard.html:49
-#: templates/pages/dashboard_analytics.html:70
+#: templates/pages/dashboard.html:46
+#: templates/pages/dashboard_analytics.html:71
 msgid "Review programmes"
 msgstr "Review programmes"
 
-#: templates/pages/dashboard.html:62
+#: templates/pages/dashboard.html:57
 msgid "Recent Upstream Anomalies"
 msgstr "Recent Upstream Anomalies"
 
-#: templates/pages/dashboard.html:63 templates/pages/dashboard.html:96
+#: templates/pages/dashboard.html:58 templates/pages/dashboard.html:91
 #: templates/pages/notifications/index.html:33
 msgid "View all"
 msgstr "View all"
 
-#: templates/pages/dashboard.html:71
+#: templates/pages/dashboard.html:66
 msgid "Record"
 msgstr "Record"
 
-#: templates/pages/dashboard.html:83
+#: templates/pages/dashboard.html:78
 msgid "No upstream anomalies found."
 msgstr "No upstream anomalies found."
 
-#: templates/pages/dashboard.html:95
+#: templates/pages/dashboard.html:90
 msgid "Recent Decisions"
 msgstr "Recent Decisions"
 
-#: templates/pages/dashboard.html:116
+#: templates/pages/dashboard.html:111
 msgid "No pending decisions found."
 msgstr "No pending decisions found."
 
-#: templates/pages/dashboard.html:128
-#: templates/pages/dashboard_analytics.html:81
+#: templates/pages/dashboard.html:123
+#: templates/pages/dashboard_analytics.html:82
 msgid "Feed Status"
 msgstr "Feed Status"
 
-#: templates/pages/dashboard.html:148
+#: templates/pages/dashboard.html:143
 msgid "Shared programme database"
 msgstr "Shared programme database"
 
-#: templates/pages/dashboard.html:151
+#: templates/pages/dashboard.html:146
 msgid ""
 "Manage channels, schedules and matching metadata from one backend "
 "dashboard."
@@ -2871,12 +2873,12 @@ msgstr ""
 "Manage channels, schedules and matching metadata from one backend "
 "dashboard."
 
-#: templates/pages/dashboard.html:158
-#: templates/pages/dashboard_analytics.html:54
+#: templates/pages/dashboard.html:153
+#: templates/pages/dashboard_analytics.html:55
 msgid "Pending Decisions"
 msgstr "Pending Decisions"
 
-#: templates/pages/dashboard.html:162
+#: templates/pages/dashboard.html:157
 msgid "Manage Channels"
 msgstr "Manage Channels"
 
@@ -2886,23 +2888,23 @@ msgstr "Manage Channels"
 msgid "Analytics"
 msgstr "Analytics"
 
-#: templates/pages/dashboard_analytics.html:27
+#: templates/pages/dashboard_analytics.html:28
 msgid "programme records"
 msgstr "programme records"
 
-#: templates/pages/dashboard_analytics.html:38
+#: templates/pages/dashboard_analytics.html:39
 msgid "runtime feeds"
 msgstr "runtime feeds"
 
-#: templates/pages/dashboard_analytics.html:47
+#: templates/pages/dashboard_analytics.html:48
 msgid "logo assets"
 msgstr "logo assets"
 
-#: templates/pages/dashboard_analytics.html:58
+#: templates/pages/dashboard_analytics.html:59
 msgid "manual review"
 msgstr "manual review"
 
-#: templates/pages/dashboard_analytics.html:68
+#: templates/pages/dashboard_analytics.html:69
 msgid "Programme Trend"
 msgstr "Programme Trend"
 
@@ -3633,7 +3635,7 @@ msgid "Display Name"
 msgstr "Display Name"
 
 #: oldman/apps/admin/model_admin.py:496 oldman/web/auth/forms.py:148
-#: oldman/web/auth/forms.py:398 oldman/web/auth/tables.py:47
+#: oldman/web/auth/forms.py:400 oldman/web/auth/tables.py:47
 #: oldman/web/auth/tables.py:132
 #: oldman/web/templates/oldman/auth/user_session_content.html:36
 #: templates/pages/examples/auth/identity.html:13
@@ -3641,7 +3643,7 @@ msgid "Staff"
 msgstr "Staff"
 
 #: oldman/apps/admin/model_admin.py:497 oldman/web/auth/forms.py:149
-#: oldman/web/auth/forms.py:399 oldman/web/auth/tables.py:49
+#: oldman/web/auth/forms.py:401 oldman/web/auth/tables.py:49
 #: oldman/web/auth/tables.py:133
 #: oldman/web/templates/oldman/auth/user_session_content.html:34
 #: templates/pages/examples/auth/identity.html:14
@@ -3756,7 +3758,7 @@ msgstr ""
 "tokens, as every active account can sign in here."
 
 #: oldman/auth/commands.py:46 oldman/web/auth/forms.py:128
-#: oldman/web/auth/forms.py:427 templates/pages/examples/auth/tokens.html:67
+#: oldman/web/auth/forms.py:429 templates/pages/examples/auth/tokens.html:67
 msgid "Password"
 msgstr "Password"
 
@@ -4192,7 +4194,7 @@ msgstr "Latest 7 days"
 #: oldman/web/auth/user_management.py:349
 #: oldman/web/auth/user_management.py:378
 #: oldman/web/components/charts/views.py:68
-#: oldman/web/components/tables/views.py:374 oldman/web/http.py:75
+#: oldman/web/components/tables/views.py:375 oldman/web/http.py:75
 #: oldman/web/http.py:120 templates/pages/examples/charts/states.html:22
 #: templates/pages/examples/tables/states.html:18
 msgid "Permission denied"
@@ -5226,7 +5228,7 @@ msgstr ""
 #: frontend/packages/oldman-web/src/components/tags-input.ts:29
 #: frontend/packages/oldman-web/src/core/services/preloader.ts:46
 #: frontend/src/components/examples/navigation-probe.ts:49
-#: oldman/web/components/tables/renderers.py:21
+#: oldman/web/components/tables/renderers.py:18
 #: oldman/web/templates/oldman/tables/default/shell.html:3
 #: templates/pages/examples/i18n/server.html:10
 msgid "Loading..."
@@ -8655,7 +8657,7 @@ msgid "Delete %(name)s"
 msgstr "Delete %(name)s"
 
 #: oldman/apps/admin/model_admin.py:68
-#: oldman/web/components/tables/views.py:100
+#: oldman/web/components/tables/views.py:101
 msgid "No records found."
 msgstr "No records found."
 
@@ -8875,7 +8877,7 @@ msgid "Check your email"
 msgstr "Check your email"
 
 #: oldman/apps/roles/apps.py:15 oldman/apps/roles/models.py:34
-#: oldman/web/auth/forms.py:401
+#: oldman/web/auth/forms.py:403
 msgid "Roles"
 msgstr "Roles"
 
@@ -9004,8 +9006,8 @@ msgstr "Framework commands"
 msgid "Services"
 msgstr "Services"
 
-#: oldman/cli/_main.py:210 oldman/cli/_main.py:538 oldman/cli/_main.py:1115
-#: oldman/cli/_main.py:1132 oldman/cli/_main.py:1171 oldman/cli/_main.py:1194
+#: oldman/cli/_main.py:210 oldman/cli/_main.py:547 oldman/cli/_main.py:1128
+#: oldman/cli/_main.py:1145 oldman/cli/_main.py:1184 oldman/cli/_main.py:1207
 #: oldman/cli/service.py:75 oldman/cli/service.py:122
 #, python-format
 msgid "Error: %(error)s"
@@ -9016,7 +9018,7 @@ msgstr "Error: %(error)s"
 msgid "Warning: %(detail)s"
 msgstr "Warning: %(detail)s"
 
-#: oldman/cli/_main.py:245 oldman/cli/_main.py:1207 oldman/cli/service.py:72
+#: oldman/cli/_main.py:245 oldman/cli/_main.py:1220 oldman/cli/service.py:72
 #: oldman/cli/service.py:119
 msgid "Aborted."
 msgstr "Aborted."
@@ -9046,44 +9048,49 @@ msgstr "Include the built-in Admin?"
 msgid "Created project at %(path)s"
 msgstr "Created project at %(path)s"
 
-#: oldman/cli/_main.py:300
+#: oldman/cli/_main.py:302
+#, python-format
+msgid "Coding agents: read %(path)s before changing anything in this project."
+msgstr "Coding agents: read %(path)s before changing anything in this project."
+
+#: oldman/cli/_main.py:308
 msgid "Application name."
 msgstr "Application name."
 
-#: oldman/cli/_main.py:305
+#: oldman/cli/_main.py:313
 msgid "App template"
 msgstr "App template"
 
-#: oldman/cli/_main.py:316
+#: oldman/cli/_main.py:324
 #, python-format
 msgid "Created app %(name)s"
 msgstr "Created app %(name)s"
 
-#: oldman/cli/_main.py:323
+#: oldman/cli/_main.py:332
 msgid "Service module name."
 msgstr "Service module name."
 
-#: oldman/cli/_main.py:328
+#: oldman/cli/_main.py:337
 msgid "Service type"
 msgstr "Service type"
 
-#: oldman/cli/_main.py:334
+#: oldman/cli/_main.py:343
 #, python-format
 msgid "Created service %(name)s"
 msgstr "Created service %(name)s"
 
-#: oldman/cli/_main.py:349
+#: oldman/cli/_main.py:358
 #, python-format
 msgid "Settings file already exists: %(path)s"
 msgstr "Settings file already exists: %(path)s"
 
-#: oldman/cli/_main.py:354
+#: oldman/cli/_main.py:363
 #, python-format
 msgid "Initialized settings: %(path)s"
 msgstr "Initialized settings: %(path)s"
 
-#: oldman/cli/_main.py:369 oldman/cli/_main.py:391 oldman/cli/_main.py:422
-#: oldman/cli/_main.py:464 oldman/cli/_main.py:788 oldman/cli/_main.py:835
+#: oldman/cli/_main.py:378 oldman/cli/_main.py:400 oldman/cli/_main.py:431
+#: oldman/cli/_main.py:473 oldman/cli/_main.py:797 oldman/cli/_main.py:844
 #, python-format
 msgid ""
 "Settings file does not exist: %(path)s. Run `oldman %(service)s settings "
@@ -9092,22 +9099,22 @@ msgstr ""
 "Settings file does not exist: %(path)s. Run `oldman %(service)s settings "
 "init` first."
 
-#: oldman/cli/_main.py:377
+#: oldman/cli/_main.py:386
 #, python-format
 msgid "Settings OK: %(path)s"
 msgstr "Settings OK: %(path)s"
 
-#: oldman/cli/_main.py:400
+#: oldman/cli/_main.py:409
 #, python-format
 msgid "Synchronized settings: %(path)s"
 msgstr "Synchronized settings: %(path)s"
 
-#: oldman/cli/_main.py:433
+#: oldman/cli/_main.py:442
 #, python-format
 msgid "Warning: %(path)s uses %(winner)s; ignored %(ignored)s"
 msgstr "Warning: %(path)s uses %(winner)s; ignored %(ignored)s"
 
-#: oldman/cli/_main.py:442
+#: oldman/cli/_main.py:451
 #, python-format
 msgid ""
 "Collected static files to %(destination)s: %(copied)s copied, "
@@ -9116,16 +9123,16 @@ msgstr ""
 "Collected static files to %(destination)s: %(copied)s copied, "
 "%(unchanged)s unchanged, %(removed)s removed."
 
-#: oldman/cli/_main.py:475
+#: oldman/cli/_main.py:484
 #, python-format
 msgid "These templates in %(destination)s differ from the framework's:"
 msgstr "These templates in %(destination)s differ from the framework's:"
 
-#: oldman/cli/_main.py:478
+#: oldman/cli/_main.py:487
 msgid "Overwrite all of them?"
 msgstr "Overwrite all of them?"
 
-#: oldman/cli/_main.py:482
+#: oldman/cli/_main.py:491
 #, python-format
 msgid ""
 "Copied templates to %(destination)s: %(new)s new, %(overwritten)s "
@@ -9134,132 +9141,132 @@ msgstr ""
 "Copied templates to %(destination)s: %(new)s new, %(overwritten)s "
 "overwritten, %(kept)s kept, %(unchanged)s already the same."
 
-#: oldman/cli/_main.py:494
+#: oldman/cli/_main.py:503
 msgid "Extracting messages..."
 msgstr "Extracting messages..."
 
-#: oldman/cli/_main.py:501
+#: oldman/cli/_main.py:510
 msgid "Canonical language code."
 msgstr "Canonical language code."
 
-#: oldman/cli/_main.py:508
+#: oldman/cli/_main.py:517
 #, python-format
 msgid "Invalid canonical language code: %(language)s"
 msgstr "Invalid canonical language code: %(language)s"
 
-#: oldman/cli/_main.py:510
+#: oldman/cli/_main.py:519
 #, python-format
 msgid "Initializing locale: %(language)s"
 msgstr "Initializing locale: %(language)s"
 
-#: oldman/cli/_main.py:517
+#: oldman/cli/_main.py:526
 msgid "Updating translations..."
 msgstr "Updating translations..."
 
-#: oldman/cli/_main.py:523
+#: oldman/cli/_main.py:532
 msgid "Compiling translations..."
 msgstr "Compiling translations..."
 
-#: oldman/cli/_main.py:530
+#: oldman/cli/_main.py:539
 msgid "Service whose settings describe the languages."
 msgstr "Service whose settings describe the languages."
 
-#: oldman/cli/_main.py:534
+#: oldman/cli/_main.py:543
 msgid "Building frontend catalogs..."
 msgstr "Building frontend catalogs..."
 
-#: oldman/cli/_main.py:548
+#: oldman/cli/_main.py:557
 msgid "Manage CLI display language."
 msgstr "Manage CLI display language."
 
-#: oldman/cli/_main.py:556
+#: oldman/cli/_main.py:565
 msgid "Supported CLI languages:"
 msgstr "Supported CLI languages:"
 
-#: oldman/cli/_main.py:565
+#: oldman/cli/_main.py:574
 #, python-format
 msgid "Current language: %(code)s (%(name)s)"
 msgstr "Current language: %(code)s (%(name)s)"
 
-#: oldman/cli/_main.py:573
+#: oldman/cli/_main.py:582
 #, python-format
 msgid "Saved language: %(language)s"
 msgstr "Saved language: %(language)s"
 
-#: oldman/cli/_main.py:578
+#: oldman/cli/_main.py:587
 msgid "Saved language: not set"
 msgstr "Saved language: not set"
 
-#: oldman/cli/_main.py:582
+#: oldman/cli/_main.py:591
 #, python-format
 msgid "Environment override: %(variable)s=%(language)s"
 msgstr "Environment override: %(variable)s=%(language)s"
 
-#: oldman/cli/_main.py:591
+#: oldman/cli/_main.py:600
 msgid "CLI language code or registered alias."
 msgstr "CLI language code or registered alias."
 
-#: oldman/cli/_main.py:599
+#: oldman/cli/_main.py:608
 #, python-format
 msgid "Unsupported CLI language %(language)s. Supported: %(supported)s"
 msgstr "Unsupported CLI language %(language)s. Supported: %(supported)s"
 
-#: oldman/cli/_main.py:610
+#: oldman/cli/_main.py:619
 #, python-format
 msgid "CLI language set to %(language)s."
 msgstr "CLI language set to %(language)s."
 
-#: oldman/cli/_main.py:615
+#: oldman/cli/_main.py:624
 msgid "List supported CLI languages."
 msgstr "List supported CLI languages."
 
-#: oldman/cli/_main.py:620
+#: oldman/cli/_main.py:629
 msgid "Show the current CLI language."
 msgstr "Show the current CLI language."
 
-#: oldman/cli/_main.py:625
+#: oldman/cli/_main.py:634
 msgid "Set the CLI language."
 msgstr "Set the CLI language."
 
-#: oldman/cli/_main.py:637
+#: oldman/cli/_main.py:646
 msgid "Manage explicit Oldman settings files."
 msgstr "Manage explicit Oldman settings files."
 
-#: oldman/cli/_main.py:646 oldman/cli/_main.py:655 oldman/cli/_main.py:664
-#: oldman/cli/_main.py:703 oldman/cli/_main.py:739 oldman/cli/_main.py:772
-#: oldman/cli/_main.py:820
+#: oldman/cli/_main.py:655 oldman/cli/_main.py:664 oldman/cli/_main.py:673
+#: oldman/cli/_main.py:712 oldman/cli/_main.py:748 oldman/cli/_main.py:781
+#: oldman/cli/_main.py:829
 msgid "Settings YAML path."
 msgstr "Settings YAML path."
 
-#: oldman/cli/_main.py:672
+#: oldman/cli/_main.py:681
 msgid "Create a settings file explicitly."
 msgstr "Create a settings file explicitly."
 
-#: oldman/cli/_main.py:677
+#: oldman/cli/_main.py:686
 msgid "Validate the current settings file."
 msgstr "Validate the current settings file."
 
-#: oldman/cli/_main.py:682
+#: oldman/cli/_main.py:691
 msgid "Add missing managed settings keys."
 msgstr "Add missing managed settings keys."
 
-#: oldman/cli/_main.py:694
+#: oldman/cli/_main.py:703
 msgid "Collect project and installed-App static files."
 msgstr "Collect project and installed-App static files."
 
-#: oldman/cli/_main.py:709
+#: oldman/cli/_main.py:718
 msgid "Remove previously collected output first."
 msgstr "Remove previously collected output first."
 
-#: oldman/cli/_main.py:718
+#: oldman/cli/_main.py:727
 msgid "Collect static files into settings.web.static.root."
 msgstr "Collect static files into settings.web.static.root."
 
-#: oldman/cli/_main.py:730
+#: oldman/cli/_main.py:739
 msgid "Copy the framework's templates into the project."
 msgstr "Copy the framework's templates into the project."
 
-#: oldman/cli/_main.py:747
+#: oldman/cli/_main.py:756
 msgid ""
 "Copy the framework's templates into settings.web.template.dir; asks "
 "before overwriting files that differ."
@@ -9267,150 +9274,150 @@ msgstr ""
 "Copy the framework's templates into settings.web.template.dir; asks "
 "before overwriting files that differ."
 
-#: oldman/cli/_main.py:759
+#: oldman/cli/_main.py:768
 msgid "Check outgoing mail settings."
 msgstr "Check outgoing mail settings."
 
-#: oldman/cli/_main.py:768
+#: oldman/cli/_main.py:777
 msgid "Recipient addresses."
 msgstr "Recipient addresses."
 
-#: oldman/cli/_main.py:794
+#: oldman/cli/_main.py:803
 #, python-format
 msgid "Sending the test message failed: %(error)s"
 msgstr "Sending the test message failed: %(error)s"
 
-#: oldman/cli/_main.py:797
+#: oldman/cli/_main.py:806
 #, python-format
 msgid "Sent %(count)s test message(s) through %(backend)s."
 msgstr "Sent %(count)s test message(s) through %(backend)s."
 
-#: oldman/cli/_main.py:805
+#: oldman/cli/_main.py:814
 msgid "Send a test message to the given addresses."
 msgstr "Send a test message to the given addresses."
 
-#: oldman/cli/_main.py:843
+#: oldman/cli/_main.py:852
 msgid "Open a bootstrapped Python shell."
 msgstr "Open a bootstrapped Python shell."
 
-#: oldman/cli/_main.py:851
+#: oldman/cli/_main.py:860
 msgid "Manage project translation catalogs."
 msgstr "Manage project translation catalogs."
 
-#: oldman/cli/_main.py:858
+#: oldman/cli/_main.py:867
 msgid "Extract translation messages."
 msgstr "Extract translation messages."
 
-#: oldman/cli/_main.py:863
+#: oldman/cli/_main.py:872
 msgid "Initialize a language catalog."
 msgstr "Initialize a language catalog."
 
-#: oldman/cli/_main.py:868
+#: oldman/cli/_main.py:877
 msgid "Update translation catalogs."
 msgstr "Update translation catalogs."
 
-#: oldman/cli/_main.py:873
+#: oldman/cli/_main.py:882
 msgid "Compile translation catalogs."
 msgstr "Compile translation catalogs."
 
-#: oldman/cli/_main.py:878
+#: oldman/cli/_main.py:887
 msgid "Build browser catalogs and the frontend language manifest."
 msgstr "Build browser catalogs and the frontend language manifest."
 
-#: oldman/cli/_main.py:903 oldman/cli/_main.py:909
+#: oldman/cli/_main.py:916 oldman/cli/_main.py:922
 msgid "Oldman application framework command line."
 msgstr "Oldman application framework command line."
 
-#: oldman/cli/_main.py:915
+#: oldman/cli/_main.py:928
 msgid "Show the installed Oldman version and exit."
 msgstr "Show the installed Oldman version and exit."
 
-#: oldman/cli/_main.py:925
+#: oldman/cli/_main.py:938
 msgid "Create an Oldman project scaffold."
 msgstr "Create an Oldman project scaffold."
 
-#: oldman/cli/_main.py:930
+#: oldman/cli/_main.py:943
 msgid "Create an Oldman app module."
 msgstr "Create an Oldman app module."
 
-#: oldman/cli/_main.py:935
+#: oldman/cli/_main.py:948
 msgid "Create an Oldman service entry."
 msgstr "Create an Oldman service entry."
 
-#: oldman/cli/_main.py:951
+#: oldman/cli/_main.py:964
 #, python-format
 msgid "Web service %(service)s."
 msgstr "Web service %(service)s."
 
-#: oldman/cli/_main.py:954
+#: oldman/cli/_main.py:967
 #, python-format
 msgid "Application service %(service)s."
 msgstr "Application service %(service)s."
 
-#: oldman/cli/_main.py:1010
+#: oldman/cli/_main.py:1023
 msgid "Install completion for the current shell."
 msgstr "Install completion for the current shell."
 
-#: oldman/cli/_main.py:1012
+#: oldman/cli/_main.py:1025
 msgid "Show completion for the current shell."
 msgstr "Show completion for the current shell."
 
-#: oldman/cli/_main.py:1035
+#: oldman/cli/_main.py:1048
 #, python-format
 msgid "%(value)s is not one of %(choices)s."
 msgstr "%(value)s is not one of %(choices)s."
 
-#: oldman/cli/_main.py:1048
+#: oldman/cli/_main.py:1061
 #, python-format
 msgid "No such option: %(option)s"
 msgstr "No such option: %(option)s"
 
-#: oldman/cli/_main.py:1053
+#: oldman/cli/_main.py:1066
 #, python-format
 msgid "%(text)s (Possible options: %(options)s)"
 msgstr "%(text)s (Possible options: %(options)s)"
 
-#: oldman/cli/_main.py:1065
+#: oldman/cli/_main.py:1078
 #, python-format
 msgid "Missing argument %(parameter)s."
 msgstr "Missing argument %(parameter)s."
 
-#: oldman/cli/_main.py:1066
+#: oldman/cli/_main.py:1079
 #, python-format
 msgid "Missing option %(parameter)s."
 msgstr "Missing option %(parameter)s."
 
-#: oldman/cli/_main.py:1067 oldman/cli/_main.py:1071
+#: oldman/cli/_main.py:1080 oldman/cli/_main.py:1084
 #, python-format
 msgid "Missing parameter %(parameter)s."
 msgstr "Missing parameter %(parameter)s."
 
-#: oldman/cli/_main.py:1080
+#: oldman/cli/_main.py:1093
 #, python-format
 msgid "Invalid value for %(parameter)s: %(detail)s"
 msgstr "Invalid value for %(parameter)s: %(detail)s"
 
-#: oldman/cli/_main.py:1084 oldman/cli/tui/inputs.py:168
+#: oldman/cli/_main.py:1097 oldman/cli/tui/inputs.py:168
 #, python-format
 msgid "Invalid value: %(detail)s"
 msgstr "Invalid value: %(detail)s"
 
-#: oldman/cli/_main.py:1090
+#: oldman/cli/_main.py:1103
 #, python-format
 msgid "Got unexpected extra argument(s): %(arguments)s"
 msgstr "Got unexpected extra argument(s): %(arguments)s"
 
-#: oldman/cli/_main.py:1108
+#: oldman/cli/_main.py:1121
 #, python-format
 msgid "Try '%(command)s --help' for help."
 msgstr "Try '%(command)s --help' for help."
 
-#: oldman/cli/_main.py:1139
+#: oldman/cli/_main.py:1152
 #, python-format
 msgid "Error: Service names conflict with root commands: %(services)s"
 msgstr "Error: Service names conflict with root commands: %(services)s"
 
-#: oldman/cli/_main.py:1163
+#: oldman/cli/_main.py:1176
 #, python-format
 msgid ""
 "Error: Settings file does not exist: %(path)s. Run `oldman %(service)s "
@@ -9433,93 +9440,106 @@ msgid "Generated %(app)s revision %(revision)s: %(path)s"
 msgstr "Generated %(app)s revision %(revision)s: %(path)s"
 
 #: oldman/cli/database.py:110
+msgid "Migration cancelled; nothing was applied."
+msgstr "Migration cancelled; nothing was applied."
+
+#: oldman/cli/database.py:113
 msgid "Recovered Oldman migration state."
 msgstr "Recovered Oldman migration state."
 
-#: oldman/cli/database.py:114
+#: oldman/cli/database.py:117
 #, python-format
 msgid "Applied revisions: %(revisions)s"
 msgstr "Applied revisions: %(revisions)s"
 
-#: oldman/cli/database.py:119
+#: oldman/cli/database.py:122
 msgid "No pending migrations."
 msgstr "No pending migrations."
 
-#: oldman/cli/database.py:127
+#: oldman/cli/database.py:126
+#, python-format
+msgid ""
+"Still without a migration: %(apps)s. Run db makemigrations for them, then"
+" db migrate."
+msgstr ""
+"Still without a migration: %(apps)s. Run db makemigrations for them, then"
+" db migrate."
+
+#: oldman/cli/database.py:137
 msgid "No applied App can be downgraded."
 msgstr "No applied App can be downgraded."
 
-#: oldman/cli/database.py:131
+#: oldman/cli/database.py:141
 #, python-format
 msgid "Downgraded %(app)s to %(revision)s; removed: %(removed)s"
 msgstr "Downgraded %(app)s to %(revision)s; removed: %(removed)s"
 
-#: oldman/cli/database.py:144
+#: oldman/cli/database.py:154
 msgid "No App was retired."
 msgstr "No App was retired."
 
-#: oldman/cli/database.py:148
+#: oldman/cli/database.py:158
 #, python-format
 msgid "Retired %(app)s; retained tables: %(tables)s"
 msgstr "Retired %(app)s; retained tables: %(tables)s"
 
-#: oldman/cli/database.py:155
+#: oldman/cli/database.py:165
 #, python-format
 msgid "Remove %(package)s from: %(files)s"
 msgstr "Remove %(package)s from: %(files)s"
 
-#: oldman/cli/database.py:167
+#: oldman/cli/database.py:177
 msgid "Migration state: not initialized."
 msgstr "Migration state: not initialized."
 
-#: oldman/cli/database.py:171
+#: oldman/cli/database.py:181
 #, python-format
 msgid "Migration state: incomplete; missing %(tables)s"
 msgstr "Migration state: incomplete; missing %(tables)s"
 
-#: oldman/cli/database.py:176
+#: oldman/cli/database.py:186
 msgid "Migration state: complete tables, but owner is missing."
 msgstr "Migration state: complete tables, but owner is missing."
 
-#: oldman/cli/database.py:180
+#: oldman/cli/database.py:190
 #, python-format
 msgid "Migration owner: %(name)s (%(project_id)s)"
 msgstr "Migration owner: %(name)s (%(project_id)s)"
 
-#: oldman/cli/database.py:188
+#: oldman/cli/database.py:198
 #, python-format
 msgid "%(app)s: current=%(current)s; heads=%(heads)s; pending=%(pending)s"
 msgstr "%(app)s: current=%(current)s; heads=%(heads)s; pending=%(pending)s"
 
-#: oldman/cli/database.py:202
+#: oldman/cli/database.py:212
 msgid "No registered Apps."
 msgstr "No registered Apps."
 
-#: oldman/cli/database.py:207
+#: oldman/cli/database.py:217
 msgid "  no revisions"
 msgstr "  no revisions"
 
-#: oldman/cli/database.py:221
+#: oldman/cli/database.py:231
 msgid "Generate one reviewed migration revision."
 msgstr "Generate one reviewed migration revision."
 
-#: oldman/cli/database.py:226
+#: oldman/cli/database.py:236
 msgid "Apply pending project migrations."
 msgstr "Apply pending project migrations."
 
-#: oldman/cli/database.py:231
+#: oldman/cli/database.py:241
 msgid "Downgrade one App migration branch."
 msgstr "Downgrade one App migration branch."
 
-#: oldman/cli/database.py:236
+#: oldman/cli/database.py:246
 msgid "Retire one App without dropping its tables."
 msgstr "Retire one App without dropping its tables."
 
-#: oldman/cli/database.py:241
+#: oldman/cli/database.py:251
 msgid "Show read-only migration status."
 msgstr "Show read-only migration status."
 
-#: oldman/cli/database.py:246
+#: oldman/cli/database.py:256
 msgid "Show source migration history."
 msgstr "Show source migration history."
 
@@ -9755,7 +9775,7 @@ msgstr "Choose the new column for %(column)s."
 msgid "Deleting column %(column)s removes its data. Enter %(name)s to confirm"
 msgstr "Deleting column %(column)s removes its data. Enter %(name)s to confirm"
 
-#: oldman/db/migrations/commands.py:208
+#: oldman/db/migrations/commands.py:215
 msgid ""
 "The database has no Oldman migration state. Is this first use or was the "
 "state lost?"
@@ -9763,7 +9783,7 @@ msgstr ""
 "The database has no Oldman migration state. Is this first use or was the "
 "state lost?"
 
-#: oldman/db/migrations/commands.py:385
+#: oldman/db/migrations/commands.py:402
 #, python-format
 msgid ""
 "The database has no Oldman internal migration state. It contains "
@@ -9774,21 +9794,32 @@ msgstr ""
 "%(tables)s non-internal table(s), while source contains %(revisions)s "
 "migration revision(s). Is this first use or was the state lost?"
 
-#: oldman/db/migrations/commands.py:440
+#: oldman/db/migrations/commands.py:467
+#, python-format
+msgid ""
+"%(apps)s have models but no migration yet. makemigrations can create one "
+"only after the other Apps' pending migrations are applied. Apply those "
+"now?"
+msgstr ""
+"%(apps)s have models but no migration yet. makemigrations can create one "
+"only after the other Apps' pending migrations are applied. Apply those "
+"now?"
+
+#: oldman/db/migrations/commands.py:489
 #, python-format
 msgid "Pending migration heads: %(heads)s. Choose the migration scope."
 msgstr "Pending migration heads: %(heads)s. Choose the migration scope."
 
-#: oldman/db/migrations/commands.py:509
+#: oldman/db/migrations/commands.py:558
 msgid "Choose the applied App to downgrade."
 msgstr "Choose the applied App to downgrade."
 
-#: oldman/db/migrations/commands.py:521
+#: oldman/db/migrations/commands.py:570
 #, python-format
 msgid "Choose the target revision for App %(app)s."
 msgstr "Choose the target revision for App %(app)s."
 
-#: oldman/db/migrations/commands.py:536
+#: oldman/db/migrations/commands.py:585
 #, python-format
 msgid ""
 "Downgrade will remove revisions %(revisions)s and may alter or delete App"
@@ -9797,32 +9828,32 @@ msgstr ""
 "Downgrade will remove revisions %(revisions)s and may alter or delete App"
 " tables recorded in the Registry: %(tables)s."
 
-#: oldman/db/migrations/commands.py:538 oldman/db/migrations/commands.py:625
-#: oldman/db/migrations/commands.py:628 oldman/db/migrations/commands.py:705
-#: oldman/db/migrations/commands.py:707
+#: oldman/db/migrations/commands.py:587 oldman/db/migrations/commands.py:674
+#: oldman/db/migrations/commands.py:677 oldman/db/migrations/commands.py:754
+#: oldman/db/migrations/commands.py:756
 msgid "none"
 msgstr "none"
 
-#: oldman/db/migrations/commands.py:540
+#: oldman/db/migrations/commands.py:589
 #, python-format
 msgid "Type App label %(app)s to confirm"
 msgstr "Type App label %(app)s to confirm"
 
-#: oldman/db/migrations/commands.py:543
+#: oldman/db/migrations/commands.py:592
 #, python-format
 msgid "Type target revision %(revision)s to confirm"
 msgstr "Type target revision %(revision)s to confirm"
 
-#: oldman/db/migrations/commands.py:604
+#: oldman/db/migrations/commands.py:653
 msgid "Choose the App to retire while retaining its physical tables."
 msgstr "Choose the App to retire while retaining its physical tables."
 
-#: oldman/db/migrations/commands.py:608
+#: oldman/db/migrations/commands.py:657
 #, python-format
 msgid "Rejected Apps: %(apps)s"
 msgstr "Rejected Apps: %(apps)s"
 
-#: oldman/db/migrations/commands.py:622
+#: oldman/db/migrations/commands.py:671
 #, python-format
 msgid ""
 "Retire App %(app)s: keep tables %(tables)s, remove migration head "
@@ -9835,12 +9866,12 @@ msgstr ""
 "%(package)s from service files %(files)s and from migration_apps if "
 "present."
 
-#: oldman/db/migrations/commands.py:630
+#: oldman/db/migrations/commands.py:679
 #, python-format
 msgid "Type App label %(app)s to retire permanently"
 msgstr "Type App label %(app)s to retire permanently"
 
-#: oldman/db/migrations/commands.py:700
+#: oldman/db/migrations/commands.py:749
 #, python-format
 msgid ""
 "Recovery will stamp source heads %(heads)s and restore Registry rows "
@@ -9855,17 +9886,17 @@ msgstr ""
 "ran; continuing asserts that the current database already matches the "
 "source heads. Recovery will not run business migration DDL."
 
-#: oldman/db/migrations/commands.py:709
+#: oldman/db/migrations/commands.py:758
 #, python-format
 msgid "Type project name %(name)s to confirm"
 msgstr "Type project name %(name)s to confirm"
 
-#: oldman/db/migrations/commands.py:713
+#: oldman/db/migrations/commands.py:762
 #, python-format
 msgid "Type %(phrase)s to rebuild only internal state"
 msgstr "Type %(phrase)s to rebuild only internal state"
 
-#: oldman/db/migrations/commands.py:761
+#: oldman/db/migrations/commands.py:810
 #, python-format
 msgid ""
 "Was unmanaged table %(table)s always external, or was it released by "
@@ -9982,7 +10013,7 @@ msgstr "Password must be 8-128 characters and include letters and numbers"
 msgid "New Password"
 msgstr "New Password"
 
-#: oldman/web/auth/forms.py:58 oldman/web/auth/forms.py:442
+#: oldman/web/auth/forms.py:58 oldman/web/auth/forms.py:444
 msgid "Confirm Password"
 msgstr "Confirm Password"
 
@@ -10035,11 +10066,11 @@ msgstr "cannot remove current user staff access"
 msgid "cannot remove current user superuser access"
 msgstr "cannot remove current user superuser access"
 
-#: oldman/web/auth/forms.py:398
+#: oldman/web/auth/forms.py:400
 msgid "Staff member; can sign in to the Admin"
 msgstr "Staff member; can sign in to the Admin"
 
-#: oldman/web/auth/forms.py:399
+#: oldman/web/auth/forms.py:401
 msgid "Has every permission"
 msgstr "Has every permission"
 
@@ -10320,33 +10351,33 @@ msgid "Invalid %(label)s filter"
 msgstr "Invalid %(label)s filter"
 
 #: frontend/packages/oldman-web/src/components/table.ts:406
-#: oldman/web/components/tables/views.py:103
+#: oldman/web/components/tables/views.py:104
 msgid "No matching records"
 msgstr "No matching records"
 
-#: oldman/web/components/tables/views.py:104
+#: oldman/web/components/tables/views.py:105
 msgid "Adjust or reset the filters to see more records."
 msgstr "Adjust or reset the filters to see more records."
 
-#: oldman/web/components/tables/views.py:175
+#: oldman/web/components/tables/views.py:176
 msgid "Invalid table pagination parameter"
 msgstr "Invalid table pagination parameter"
 
-#: oldman/web/components/tables/views.py:198
+#: oldman/web/components/tables/views.py:199
 msgid "Unsupported table export format"
 msgstr "Unsupported table export format"
 
-#: oldman/web/components/tables/views.py:266
+#: oldman/web/components/tables/views.py:267
 #, python-format
 msgid "Unknown table filter: %(name)s"
 msgstr "Unknown table filter: %(name)s"
 
-#: oldman/web/components/tables/views.py:306
+#: oldman/web/components/tables/views.py:307
 #, python-format
 msgid "Unknown table sort: %(name)s"
 msgstr "Unknown table sort: %(name)s"
 
-#: oldman/web/components/tables/views.py:308
+#: oldman/web/components/tables/views.py:309
 #, python-format
 msgid "Table column is not sortable: %(name)s"
 msgstr "Table column is not sortable: %(name)s"

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "EPG dashboard consumer application for the Oldman framework."
 requires-python = ">=3.12, <3.14"
 dependencies = [
-    "oldman>=0.5.0,<0.6.0",
+    "oldman>=0.6.0,<0.7.0",
 ]
 
 [dependency-groups]

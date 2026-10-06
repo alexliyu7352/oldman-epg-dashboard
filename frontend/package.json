@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "oldman-web": "^0.5.0",
+    "oldman-web": "^0.6.0",
     "@fontsource/dm-sans": "^5.2.7",
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo": "^8.0.12",

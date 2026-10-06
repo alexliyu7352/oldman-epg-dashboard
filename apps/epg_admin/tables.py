@@ -9,7 +9,7 @@ from typing import Any, cast
 from markupsafe import Markup, escape
 from oldman.i18n import gettext_lazy as _
 from oldman.storage import media_url
-from oldman.web.components import render_modal_sync
+from oldman.web.components import render_modal
 from oldman.web.components.tables import (
     BaseTableView,
     RowAction,
@@ -393,12 +393,12 @@ class CatalogChannelTable(SQLAlchemyTableView):
         display, value = date_cell(row.updated_at, date_format="%d %b, %Y %H:%M", empty="-")
         return Markup(f'<span class="text-default-500">{escape(display)}</span>'), value
 
-    def get_column_action_data(self, row: CatalogChannel, **kwargs: object):
-        """渲染频道目录编辑和证据预览动作。"""
+    async def get_column_action_data(self, row: CatalogChannel, **kwargs: object):
+        """渲染频道目录编辑和证据预览动作;证据弹窗经应用的模板环境渲染,所以回调是异步的。"""
         safe_modal_id = f"catalog-channel-evidence-{int(row.id)}"
         evidence_body = Markup('<pre class="mb-0 text-xs text-default-500">') + escape(row.evidence_json or "{}") + Markup("</pre>")
-        evidence_modal = render_modal_sync(
-            self,
+        evidence_modal = await render_modal(
+            kwargs["request"],
             modal_id=safe_modal_id,
             title=_("Evidence JSON"),
             body=evidence_body,

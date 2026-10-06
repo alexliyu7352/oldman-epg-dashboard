@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  oldman\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-04 06:13-0700\n"
+"POT-Creation-Date: 2026-10-06 12:53-0700\n"
 "PO-Revision-Date: 2026-09-02 18:00-0700\n"
 "Last-Translator: Oldman Contributors <noreply@oldman.dev>\n"
 "Language: zh_Hant\n"
@@ -44,44 +44,44 @@ msgstr "服務通訊"
 msgid "Dashboard"
 msgstr "儀表盤"
 
-#: apps/dashboard/chart_views.py:48 apps/dashboard/chart_views.py:51
-#: templates/pages/dashboard.html:29
-#: templates/pages/dashboard_analytics.html:23
+#: apps/dashboard/chart_views.py:45 apps/dashboard/chart_views.py:48
+#: templates/pages/dashboard.html:28
+#: templates/pages/dashboard_analytics.html:24
 #: templates/pages/epg_list/index.html:4 templates/pages/epg_list/index.html:9
 #: templates/partials/sidebar.html:25
 msgid "Programmes"
 msgstr "節目"
 
-#: apps/dashboard/chart_views.py:50
+#: apps/dashboard/chart_views.py:47
 msgid "Total Programmes"
 msgstr "節目總數"
 
-#: apps/dashboard/chart_views.py:83 apps/dashboard/chart_views.py:86
+#: apps/dashboard/chart_views.py:79 apps/dashboard/chart_views.py:82
 #: apps/epg_admin/tables.py:299
 msgid "Feeds"
 msgstr "節目源"
 
-#: apps/dashboard/chart_views.py:85
+#: apps/dashboard/chart_views.py:81
 msgid "Total Feeds"
 msgstr "節目源總數"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 #: apps/examples/chart_views.py:535 apps/examples/forms.py:72
 #: apps/examples/forms.py:212
 msgid "Low"
 msgstr "低"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 msgid "Medium"
 msgstr "中"
 
-#: apps/dashboard/chart_views.py:124 apps/epg_admin/views.py:108
+#: apps/dashboard/chart_views.py:117 apps/epg_admin/views.py:108
 #: apps/examples/chart_views.py:534 apps/examples/forms.py:74
 #: apps/examples/forms.py:212
 msgid "High"
 msgstr "高"
 
-#: apps/dashboard/chart_views.py:128 apps/dashboard/chart_views.py:131
+#: apps/dashboard/chart_views.py:121 apps/dashboard/chart_views.py:124
 #: apps/epg_admin/models.py:263 apps/epg_admin/views.py:112
 #: apps/epg_admin/views.py:115 apps/epg_admin/views.py:146
 #: apps/epg_admin/views.py:149 templates/pages/logo_assets/index.html:5
@@ -89,7 +89,7 @@ msgstr "高"
 msgid "Logo Assets"
 msgstr "臺標資源"
 
-#: apps/dashboard/chart_views.py:130 apps/epg_admin/views.py:114
+#: apps/dashboard/chart_views.py:123 apps/epg_admin/views.py:114
 #: apps/epg_admin/views.py:148
 msgid "Total Logos"
 msgstr "臺標總數"
@@ -100,14 +100,16 @@ msgstr "EPG 管理"
 
 #: apps/epg_admin/charts.py:15 oldman/web/auth/forms.py:106
 #: oldman/web/templates/oldman/messages/notifications/center_content.html:15
+#: templates/pages/dashboard.html:10
+#: templates/pages/dashboard_analytics.html:10
 msgid "All"
 msgstr "全部"
 
-#: apps/epg_admin/charts.py:15 templates/pages/dashboard.html:10
-#: templates/pages/dashboard.html:11 templates/pages/dashboard.html:12
-#: templates/pages/dashboard_analytics.html:10
+#: apps/epg_admin/charts.py:15 templates/pages/dashboard.html:11
+#: templates/pages/dashboard.html:12 templates/pages/dashboard.html:13
 #: templates/pages/dashboard_analytics.html:11
 #: templates/pages/dashboard_analytics.html:12
+#: templates/pages/dashboard_analytics.html:13
 #: templates/pages/examples/ui/countdown.html:22
 msgid "Days"
 msgstr "天數"
@@ -460,7 +462,7 @@ msgstr "搜尋來源、鍵、資料或節目源"
 #: apps/epg_admin/forms.py:448 apps/epg_admin/tables.py:634
 #: apps/epg_admin/tables.py:780 apps/epg_admin/tables.py:920
 #: apps/epg_admin/tables.py:1063 apps/epg_admin/views.py:882
-#: apps/examples/chart_views.py:121 templates/pages/dashboard.html:70
+#: apps/examples/chart_views.py:121 templates/pages/dashboard.html:65
 #: templates/pages/examples/i18n/coverage.html:10
 #: templates/pages/upstream_records/index.html:44
 msgid "Source"
@@ -470,14 +472,14 @@ msgstr "來源"
 #: apps/examples/forms.py:66 apps/examples/forms.py:137
 #: apps/examples/forms.py:207 apps/examples/forms.py:237
 #: apps/examples/forms.py:504 oldman/web/auth/forms.py:147
-#: oldman/web/auth/forms.py:397 oldman/web/auth/tables.py:45
+#: oldman/web/auth/forms.py:399 oldman/web/auth/tables.py:45
 #: oldman/web/templates/oldman/auth/user_session_content.html:29
 #: templates/pages/examples/auth/identity.html:12
 msgid "Active"
 msgstr "已啟用"
 
 #: apps/epg_admin/forms.py:454 apps/epg_admin/tables.py:642
-#: templates/pages/dashboard.html:72
+#: templates/pages/dashboard.html:67
 msgid "Disappeared"
 msgstr "已消失"
 
@@ -542,13 +544,13 @@ msgid "Search scope, reason, operator, feed"
 msgstr "搜尋範圍、原因、操作人或節目源"
 
 #: apps/epg_admin/forms.py:523 apps/epg_admin/tables.py:919
-#: templates/pages/dashboard.html:103
+#: templates/pages/dashboard.html:98
 msgid "Scope"
 msgstr "適用範圍"
 
 #: apps/epg_admin/forms.py:525 apps/epg_admin/forms.py:604
 #: apps/epg_admin/tables.py:923 apps/epg_admin/tables.py:1100
-#: templates/pages/dashboard.html:104
+#: templates/pages/dashboard.html:99
 msgid "Decision"
 msgstr "決定"
 
@@ -587,8 +589,8 @@ msgstr "全部類型"
 msgid "Decisions"
 msgstr "決策"
 
-#: apps/epg_admin/forms.py:570 templates/pages/dashboard.html:138
-#: templates/pages/dashboard_analytics.html:94
+#: apps/epg_admin/forms.py:570 templates/pages/dashboard.html:133
+#: templates/pages/dashboard_analytics.html:95
 msgid "Logo Quality"
 msgstr "臺標質量"
 
@@ -636,7 +638,7 @@ msgid "Info"
 msgstr "資訊"
 
 #: apps/epg_admin/forms.py:609 apps/epg_admin/tables.py:924
-#: templates/pages/dashboard.html:105
+#: templates/pages/dashboard.html:100
 msgid "Reason"
 msgstr "原因"
 
@@ -733,7 +735,7 @@ msgstr "頻道名稱"
 msgid "Upstream Record"
 msgstr "上游記錄"
 
-#: apps/epg_admin/models.py:138 templates/pages/dashboard.html:39
+#: apps/epg_admin/models.py:138 templates/pages/dashboard.html:38
 #: templates/pages/upstream_records/index.html:5
 #: templates/pages/upstream_records/index.html:10
 #: templates/partials/sidebar.html:35
@@ -748,8 +750,8 @@ msgstr "目錄頻道"
 
 #: apps/epg_admin/models.py:219 templates/pages/catalog_feeds/index.html:4
 #: templates/pages/catalog_feeds/index.html:9
-#: templates/pages/dashboard.html:154
-#: templates/pages/dashboard_analytics.html:34
+#: templates/pages/dashboard.html:149
+#: templates/pages/dashboard_analytics.html:35
 #: templates/partials/sidebar.html:30
 msgid "Catalog Feeds"
 msgstr "目錄源"
@@ -1423,7 +1425,7 @@ msgstr "啟用通知"
 msgid "Submit layout"
 msgstr "提交佈局"
 
-#: apps/examples/forms.py:237 oldman/web/auth/forms.py:397
+#: apps/examples/forms.py:237 oldman/web/auth/forms.py:399
 msgid "Can sign in"
 msgstr "可以登入"
 
@@ -1655,7 +1657,7 @@ msgstr "儲存前檢查可選的時間安排和專案說明。"
 msgid "Create project"
 msgstr "建立專案"
 
-#: apps/examples/forms.py:463 oldman/cli/_main.py:306
+#: apps/examples/forms.py:463 oldman/cli/_main.py:314
 #: templates/pages/examples/config/_file_result.html:18
 msgid "Display name"
 msgstr "顯示名稱"
@@ -1840,7 +1842,7 @@ msgstr "操作"
 msgid "Delete"
 msgstr "刪除"
 
-#: apps/examples/tables.py:162
+#: apps/examples/tables.py:161
 msgid "This team has no projects."
 msgstr "這個團隊沒有專案。"
 
@@ -2774,75 +2776,75 @@ msgstr "啟動開發模式服務，前端資源從 Vite 載入。"
 msgid "Menu"
 msgstr "選單"
 
-#: templates/pages/dashboard.html:15
-#: templates/pages/dashboard_analytics.html:15
+#: templates/pages/dashboard.html:16
+#: templates/pages/dashboard_analytics.html:16
 msgid "Refresh"
 msgstr "重新整理"
 
-#: templates/pages/dashboard.html:24
+#: templates/pages/dashboard.html:23
 msgid "Total Channels"
 msgstr "頻道總數"
 
-#: templates/pages/dashboard.html:34
-#: templates/pages/dashboard_analytics.html:45
+#: templates/pages/dashboard.html:33
+#: templates/pages/dashboard_analytics.html:46
 msgid "Logo Coverage"
 msgstr "臺標覆蓋率"
 
-#: templates/pages/dashboard.html:48
+#: templates/pages/dashboard.html:45
 msgid "Platform Perspective"
 msgstr "平臺視角"
 
-#: templates/pages/dashboard.html:49
-#: templates/pages/dashboard_analytics.html:70
+#: templates/pages/dashboard.html:46
+#: templates/pages/dashboard_analytics.html:71
 msgid "Review programmes"
 msgstr "稽核節目"
 
-#: templates/pages/dashboard.html:62
+#: templates/pages/dashboard.html:57
 msgid "Recent Upstream Anomalies"
 msgstr "最近的上游異常"
 
-#: templates/pages/dashboard.html:63 templates/pages/dashboard.html:96
+#: templates/pages/dashboard.html:58 templates/pages/dashboard.html:91
 #: templates/pages/notifications/index.html:33
 msgid "View all"
 msgstr "檢視全部"
 
-#: templates/pages/dashboard.html:71
+#: templates/pages/dashboard.html:66
 msgid "Record"
 msgstr "記錄"
 
-#: templates/pages/dashboard.html:83
+#: templates/pages/dashboard.html:78
 msgid "No upstream anomalies found."
 msgstr "未發現上游異常。"
 
-#: templates/pages/dashboard.html:95
+#: templates/pages/dashboard.html:90
 msgid "Recent Decisions"
 msgstr "最近的決定"
 
-#: templates/pages/dashboard.html:116
+#: templates/pages/dashboard.html:111
 msgid "No pending decisions found."
 msgstr "未找到待決決定。"
 
-#: templates/pages/dashboard.html:128
-#: templates/pages/dashboard_analytics.html:81
+#: templates/pages/dashboard.html:123
+#: templates/pages/dashboard_analytics.html:82
 msgid "Feed Status"
 msgstr "源狀態"
 
-#: templates/pages/dashboard.html:148
+#: templates/pages/dashboard.html:143
 msgid "Shared programme database"
 msgstr "共享節目資料庫"
 
-#: templates/pages/dashboard.html:151
+#: templates/pages/dashboard.html:146
 msgid ""
 "Manage channels, schedules and matching metadata from one backend "
 "dashboard."
 msgstr "在同一個後臺儀表盤中管理頻道、節目單和匹配後設資料。"
 
-#: templates/pages/dashboard.html:158
-#: templates/pages/dashboard_analytics.html:54
+#: templates/pages/dashboard.html:153
+#: templates/pages/dashboard_analytics.html:55
 msgid "Pending Decisions"
 msgstr "待處理決策"
 
-#: templates/pages/dashboard.html:162
+#: templates/pages/dashboard.html:157
 msgid "Manage Channels"
 msgstr "管理渠道"
 
@@ -2852,23 +2854,23 @@ msgstr "管理渠道"
 msgid "Analytics"
 msgstr "分析"
 
-#: templates/pages/dashboard_analytics.html:27
+#: templates/pages/dashboard_analytics.html:28
 msgid "programme records"
 msgstr "節目記錄"
 
-#: templates/pages/dashboard_analytics.html:38
+#: templates/pages/dashboard_analytics.html:39
 msgid "runtime feeds"
 msgstr "執行時源"
 
-#: templates/pages/dashboard_analytics.html:47
+#: templates/pages/dashboard_analytics.html:48
 msgid "logo assets"
 msgstr "臺標資源"
 
-#: templates/pages/dashboard_analytics.html:58
+#: templates/pages/dashboard_analytics.html:59
 msgid "manual review"
 msgstr "人工稽核"
 
-#: templates/pages/dashboard_analytics.html:68
+#: templates/pages/dashboard_analytics.html:69
 msgid "Programme Trend"
 msgstr "節目趨勢"
 
@@ -3550,7 +3552,7 @@ msgid "Display Name"
 msgstr "顯示名稱"
 
 #: oldman/apps/admin/model_admin.py:496 oldman/web/auth/forms.py:148
-#: oldman/web/auth/forms.py:398 oldman/web/auth/tables.py:47
+#: oldman/web/auth/forms.py:400 oldman/web/auth/tables.py:47
 #: oldman/web/auth/tables.py:132
 #: oldman/web/templates/oldman/auth/user_session_content.html:36
 #: templates/pages/examples/auth/identity.html:13
@@ -3558,7 +3560,7 @@ msgid "Staff"
 msgstr "工作人員"
 
 #: oldman/apps/admin/model_admin.py:497 oldman/web/auth/forms.py:149
-#: oldman/web/auth/forms.py:399 oldman/web/auth/tables.py:49
+#: oldman/web/auth/forms.py:401 oldman/web/auth/tables.py:49
 #: oldman/web/auth/tables.py:133
 #: oldman/web/templates/oldman/auth/user_session_content.html:34
 #: templates/pages/examples/auth/identity.html:14
@@ -3659,7 +3661,7 @@ msgid ""
 msgstr "用使用者名稱和密碼 POST %(url)s。所有啟用的帳號都能拿到令牌，與本站所有啟用的帳號都能登入一致。"
 
 #: oldman/auth/commands.py:46 oldman/web/auth/forms.py:128
-#: oldman/web/auth/forms.py:427 templates/pages/examples/auth/tokens.html:67
+#: oldman/web/auth/forms.py:429 templates/pages/examples/auth/tokens.html:67
 msgid "Password"
 msgstr "密碼"
 
@@ -4049,7 +4051,7 @@ msgstr "最近7天"
 #: oldman/web/auth/user_management.py:349
 #: oldman/web/auth/user_management.py:378
 #: oldman/web/components/charts/views.py:68
-#: oldman/web/components/tables/views.py:374 oldman/web/http.py:75
+#: oldman/web/components/tables/views.py:375 oldman/web/http.py:75
 #: oldman/web/http.py:120 templates/pages/examples/charts/states.html:22
 #: templates/pages/examples/tables/states.html:18
 msgid "Permission denied"
@@ -4972,7 +4974,7 @@ msgstr "這些標籤是由 Jinja 根據當前請求翻譯的。更改語言，�
 #: frontend/packages/oldman-web/src/components/tags-input.ts:29
 #: frontend/packages/oldman-web/src/core/services/preloader.ts:46
 #: frontend/src/components/examples/navigation-probe.ts:49
-#: oldman/web/components/tables/renderers.py:21
+#: oldman/web/components/tables/renderers.py:18
 #: oldman/web/templates/oldman/tables/default/shell.html:3
 #: templates/pages/examples/i18n/server.html:10
 msgid "Loading..."
@@ -8159,7 +8161,7 @@ msgid "Delete %(name)s"
 msgstr "刪除%(name)s"
 
 #: oldman/apps/admin/model_admin.py:68
-#: oldman/web/components/tables/views.py:100
+#: oldman/web/components/tables/views.py:101
 msgid "No records found."
 msgstr "找不到記錄。"
 
@@ -8379,7 +8381,7 @@ msgid "Check your email"
 msgstr "請查收郵件"
 
 #: oldman/apps/roles/apps.py:15 oldman/apps/roles/models.py:34
-#: oldman/web/auth/forms.py:401
+#: oldman/web/auth/forms.py:403
 msgid "Roles"
 msgstr "角色"
 
@@ -8508,8 +8510,8 @@ msgstr "框架命令"
 msgid "Services"
 msgstr "服務"
 
-#: oldman/cli/_main.py:210 oldman/cli/_main.py:538 oldman/cli/_main.py:1115
-#: oldman/cli/_main.py:1132 oldman/cli/_main.py:1171 oldman/cli/_main.py:1194
+#: oldman/cli/_main.py:210 oldman/cli/_main.py:547 oldman/cli/_main.py:1128
+#: oldman/cli/_main.py:1145 oldman/cli/_main.py:1184 oldman/cli/_main.py:1207
 #: oldman/cli/service.py:75 oldman/cli/service.py:122
 #, python-format
 msgid "Error: %(error)s"
@@ -8520,7 +8522,7 @@ msgstr "錯誤：%(error)s"
 msgid "Warning: %(detail)s"
 msgstr "警告：%(detail)s"
 
-#: oldman/cli/_main.py:245 oldman/cli/_main.py:1207 oldman/cli/service.py:72
+#: oldman/cli/_main.py:245 oldman/cli/_main.py:1220 oldman/cli/service.py:72
 #: oldman/cli/service.py:119
 msgid "Aborted."
 msgstr "已中止。"
@@ -8550,66 +8552,71 @@ msgstr "是否整合內建後臺管理（Admin）？"
 msgid "Created project at %(path)s"
 msgstr "已在 %(path)s 建立專案"
 
-#: oldman/cli/_main.py:300
+#: oldman/cli/_main.py:302
+#, python-format
+msgid "Coding agents: read %(path)s before changing anything in this project."
+msgstr "編碼 agent：修改本專案的任何內容之前，先閱讀 %(path)s。"
+
+#: oldman/cli/_main.py:308
 msgid "Application name."
 msgstr "應用程式名稱。"
 
-#: oldman/cli/_main.py:305
+#: oldman/cli/_main.py:313
 msgid "App template"
 msgstr "應用程式範本"
 
-#: oldman/cli/_main.py:316
+#: oldman/cli/_main.py:324
 #, python-format
 msgid "Created app %(name)s"
 msgstr "已建立應用程式 %(name)s"
 
-#: oldman/cli/_main.py:323
+#: oldman/cli/_main.py:332
 msgid "Service module name."
 msgstr "服務模組名稱。"
 
-#: oldman/cli/_main.py:328
+#: oldman/cli/_main.py:337
 msgid "Service type"
 msgstr "服務類型"
 
-#: oldman/cli/_main.py:334
+#: oldman/cli/_main.py:343
 #, python-format
 msgid "Created service %(name)s"
 msgstr "已建立服務 %(name)s"
 
-#: oldman/cli/_main.py:349
+#: oldman/cli/_main.py:358
 #, python-format
 msgid "Settings file already exists: %(path)s"
 msgstr "設定檔已存在：%(path)s"
 
-#: oldman/cli/_main.py:354
+#: oldman/cli/_main.py:363
 #, python-format
 msgid "Initialized settings: %(path)s"
 msgstr "已初始化設定：%(path)s"
 
-#: oldman/cli/_main.py:369 oldman/cli/_main.py:391 oldman/cli/_main.py:422
-#: oldman/cli/_main.py:464 oldman/cli/_main.py:788 oldman/cli/_main.py:835
+#: oldman/cli/_main.py:378 oldman/cli/_main.py:400 oldman/cli/_main.py:431
+#: oldman/cli/_main.py:473 oldman/cli/_main.py:797 oldman/cli/_main.py:844
 #, python-format
 msgid ""
 "Settings file does not exist: %(path)s. Run `oldman %(service)s settings "
 "init` first."
 msgstr "設定檔不存在：%(path)s。請先執行 `oldman %(service)s settings init`。"
 
-#: oldman/cli/_main.py:377
+#: oldman/cli/_main.py:386
 #, python-format
 msgid "Settings OK: %(path)s"
 msgstr "設定有效：%(path)s"
 
-#: oldman/cli/_main.py:400
+#: oldman/cli/_main.py:409
 #, python-format
 msgid "Synchronized settings: %(path)s"
 msgstr "已同步設定：%(path)s"
 
-#: oldman/cli/_main.py:433
+#: oldman/cli/_main.py:442
 #, python-format
 msgid "Warning: %(path)s uses %(winner)s; ignored %(ignored)s"
 msgstr "警告：%(path)s 使用 %(winner)s；已忽略 %(ignored)s"
 
-#: oldman/cli/_main.py:442
+#: oldman/cli/_main.py:451
 #, python-format
 msgid ""
 "Collected static files to %(destination)s: %(copied)s copied, "
@@ -8618,16 +8625,16 @@ msgstr ""
 "已將靜態檔案收集到 %(destination)s：複製 %(copied)s 個，未變更 %(unchanged)s 個，刪除 "
 "%(removed)s 個。"
 
-#: oldman/cli/_main.py:475
+#: oldman/cli/_main.py:484
 #, python-format
 msgid "These templates in %(destination)s differ from the framework's:"
 msgstr "%(destination)s 中下列範本與框架的不同："
 
-#: oldman/cli/_main.py:478
+#: oldman/cli/_main.py:487
 msgid "Overwrite all of them?"
 msgstr "全部覆蓋嗎？"
 
-#: oldman/cli/_main.py:482
+#: oldman/cli/_main.py:491
 #, python-format
 msgid ""
 "Copied templates to %(destination)s: %(new)s new, %(overwritten)s "
@@ -8636,281 +8643,281 @@ msgstr ""
 "已複製範本到 %(destination)s：新增 %(new)s 個，覆蓋 %(overwritten)s 個，保留 %(kept)s "
 "個，%(unchanged)s 個已相同。"
 
-#: oldman/cli/_main.py:494
+#: oldman/cli/_main.py:503
 msgid "Extracting messages..."
 msgstr "正在擷取翻譯訊息……"
 
-#: oldman/cli/_main.py:501
+#: oldman/cli/_main.py:510
 msgid "Canonical language code."
 msgstr "標準語言代碼。"
 
-#: oldman/cli/_main.py:508
+#: oldman/cli/_main.py:517
 #, python-format
 msgid "Invalid canonical language code: %(language)s"
 msgstr "無效的標準語言代碼：%(language)s"
 
-#: oldman/cli/_main.py:510
+#: oldman/cli/_main.py:519
 #, python-format
 msgid "Initializing locale: %(language)s"
 msgstr "正在初始化語言：%(language)s"
 
-#: oldman/cli/_main.py:517
+#: oldman/cli/_main.py:526
 msgid "Updating translations..."
 msgstr "正在更新翻譯……"
 
-#: oldman/cli/_main.py:523
+#: oldman/cli/_main.py:532
 msgid "Compiling translations..."
 msgstr "正在編譯翻譯……"
 
-#: oldman/cli/_main.py:530
+#: oldman/cli/_main.py:539
 msgid "Service whose settings describe the languages."
 msgstr "語言設定所屬的服務。"
 
-#: oldman/cli/_main.py:534
+#: oldman/cli/_main.py:543
 msgid "Building frontend catalogs..."
 msgstr "正在產生前端語言包……"
 
-#: oldman/cli/_main.py:548
+#: oldman/cli/_main.py:557
 msgid "Manage CLI display language."
 msgstr "管理 CLI 顯示語言。"
 
-#: oldman/cli/_main.py:556
+#: oldman/cli/_main.py:565
 msgid "Supported CLI languages:"
 msgstr "支援的 CLI 語言："
 
-#: oldman/cli/_main.py:565
+#: oldman/cli/_main.py:574
 #, python-format
 msgid "Current language: %(code)s (%(name)s)"
 msgstr "目前語言：%(code)s（%(name)s）"
 
-#: oldman/cli/_main.py:573
+#: oldman/cli/_main.py:582
 #, python-format
 msgid "Saved language: %(language)s"
 msgstr "已儲存語言：%(language)s"
 
-#: oldman/cli/_main.py:578
+#: oldman/cli/_main.py:587
 msgid "Saved language: not set"
 msgstr "已儲存語言：未設定"
 
-#: oldman/cli/_main.py:582
+#: oldman/cli/_main.py:591
 #, python-format
 msgid "Environment override: %(variable)s=%(language)s"
 msgstr "環境變數覆寫：%(variable)s=%(language)s"
 
-#: oldman/cli/_main.py:591
+#: oldman/cli/_main.py:600
 msgid "CLI language code or registered alias."
 msgstr "CLI 語言代碼或已註冊別名。"
 
-#: oldman/cli/_main.py:599
+#: oldman/cli/_main.py:608
 #, python-format
 msgid "Unsupported CLI language %(language)s. Supported: %(supported)s"
 msgstr "不支援 CLI 語言 %(language)s。支援：%(supported)s"
 
-#: oldman/cli/_main.py:610
+#: oldman/cli/_main.py:619
 #, python-format
 msgid "CLI language set to %(language)s."
 msgstr "CLI 語言已設定為 %(language)s。"
 
-#: oldman/cli/_main.py:615
+#: oldman/cli/_main.py:624
 msgid "List supported CLI languages."
 msgstr "列出支援的 CLI 語言。"
 
-#: oldman/cli/_main.py:620
+#: oldman/cli/_main.py:629
 msgid "Show the current CLI language."
 msgstr "顯示目前 CLI 語言。"
 
-#: oldman/cli/_main.py:625
+#: oldman/cli/_main.py:634
 msgid "Set the CLI language."
 msgstr "設定 CLI 語言。"
 
-#: oldman/cli/_main.py:637
+#: oldman/cli/_main.py:646
 msgid "Manage explicit Oldman settings files."
 msgstr "管理明確的 Oldman 設定檔。"
 
-#: oldman/cli/_main.py:646 oldman/cli/_main.py:655 oldman/cli/_main.py:664
-#: oldman/cli/_main.py:703 oldman/cli/_main.py:739 oldman/cli/_main.py:772
-#: oldman/cli/_main.py:820
+#: oldman/cli/_main.py:655 oldman/cli/_main.py:664 oldman/cli/_main.py:673
+#: oldman/cli/_main.py:712 oldman/cli/_main.py:748 oldman/cli/_main.py:781
+#: oldman/cli/_main.py:829
 msgid "Settings YAML path."
 msgstr "設定 YAML 路徑。"
 
-#: oldman/cli/_main.py:672
+#: oldman/cli/_main.py:681
 msgid "Create a settings file explicitly."
 msgstr "明確建立設定檔。"
 
-#: oldman/cli/_main.py:677
+#: oldman/cli/_main.py:686
 msgid "Validate the current settings file."
 msgstr "驗證目前設定檔。"
 
-#: oldman/cli/_main.py:682
+#: oldman/cli/_main.py:691
 msgid "Add missing managed settings keys."
 msgstr "補充缺少的受管設定項。"
 
-#: oldman/cli/_main.py:694
+#: oldman/cli/_main.py:703
 msgid "Collect project and installed-App static files."
 msgstr "收集專案和已安裝應用程式的靜態檔案。"
 
-#: oldman/cli/_main.py:709
+#: oldman/cli/_main.py:718
 msgid "Remove previously collected output first."
 msgstr "先刪除上次收集的輸出。"
 
-#: oldman/cli/_main.py:718
+#: oldman/cli/_main.py:727
 msgid "Collect static files into settings.web.static.root."
 msgstr "將靜態檔案收集到 settings.web.static.root。"
 
-#: oldman/cli/_main.py:730
+#: oldman/cli/_main.py:739
 msgid "Copy the framework's templates into the project."
 msgstr "把框架的範本複製到專案。"
 
-#: oldman/cli/_main.py:747
+#: oldman/cli/_main.py:756
 msgid ""
 "Copy the framework's templates into settings.web.template.dir; asks "
 "before overwriting files that differ."
 msgstr "把框架的範本複製到 settings.web.template.dir；覆蓋內容不同的檔案前會先詢問。"
 
-#: oldman/cli/_main.py:759
+#: oldman/cli/_main.py:768
 msgid "Check outgoing mail settings."
 msgstr "檢查外發郵件設定。"
 
-#: oldman/cli/_main.py:768
+#: oldman/cli/_main.py:777
 msgid "Recipient addresses."
 msgstr "收件人地址。"
 
-#: oldman/cli/_main.py:794
+#: oldman/cli/_main.py:803
 #, python-format
 msgid "Sending the test message failed: %(error)s"
 msgstr "測試郵件傳送失敗：%(error)s"
 
-#: oldman/cli/_main.py:797
+#: oldman/cli/_main.py:806
 #, python-format
 msgid "Sent %(count)s test message(s) through %(backend)s."
 msgstr "已透過 %(backend)s 傳送 %(count)s 封測試郵件。"
 
-#: oldman/cli/_main.py:805
+#: oldman/cli/_main.py:814
 msgid "Send a test message to the given addresses."
 msgstr "向指定地址傳送一封測試郵件。"
 
-#: oldman/cli/_main.py:843
+#: oldman/cli/_main.py:852
 msgid "Open a bootstrapped Python shell."
 msgstr "開啟已完成框架初始化的 Python Shell。"
 
-#: oldman/cli/_main.py:851
+#: oldman/cli/_main.py:860
 msgid "Manage project translation catalogs."
 msgstr "管理專案翻譯目錄。"
 
-#: oldman/cli/_main.py:858
+#: oldman/cli/_main.py:867
 msgid "Extract translation messages."
 msgstr "擷取翻譯訊息。"
 
-#: oldman/cli/_main.py:863
+#: oldman/cli/_main.py:872
 msgid "Initialize a language catalog."
 msgstr "初始化語言目錄。"
 
-#: oldman/cli/_main.py:868
+#: oldman/cli/_main.py:877
 msgid "Update translation catalogs."
 msgstr "更新翻譯目錄。"
 
-#: oldman/cli/_main.py:873
+#: oldman/cli/_main.py:882
 msgid "Compile translation catalogs."
 msgstr "編譯翻譯目錄。"
 
-#: oldman/cli/_main.py:878
+#: oldman/cli/_main.py:887
 msgid "Build browser catalogs and the frontend language manifest."
 msgstr "產生瀏覽器語言包與前端語言清單。"
 
-#: oldman/cli/_main.py:903 oldman/cli/_main.py:909
+#: oldman/cli/_main.py:916 oldman/cli/_main.py:922
 msgid "Oldman application framework command line."
 msgstr "Oldman 應用框架命令列。"
 
-#: oldman/cli/_main.py:915
+#: oldman/cli/_main.py:928
 msgid "Show the installed Oldman version and exit."
 msgstr "顯示已安裝的 Oldman 版本並結束。"
 
-#: oldman/cli/_main.py:925
+#: oldman/cli/_main.py:938
 msgid "Create an Oldman project scaffold."
 msgstr "建立 Oldman 專案鷹架。"
 
-#: oldman/cli/_main.py:930
+#: oldman/cli/_main.py:943
 msgid "Create an Oldman app module."
 msgstr "建立 Oldman 應用程式模組。"
 
-#: oldman/cli/_main.py:935
+#: oldman/cli/_main.py:948
 msgid "Create an Oldman service entry."
 msgstr "建立 Oldman 服務入口。"
 
-#: oldman/cli/_main.py:951
+#: oldman/cli/_main.py:964
 #, python-format
 msgid "Web service %(service)s."
 msgstr "Web 服務 %(service)s。"
 
-#: oldman/cli/_main.py:954
+#: oldman/cli/_main.py:967
 #, python-format
 msgid "Application service %(service)s."
 msgstr "應用程式服務 %(service)s。"
 
-#: oldman/cli/_main.py:1010
+#: oldman/cli/_main.py:1023
 msgid "Install completion for the current shell."
 msgstr "為目前 shell 安裝補全。"
 
-#: oldman/cli/_main.py:1012
+#: oldman/cli/_main.py:1025
 msgid "Show completion for the current shell."
 msgstr "顯示目前 shell 的補全指令稿。"
 
-#: oldman/cli/_main.py:1035
+#: oldman/cli/_main.py:1048
 #, python-format
 msgid "%(value)s is not one of %(choices)s."
 msgstr "%(value)s 不是以下選項之一：%(choices)s。"
 
-#: oldman/cli/_main.py:1048
+#: oldman/cli/_main.py:1061
 #, python-format
 msgid "No such option: %(option)s"
 msgstr "沒有此選項：%(option)s"
 
-#: oldman/cli/_main.py:1053
+#: oldman/cli/_main.py:1066
 #, python-format
 msgid "%(text)s (Possible options: %(options)s)"
 msgstr "%(text)s（可用選項：%(options)s）"
 
-#: oldman/cli/_main.py:1065
+#: oldman/cli/_main.py:1078
 #, python-format
 msgid "Missing argument %(parameter)s."
 msgstr "缺少參數 %(parameter)s。"
 
-#: oldman/cli/_main.py:1066
+#: oldman/cli/_main.py:1079
 #, python-format
 msgid "Missing option %(parameter)s."
 msgstr "缺少選項 %(parameter)s。"
 
-#: oldman/cli/_main.py:1067 oldman/cli/_main.py:1071
+#: oldman/cli/_main.py:1080 oldman/cli/_main.py:1084
 #, python-format
 msgid "Missing parameter %(parameter)s."
 msgstr "缺少參數 %(parameter)s。"
 
-#: oldman/cli/_main.py:1080
+#: oldman/cli/_main.py:1093
 #, python-format
 msgid "Invalid value for %(parameter)s: %(detail)s"
 msgstr "參數 %(parameter)s 的值無效：%(detail)s"
 
-#: oldman/cli/_main.py:1084 oldman/cli/tui/inputs.py:168
+#: oldman/cli/_main.py:1097 oldman/cli/tui/inputs.py:168
 #, python-format
 msgid "Invalid value: %(detail)s"
 msgstr "值無效：%(detail)s"
 
-#: oldman/cli/_main.py:1090
+#: oldman/cli/_main.py:1103
 #, python-format
 msgid "Got unexpected extra argument(s): %(arguments)s"
 msgstr "收到非預期的多餘參數：%(arguments)s"
 
-#: oldman/cli/_main.py:1108
+#: oldman/cli/_main.py:1121
 #, python-format
 msgid "Try '%(command)s --help' for help."
 msgstr "執行「%(command)s --help」查看說明。"
 
-#: oldman/cli/_main.py:1139
+#: oldman/cli/_main.py:1152
 #, python-format
 msgid "Error: Service names conflict with root commands: %(services)s"
 msgstr "錯誤：服務名稱與框架命令衝突：%(services)s"
 
-#: oldman/cli/_main.py:1163
+#: oldman/cli/_main.py:1176
 #, python-format
 msgid ""
 "Error: Settings file does not exist: %(path)s. Run `oldman %(service)s "
@@ -8931,93 +8938,104 @@ msgid "Generated %(app)s revision %(revision)s: %(path)s"
 msgstr "已產生 %(app)s 遷移版本 %(revision)s：%(path)s"
 
 #: oldman/cli/database.py:110
+msgid "Migration cancelled; nothing was applied."
+msgstr "已取消遷移，沒有執行任何遷移。"
+
+#: oldman/cli/database.py:113
 msgid "Recovered Oldman migration state."
 msgstr "已恢復 Oldman 遷移狀態。"
 
-#: oldman/cli/database.py:114
+#: oldman/cli/database.py:117
 #, python-format
 msgid "Applied revisions: %(revisions)s"
 msgstr "已套用遷移版本：%(revisions)s"
 
-#: oldman/cli/database.py:119
+#: oldman/cli/database.py:122
 msgid "No pending migrations."
 msgstr "沒有待執行的遷移。"
 
-#: oldman/cli/database.py:127
+#: oldman/cli/database.py:126
+#, python-format
+msgid ""
+"Still without a migration: %(apps)s. Run db makemigrations for them, then"
+" db migrate."
+msgstr "以下 App 仍然沒有遷移：%(apps)s。先為它們執行 db makemigrations，再執行 db migrate。"
+
+#: oldman/cli/database.py:137
 msgid "No applied App can be downgraded."
 msgstr "沒有可以回退的已遷移應用程式。"
 
-#: oldman/cli/database.py:131
+#: oldman/cli/database.py:141
 #, python-format
 msgid "Downgraded %(app)s to %(revision)s; removed: %(removed)s"
 msgstr "已將 %(app)s 回退到 %(revision)s；移除：%(removed)s"
 
-#: oldman/cli/database.py:144
+#: oldman/cli/database.py:154
 msgid "No App was retired."
 msgstr "未停用任何應用程式。"
 
-#: oldman/cli/database.py:148
+#: oldman/cli/database.py:158
 #, python-format
 msgid "Retired %(app)s; retained tables: %(tables)s"
 msgstr "已停用 %(app)s；保留資料表：%(tables)s"
 
-#: oldman/cli/database.py:155
+#: oldman/cli/database.py:165
 #, python-format
 msgid "Remove %(package)s from: %(files)s"
 msgstr "請從以下檔案中移除 %(package)s：%(files)s"
 
-#: oldman/cli/database.py:167
+#: oldman/cli/database.py:177
 msgid "Migration state: not initialized."
 msgstr "遷移狀態：尚未初始化。"
 
-#: oldman/cli/database.py:171
+#: oldman/cli/database.py:181
 #, python-format
 msgid "Migration state: incomplete; missing %(tables)s"
 msgstr "遷移狀態：不完整；缺少 %(tables)s"
 
-#: oldman/cli/database.py:176
+#: oldman/cli/database.py:186
 msgid "Migration state: complete tables, but owner is missing."
 msgstr "遷移狀態：資料表完整，但缺少所屬專案記錄。"
 
-#: oldman/cli/database.py:180
+#: oldman/cli/database.py:190
 #, python-format
 msgid "Migration owner: %(name)s (%(project_id)s)"
 msgstr "遷移所屬專案：%(name)s（%(project_id)s）"
 
-#: oldman/cli/database.py:188
+#: oldman/cli/database.py:198
 #, python-format
 msgid "%(app)s: current=%(current)s; heads=%(heads)s; pending=%(pending)s"
 msgstr "%(app)s：目前=%(current)s；最新=%(heads)s；待執行=%(pending)s"
 
-#: oldman/cli/database.py:202
+#: oldman/cli/database.py:212
 msgid "No registered Apps."
 msgstr "沒有已註冊的應用程式。"
 
-#: oldman/cli/database.py:207
+#: oldman/cli/database.py:217
 msgid "  no revisions"
 msgstr "  沒有遷移版本"
 
-#: oldman/cli/database.py:221
+#: oldman/cli/database.py:231
 msgid "Generate one reviewed migration revision."
 msgstr "產生一個供檢查的遷移版本。"
 
-#: oldman/cli/database.py:226
+#: oldman/cli/database.py:236
 msgid "Apply pending project migrations."
 msgstr "執行專案中待處理的遷移。"
 
-#: oldman/cli/database.py:231
+#: oldman/cli/database.py:241
 msgid "Downgrade one App migration branch."
 msgstr "回退一個應用程式的遷移分支。"
 
-#: oldman/cli/database.py:236
+#: oldman/cli/database.py:246
 msgid "Retire one App without dropping its tables."
 msgstr "停用一個應用程式，但保留其資料表。"
 
-#: oldman/cli/database.py:241
+#: oldman/cli/database.py:251
 msgid "Show read-only migration status."
 msgstr "顯示唯讀遷移狀態。"
 
-#: oldman/cli/database.py:246
+#: oldman/cli/database.py:256
 msgid "Show source migration history."
 msgstr "顯示原始碼中的遷移歷史。"
 
@@ -9245,13 +9263,13 @@ msgstr "為 %(column)s 選擇對應的新欄位。"
 msgid "Deleting column %(column)s removes its data. Enter %(name)s to confirm"
 msgstr "刪除欄位 %(column)s 會刪掉其中的資料。輸入 %(name)s 確認"
 
-#: oldman/db/migrations/commands.py:208
+#: oldman/db/migrations/commands.py:215
 msgid ""
 "The database has no Oldman migration state. Is this first use or was the "
 "state lost?"
 msgstr "資料庫裡沒有 Oldman 遷移狀態。這是首次使用，還是狀態遺失了？"
 
-#: oldman/db/migrations/commands.py:385
+#: oldman/db/migrations/commands.py:402
 #, python-format
 msgid ""
 "The database has no Oldman internal migration state. It contains "
@@ -9261,53 +9279,61 @@ msgstr ""
 "資料庫裡沒有 Oldman 內部遷移狀態。庫中有 %(tables)s 張非內部資料表，原始碼中有 %(revisions)s "
 "個遷移版本。這是首次使用，還是狀態遺失了？"
 
-#: oldman/db/migrations/commands.py:440
+#: oldman/db/migrations/commands.py:467
+#, python-format
+msgid ""
+"%(apps)s have models but no migration yet. makemigrations can create one "
+"only after the other Apps' pending migrations are applied. Apply those "
+"now?"
+msgstr "%(apps)s 有模型但還沒有遷移。要先執行其他 App 待執行的遷移，makemigrations 才能為它產生遷移。現在執行嗎？"
+
+#: oldman/db/migrations/commands.py:489
 #, python-format
 msgid "Pending migration heads: %(heads)s. Choose the migration scope."
 msgstr "待執行的遷移：%(heads)s。選擇遷移範圍。"
 
-#: oldman/db/migrations/commands.py:509
+#: oldman/db/migrations/commands.py:558
 msgid "Choose the applied App to downgrade."
 msgstr "選擇要回退的已遷移 App。"
 
-#: oldman/db/migrations/commands.py:521
+#: oldman/db/migrations/commands.py:570
 #, python-format
 msgid "Choose the target revision for App %(app)s."
 msgstr "為 App %(app)s 選擇回退到的遷移版本。"
 
-#: oldman/db/migrations/commands.py:536
+#: oldman/db/migrations/commands.py:585
 #, python-format
 msgid ""
 "Downgrade will remove revisions %(revisions)s and may alter or delete App"
 " tables recorded in the Registry: %(tables)s."
 msgstr "回退會移除遷移版本 %(revisions)s，並可能修改或刪除 Registry 中記錄的 App 資料表：%(tables)s。"
 
-#: oldman/db/migrations/commands.py:538 oldman/db/migrations/commands.py:625
-#: oldman/db/migrations/commands.py:628 oldman/db/migrations/commands.py:705
-#: oldman/db/migrations/commands.py:707
+#: oldman/db/migrations/commands.py:587 oldman/db/migrations/commands.py:674
+#: oldman/db/migrations/commands.py:677 oldman/db/migrations/commands.py:754
+#: oldman/db/migrations/commands.py:756
 msgid "none"
 msgstr "無"
 
-#: oldman/db/migrations/commands.py:540
+#: oldman/db/migrations/commands.py:589
 #, python-format
 msgid "Type App label %(app)s to confirm"
 msgstr "輸入 App 標籤 %(app)s 確認"
 
-#: oldman/db/migrations/commands.py:543
+#: oldman/db/migrations/commands.py:592
 #, python-format
 msgid "Type target revision %(revision)s to confirm"
 msgstr "輸入目標遷移版本 %(revision)s 確認"
 
-#: oldman/db/migrations/commands.py:604
+#: oldman/db/migrations/commands.py:653
 msgid "Choose the App to retire while retaining its physical tables."
 msgstr "選擇要停用的 App（保留它的實體資料表）。"
 
-#: oldman/db/migrations/commands.py:608
+#: oldman/db/migrations/commands.py:657
 #, python-format
 msgid "Rejected Apps: %(apps)s"
 msgstr "不能停用的 App：%(apps)s"
 
-#: oldman/db/migrations/commands.py:622
+#: oldman/db/migrations/commands.py:671
 #, python-format
 msgid ""
 "Retire App %(app)s: keep tables %(tables)s, remove migration head "
@@ -9318,12 +9344,12 @@ msgstr ""
 "停用 App %(app)s：保留資料表 %(tables)s，移除遷移頭 %(head)s，並清除它在 Registry "
 "中的記錄。之後從服務設定檔 %(files)s 和 migration_apps（如果有）中移除套件 %(package)s。"
 
-#: oldman/db/migrations/commands.py:630
+#: oldman/db/migrations/commands.py:679
 #, python-format
 msgid "Type App label %(app)s to retire permanently"
 msgstr "輸入 App 標籤 %(app)s 以永久停用"
 
-#: oldman/db/migrations/commands.py:700
+#: oldman/db/migrations/commands.py:749
 #, python-format
 msgid ""
 "Recovery will stamp source heads %(heads)s and restore Registry rows "
@@ -9336,17 +9362,17 @@ msgstr ""
 "%(rows)s。目前沒有模型的資料表保持為外部資料表：%(external)s。Oldman "
 "無法證明任意空白遷移版本或資料操作已經執行過；繼續即表示你確認目前資料庫已與原始碼的遷移頭一致。恢復不會執行業務遷移的 DDL。"
 
-#: oldman/db/migrations/commands.py:709
+#: oldman/db/migrations/commands.py:758
 #, python-format
 msgid "Type project name %(name)s to confirm"
 msgstr "輸入專案名稱 %(name)s 確認"
 
-#: oldman/db/migrations/commands.py:713
+#: oldman/db/migrations/commands.py:762
 #, python-format
 msgid "Type %(phrase)s to rebuild only internal state"
 msgstr "輸入 %(phrase)s，只重建內部狀態"
 
-#: oldman/db/migrations/commands.py:761
+#: oldman/db/migrations/commands.py:810
 #, python-format
 msgid ""
 "Was unmanaged table %(table)s always external, or was it released by "
@@ -9459,7 +9485,7 @@ msgstr "密碼必須為 8 至 128 個字元，並同時包含字母和數字"
 msgid "New Password"
 msgstr "新密碼"
 
-#: oldman/web/auth/forms.py:58 oldman/web/auth/forms.py:442
+#: oldman/web/auth/forms.py:58 oldman/web/auth/forms.py:444
 msgid "Confirm Password"
 msgstr "確認密碼"
 
@@ -9512,11 +9538,11 @@ msgstr "不能移除目前使用者的工作人員權限"
 msgid "cannot remove current user superuser access"
 msgstr "不能移除目前使用者的超級使用者權限"
 
-#: oldman/web/auth/forms.py:398
+#: oldman/web/auth/forms.py:400
 msgid "Staff member; can sign in to the Admin"
 msgstr "工作人員，可以登入 Admin"
 
-#: oldman/web/auth/forms.py:399
+#: oldman/web/auth/forms.py:401
 msgid "Has every permission"
 msgstr "擁有全部權限"
 
@@ -9797,33 +9823,33 @@ msgid "Invalid %(label)s filter"
 msgstr "無效的 %(label)s 篩選值"
 
 #: frontend/packages/oldman-web/src/components/table.ts:406
-#: oldman/web/components/tables/views.py:103
+#: oldman/web/components/tables/views.py:104
 msgid "No matching records"
 msgstr "沒有符合的記錄"
 
-#: oldman/web/components/tables/views.py:104
+#: oldman/web/components/tables/views.py:105
 msgid "Adjust or reset the filters to see more records."
 msgstr "調整或重設篩選條件以查看更多記錄。"
 
-#: oldman/web/components/tables/views.py:175
+#: oldman/web/components/tables/views.py:176
 msgid "Invalid table pagination parameter"
 msgstr "表格分頁參數無效"
 
-#: oldman/web/components/tables/views.py:198
+#: oldman/web/components/tables/views.py:199
 msgid "Unsupported table export format"
 msgstr "不支援的表格匯出格式"
 
-#: oldman/web/components/tables/views.py:266
+#: oldman/web/components/tables/views.py:267
 #, python-format
 msgid "Unknown table filter: %(name)s"
 msgstr "未知的表格篩選條件：%(name)s"
 
-#: oldman/web/components/tables/views.py:306
+#: oldman/web/components/tables/views.py:307
 #, python-format
 msgid "Unknown table sort: %(name)s"
 msgstr "未知的表格排序欄位：%(name)s"
 
-#: oldman/web/components/tables/views.py:308
+#: oldman/web/components/tables/views.py:309
 #, python-format
 msgid "Table column is not sortable: %(name)s"
 msgstr "該欄不能排序：%(name)s"

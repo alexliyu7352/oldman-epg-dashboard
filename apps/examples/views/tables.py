@@ -70,10 +70,10 @@ async def example_tables_page(request: Request, page: str):
         )
         renderer = table.get_renderer()
         context.update(
-            loading_fragment=renderer.render_initial_fragment(data_format="html"),
+            loading_fragment=await renderer.render_initial_fragment(data_format="html"),
             empty_fragment=await table.render_html_fragment(table_request, empty_result),
-            error_fragment=renderer.render_error_fragment(str(_("The Table request failed."))),
-            permission_fragment=renderer.render_error_fragment(str(_("Permission denied."))),
+            error_fragment=await renderer.render_error_fragment(str(_("The Table request failed."))),
+            permission_fragment=await renderer.render_error_fragment(str(_("Permission denied."))),
             selectable_table=table,
         )
         return await render_template("pages/examples/tables/states.html", context=context)
