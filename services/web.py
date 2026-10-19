@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from oldman.apps.admin import install_admin
+from oldman.apps.roles.permissions import VIEW_ROLES
 from oldman.auth.user_permissions import VIEW_USERS
 from oldman.i18n import gettext, gettext_noop
 from oldman.runtime.web import WebApplication
@@ -35,6 +36,11 @@ async def can_manage_users(request: Any) -> bool:
     return await has_perm(request, VIEW_USERS)
 
 
+async def can_manage_roles(request: Any) -> bool:
+    """Whether the menu lists Role management: the permission its pages check (a superuser holds it)."""
+    return await has_perm(request, VIEW_ROLES)
+
+
 def install_dashboard_templates(app: WebApp) -> StaticBundleRegistry:
     """Install shared templates, the project's Vite bundle and the template globals the pages use."""
     from apps.epg_admin.services import dashboard_notifications
@@ -57,6 +63,7 @@ def install_dashboard_templates(app: WebApp) -> StaticBundleRegistry:
     registry.install_template_globals(environment)
     environment.globals["app_main_bundle"] = APP_MAIN_BUNDLE
     environment.globals["can_manage_users"] = can_manage_users
+    environment.globals["can_manage_roles"] = can_manage_roles
     # 本项目的顶栏业务通知(骨架没有):EPG 数据里的最新动态。
     environment.globals["topbar_dashboard_notifications"] = dashboard_notifications
     return registry

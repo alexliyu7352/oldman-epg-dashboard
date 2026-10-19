@@ -38,10 +38,14 @@
 
       {# The account pages are the framework's and pass no active_page: they are matched by address. #}
       {% set on_users = request.path == urls.users or request.path.startswith(urls.users ~ "/") %}
+      {% set on_roles = request.path == urls.roles or request.path.startswith(urls.roles ~ "/") %}
       {% set on_profile = request.path == urls.profile or request.path.startswith(urls.profile ~ "/") %}
-      {% call sidebar_menu_group("sidebarSystem", _("System"), "ri-settings-3-line", active=active_section == 'system' or on_users or on_profile) %}
+      {% call sidebar_menu_group("sidebarSystem", _("System"), "ri-settings-3-line", active=active_section == 'system' or on_users or on_roles or on_profile) %}
         {% if can_manage_users(request) %}
           {{ sidebar_menu_item(urls.users, _("Users"), active=on_users) }}
+        {% endif %}
+        {% if can_manage_roles(request) %}
+          {{ sidebar_menu_item(urls.roles, _("Roles"), active=on_roles) }}
         {% endif %}
         {{ sidebar_menu_item(urls.profile, _("User Session"), active=on_profile) }}
         {{ sidebar_menu_item("/notifications", _("Notifications"), active=active_page == 'notifications') }}

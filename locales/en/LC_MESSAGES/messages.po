@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 12:53-0700\n"
+"POT-Creation-Date: 2026-10-07 10:41-0700\n"
 "PO-Revision-Date: 2026-08-28 15:43-0700\n"
 "Last-Translator: Oldman Contributors <noreply@oldman.dev>\n"
 "Language: en\n"
@@ -32,12 +32,12 @@ msgstr "User"
 #: oldman/web/templates/oldman/dashboard/account/users/form.html:14
 #: oldman/web/templates/oldman/dashboard/account/users/index.html:8
 #: oldman/web/templates/oldman/dashboard/account/users/index.html:12
-#: templates/partials/sidebar.html:44
+#: templates/partials/sidebar.html:45
 msgid "Users"
 msgstr "Users"
 
 #: apps/communication/apps.py:11 apps/examples/views/__init__.py:14
-#: templates/partials/sidebar.html:56
+#: templates/partials/sidebar.html:60
 msgid "Service communication"
 msgstr "Service communication"
 
@@ -144,7 +144,8 @@ msgstr "Search name, URL, country"
 #: apps/epg_admin/forms.py:37 apps/epg_admin/forms.py:211
 #: apps/epg_admin/tables.py:60 apps/epg_admin/tables.py:187
 #: apps/examples/forms.py:125 apps/examples/forms.py:194
-#: oldman/apps/roles/forms.py:54 templates/pages/examples/forms/page.html:80
+#: oldman/apps/roles/forms.py:54 oldman/apps/roles/management.py:113
+#: templates/pages/examples/forms/page.html:80
 msgid "Name"
 msgstr "Name"
 
@@ -198,6 +199,7 @@ msgstr "TVG Reason"
 #: apps/epg_admin/forms.py:254 apps/epg_admin/forms.py:648
 #: apps/epg_admin/tables.py:119 apps/examples/forms.py:130
 #: apps/examples/forms.py:474 oldman/apps/roles/forms.py:59
+#: oldman/apps/roles/management.py:114
 #: templates/partials/examples/tables/static_project_table.html:15
 msgid "Description"
 msgstr "Description"
@@ -826,14 +828,15 @@ msgstr "ID"
 #: apps/epg_admin/tables.py:459 apps/epg_admin/tables.py:643
 #: apps/epg_admin/tables.py:786 apps/epg_admin/tables.py:928
 #: apps/epg_admin/tables.py:1065 oldman/apps/admin/table.py:57
-#: oldman/web/auth/tables.py:137
+#: oldman/apps/roles/management.py:117 oldman/web/auth/tables.py:137
 msgid "Action"
 msgstr "Action"
 
 #: apps/epg_admin/tables.py:96 apps/epg_admin/tables.py:168
 #: apps/epg_admin/tables.py:276 apps/epg_admin/tables.py:412
 #: apps/epg_admin/tables.py:606 apps/examples/tables.py:134
-#: oldman/apps/admin/model_admin.py:278 oldman/web/auth/tables.py:68
+#: oldman/apps/admin/model_admin.py:278 oldman/apps/roles/management.py:146
+#: oldman/web/auth/tables.py:68
 msgid "Edit"
 msgstr "Edit"
 
@@ -895,6 +898,7 @@ msgstr "Updated"
 #: oldman/web/templates/oldman/auth/user_session_content.html:112
 #: oldman/web/templates/oldman/auth/user_session_content.html:113
 #: oldman/web/templates/oldman/auth/user_session_content.html:123
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:33
 #: oldman/web/templates/oldman/dashboard/partials/topbar.html:5
 #: oldman/web/templates/oldman/dashboard/partials/topbar.html:110
 #: templates/pages/catalog_channels/index.html:47
@@ -1370,7 +1374,7 @@ msgid "Receiving service"
 msgstr "Receiving service"
 
 #: apps/examples/forms.py:127 apps/examples/views/__init__.py:62
-#: templates/partials/sidebar.html:106
+#: templates/partials/sidebar.html:110
 msgid "Slug"
 msgstr "Slug"
 
@@ -1855,8 +1859,9 @@ msgstr "Actions"
 
 #: apps/examples/tables.py:137
 #: oldman/apps/admin/templates/admin/model/form.html:24
-#: oldman/web/auth/tables.py:77
+#: oldman/apps/roles/management.py:148 oldman/web/auth/tables.py:77
 #: oldman/web/templates/oldman/auth/partials/user_delete_form.html:9
+#: oldman/web/templates/oldman/dashboard/account/roles/delete_form.html:12
 #: templates/pages/catalog_channels/form.html:30
 #: templates/pages/catalog_feeds/form.html:61
 #: templates/pages/catalog_feeds/form.html:78
@@ -1878,214 +1883,214 @@ msgstr ""
 "Run a fixed Worker and inspect a real project snapshot, failure or task "
 "stop."
 
-#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:57
+#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:61
 msgid "Immediate RPC"
 msgstr "Immediate RPC"
 
-#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:58
+#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:62
 msgid "Events and Broadcast"
 msgstr "Events and Broadcast"
 
-#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:59
+#: apps/examples/views/__init__.py:15 templates/partials/sidebar.html:63
 msgid "Communication Failures"
 msgstr "Communication Failures"
 
-#: apps/examples/views/__init__.py:18 templates/partials/sidebar.html:62
+#: apps/examples/views/__init__.py:18 templates/partials/sidebar.html:66
 msgid "Distributed Tasks"
 msgstr "Distributed Tasks"
 
-#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:63
+#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:67
 msgid "Submission and Results"
 msgstr "Submission and Results"
 
-#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:64
+#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:68
 msgid "Schedules and Retry"
 msgstr "Schedules and Retry"
 
-#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:65
+#: apps/examples/views/__init__.py:19 templates/partials/sidebar.html:69
 msgid "Queues and Broadcast"
 msgstr "Queues and Broadcast"
 
-#: apps/examples/views/__init__.py:22 templates/partials/sidebar.html:68
+#: apps/examples/views/__init__.py:22 templates/partials/sidebar.html:72
 msgid "HTTP"
 msgstr "HTTP"
 
-#: apps/examples/views/__init__.py:23 templates/partials/sidebar.html:69
+#: apps/examples/views/__init__.py:23 templates/partials/sidebar.html:73
 msgid "Backend HTTP Client"
 msgstr "Backend HTTP Client"
 
-#: apps/examples/views/__init__.py:26 templates/partials/sidebar.html:72
+#: apps/examples/views/__init__.py:26 templates/partials/sidebar.html:76
 msgid "Cache"
 msgstr "Cache"
 
-#: apps/examples/views/__init__.py:27 templates/partials/sidebar.html:73
+#: apps/examples/views/__init__.py:27 templates/partials/sidebar.html:77
 msgid "Redis Cache"
 msgstr "Redis Cache"
 
-#: apps/examples/views/__init__.py:27 templates/partials/sidebar.html:74
+#: apps/examples/views/__init__.py:27 templates/partials/sidebar.html:78
 msgid "Model Cache"
 msgstr "Model Cache"
 
-#: apps/examples/views/__init__.py:30 templates/partials/sidebar.html:76
+#: apps/examples/views/__init__.py:30 templates/partials/sidebar.html:80
 msgid "Dynamic Configuration"
 msgstr "Dynamic Configuration"
 
-#: apps/examples/views/__init__.py:31 templates/partials/sidebar.html:77
+#: apps/examples/views/__init__.py:31 templates/partials/sidebar.html:81
 msgid "File Configuration"
 msgstr "File Configuration"
 
-#: apps/examples/views/__init__.py:31 templates/partials/sidebar.html:78
+#: apps/examples/views/__init__.py:31 templates/partials/sidebar.html:82
 msgid "Redis Configuration"
 msgstr "Redis Configuration"
 
-#: apps/examples/views/__init__.py:34 templates/partials/sidebar.html:81
+#: apps/examples/views/__init__.py:34 templates/partials/sidebar.html:85
 msgid "Security"
 msgstr "Security"
 
-#: apps/examples/views/__init__.py:35 templates/partials/sidebar.html:82
+#: apps/examples/views/__init__.py:35 templates/partials/sidebar.html:86
 msgid "Browser Fingerprint"
 msgstr "Browser Fingerprint"
 
-#: apps/examples/views/__init__.py:38 templates/partials/sidebar.html:85
+#: apps/examples/views/__init__.py:38 templates/partials/sidebar.html:89
 msgid "Tables"
 msgstr "Tables"
 
-#: apps/examples/views/__init__.py:40 templates/partials/sidebar.html:86
+#: apps/examples/views/__init__.py:40 templates/partials/sidebar.html:90
 msgid "Static HTML"
 msgstr "Static HTML"
 
-#: apps/examples/views/__init__.py:41 templates/partials/sidebar.html:87
+#: apps/examples/views/__init__.py:41 templates/partials/sidebar.html:91
 msgid "Responsive Table"
 msgstr "Responsive Table"
 
-#: apps/examples/views/__init__.py:42 templates/partials/sidebar.html:88
+#: apps/examples/views/__init__.py:42 templates/partials/sidebar.html:92
 msgid "HTML Data Table"
 msgstr "HTML Data Table"
 
-#: apps/examples/views/__init__.py:43 templates/partials/sidebar.html:89
+#: apps/examples/views/__init__.py:43 templates/partials/sidebar.html:93
 msgid "JSON Data Table"
 msgstr "JSON Data Table"
 
-#: apps/examples/views/__init__.py:44 templates/partials/sidebar.html:90
+#: apps/examples/views/__init__.py:44 templates/partials/sidebar.html:94
 msgid "Table States"
 msgstr "Table States"
 
-#: apps/examples/views/__init__.py:45 templates/partials/sidebar.html:91
+#: apps/examples/views/__init__.py:45 templates/partials/sidebar.html:95
 msgid "Realtime Table"
 msgstr "Realtime Table"
 
-#: apps/examples/views/__init__.py:46 templates/partials/sidebar.html:92
+#: apps/examples/views/__init__.py:46 templates/partials/sidebar.html:96
 msgid "Advanced Tables"
 msgstr "Advanced Tables"
 
-#: apps/examples/views/__init__.py:50 templates/partials/sidebar.html:95
+#: apps/examples/views/__init__.py:50 templates/partials/sidebar.html:99
 msgid "Forms"
 msgstr "Forms"
 
-#: apps/examples/views/__init__.py:52 templates/partials/sidebar.html:96
+#: apps/examples/views/__init__.py:52 templates/partials/sidebar.html:100
 msgid "Basic Fields"
 msgstr "Basic Fields"
 
-#: apps/examples/views/__init__.py:53 templates/partials/sidebar.html:97
+#: apps/examples/views/__init__.py:53 templates/partials/sidebar.html:101
 msgid "Choice Fields"
 msgstr "Choice Fields"
 
-#: apps/examples/views/__init__.py:54 templates/partials/sidebar.html:98
+#: apps/examples/views/__init__.py:54 templates/partials/sidebar.html:102
 msgid "Form Layouts"
 msgstr "Form Layouts"
 
-#: apps/examples/views/__init__.py:55 templates/partials/sidebar.html:99
+#: apps/examples/views/__init__.py:55 templates/partials/sidebar.html:103
 msgid "Boolean Widgets"
 msgstr "Boolean Widgets"
 
-#: apps/examples/views/__init__.py:56 templates/partials/sidebar.html:100
+#: apps/examples/views/__init__.py:56 templates/partials/sidebar.html:104
 msgid "Validation"
 msgstr "Validation"
 
-#: apps/examples/views/__init__.py:57 templates/partials/sidebar.html:101
+#: apps/examples/views/__init__.py:57 templates/partials/sidebar.html:105
 msgid "Selects"
 msgstr "Selects"
 
-#: apps/examples/views/__init__.py:58 templates/partials/sidebar.html:102
+#: apps/examples/views/__init__.py:58 templates/partials/sidebar.html:106
 msgid "Autocomplete"
 msgstr "Autocomplete"
 
-#: apps/examples/views/__init__.py:59 templates/partials/sidebar.html:103
+#: apps/examples/views/__init__.py:59 templates/partials/sidebar.html:107
 msgid "Date and Time"
 msgstr "Date and Time"
 
-#: apps/examples/views/__init__.py:60 templates/partials/sidebar.html:104
+#: apps/examples/views/__init__.py:60 templates/partials/sidebar.html:108
 msgid "Input Masks"
 msgstr "Input Masks"
 
 #: apps/examples/views/__init__.py:61 templates/pages/examples/plugins.html:13
-#: templates/partials/sidebar.html:105
+#: templates/partials/sidebar.html:109
 msgid "Sliders"
 msgstr "Sliders"
 
-#: apps/examples/views/__init__.py:63 templates/partials/sidebar.html:107
+#: apps/examples/views/__init__.py:63 templates/partials/sidebar.html:111
 msgid "Input Spinner"
 msgstr "Input Spinner"
 
-#: apps/examples/views/__init__.py:64 templates/partials/sidebar.html:108
+#: apps/examples/views/__init__.py:64 templates/partials/sidebar.html:112
 msgid "Tags"
 msgstr "Tags"
 
-#: apps/examples/views/__init__.py:65 templates/partials/sidebar.html:109
+#: apps/examples/views/__init__.py:65 templates/partials/sidebar.html:113
 msgid "Color Picker"
 msgstr "Color Picker"
 
-#: apps/examples/views/__init__.py:66 templates/partials/sidebar.html:110
+#: apps/examples/views/__init__.py:66 templates/partials/sidebar.html:114
 msgid "Rich Text Editor"
 msgstr "Rich Text Editor"
 
-#: apps/examples/views/__init__.py:67 templates/partials/sidebar.html:111
+#: apps/examples/views/__init__.py:67 templates/partials/sidebar.html:115
 msgid "Multi-step Form"
 msgstr "Multi-step Form"
 
-#: apps/examples/views/__init__.py:68 templates/partials/sidebar.html:112
+#: apps/examples/views/__init__.py:68 templates/partials/sidebar.html:116
 msgid "File Upload"
 msgstr "File Upload"
 
-#: apps/examples/views/__init__.py:69 templates/partials/sidebar.html:113
+#: apps/examples/views/__init__.py:69 templates/partials/sidebar.html:117
 msgid "JSON Lists"
 msgstr "JSON Lists"
 
-#: apps/examples/views/__init__.py:70 templates/partials/sidebar.html:114
+#: apps/examples/views/__init__.py:70 templates/partials/sidebar.html:118
 msgid "Form Containers"
 msgstr "Form Containers"
 
-#: apps/examples/views/__init__.py:74 templates/partials/sidebar.html:117
+#: apps/examples/views/__init__.py:74 templates/partials/sidebar.html:121
 msgid "Modals"
 msgstr "Modals"
 
-#: apps/examples/views/__init__.py:76 templates/partials/sidebar.html:118
+#: apps/examples/views/__init__.py:76 templates/partials/sidebar.html:122
 msgid "Modal Basics"
 msgstr "Modal Basics"
 
-#: apps/examples/views/__init__.py:77 templates/partials/sidebar.html:119
+#: apps/examples/views/__init__.py:77 templates/partials/sidebar.html:123
 msgid "Remote Content"
 msgstr "Remote Content"
 
-#: apps/examples/views/__init__.py:78 templates/partials/sidebar.html:120
+#: apps/examples/views/__init__.py:78 templates/partials/sidebar.html:124
 msgid "Modal Workflows"
 msgstr "Modal Workflows"
 
-#: apps/examples/views/__init__.py:79 templates/partials/sidebar.html:121
+#: apps/examples/views/__init__.py:79 templates/partials/sidebar.html:125
 msgid "Response Actions"
 msgstr "Response Actions"
 
-#: apps/examples/views/__init__.py:83 templates/partials/sidebar.html:124
+#: apps/examples/views/__init__.py:83 templates/partials/sidebar.html:128
 msgid "Messages"
 msgstr "Messages"
 
-#: apps/examples/views/__init__.py:84 templates/partials/sidebar.html:125
+#: apps/examples/views/__init__.py:84 templates/partials/sidebar.html:129
 msgid "Page Messages"
 msgstr "Page Messages"
 
 #: apps/examples/views/__init__.py:84
 #: templates/pages/examples/modals/actions.html:17
-#: templates/partials/sidebar.html:126
+#: templates/partials/sidebar.html:130
 msgid "Feedback"
 msgstr "Feedback"
 
@@ -2096,251 +2101,251 @@ msgstr "Feedback"
 #: oldman/web/templates/oldman/dashboard/partials/topbar.html:40
 #: templates/pages/notifications/index.html:5
 #: templates/pages/notifications/index.html:10
-#: templates/partials/sidebar.html:47 templates/partials/sidebar.html:129
+#: templates/partials/sidebar.html:51 templates/partials/sidebar.html:133
 msgid "Notifications"
 msgstr "Notifications"
 
-#: apps/examples/views/__init__.py:89 templates/partials/sidebar.html:130
+#: apps/examples/views/__init__.py:89 templates/partials/sidebar.html:134
 msgid "Notification Generator"
 msgstr "Notification Generator"
 
-#: apps/examples/views/__init__.py:90 templates/partials/sidebar.html:131
+#: apps/examples/views/__init__.py:90 templates/partials/sidebar.html:135
 msgid "Notification Center"
 msgstr "Notification Center"
 
-#: apps/examples/views/__init__.py:91 templates/partials/sidebar.html:132
+#: apps/examples/views/__init__.py:91 templates/partials/sidebar.html:136
 msgid "Realtime Notifications"
 msgstr "Realtime Notifications"
 
-#: apps/examples/views/__init__.py:95 templates/partials/sidebar.html:135
+#: apps/examples/views/__init__.py:95 templates/partials/sidebar.html:139
 msgid "Storage"
 msgstr "Storage"
 
 #: apps/examples/views/__init__.py:97
 #: templates/pages/examples/tables/realtime.html:25
 #: templates/pages/examples/ui/tabs-disclosure.html:86
-#: templates/partials/sidebar.html:136
+#: templates/partials/sidebar.html:140
 msgid "Upload"
 msgstr "Upload"
 
-#: apps/examples/views/__init__.py:98 templates/partials/sidebar.html:137
+#: apps/examples/views/__init__.py:98 templates/partials/sidebar.html:141
 msgid "File Lifecycle"
 msgstr "File Lifecycle"
 
-#: apps/examples/views/__init__.py:99 templates/partials/sidebar.html:138
+#: apps/examples/views/__init__.py:99 templates/partials/sidebar.html:142
 msgid "Storage API"
 msgstr "Storage API"
 
-#: apps/examples/views/__init__.py:103 templates/partials/sidebar.html:141
+#: apps/examples/views/__init__.py:103 templates/partials/sidebar.html:145
 msgid "Data Inputs"
 msgstr "Data Inputs"
 
-#: apps/examples/views/__init__.py:105 templates/partials/sidebar.html:142
+#: apps/examples/views/__init__.py:105 templates/partials/sidebar.html:146
 msgid "Editable Lists"
 msgstr "Editable Lists"
 
-#: apps/examples/views/__init__.py:106 templates/partials/sidebar.html:143
+#: apps/examples/views/__init__.py:106 templates/partials/sidebar.html:147
 msgid "Remote Autocomplete"
 msgstr "Remote Autocomplete"
 
-#: apps/examples/views/__init__.py:107 templates/partials/sidebar.html:144
+#: apps/examples/views/__init__.py:107 templates/partials/sidebar.html:148
 msgid "Data Providers"
 msgstr "Data Providers"
 
-#: apps/examples/views/__init__.py:111 templates/partials/sidebar.html:147
+#: apps/examples/views/__init__.py:111 templates/partials/sidebar.html:151
 msgid "Sortable"
 msgstr "Sortable"
 
-#: apps/examples/views/__init__.py:112 templates/partials/sidebar.html:148
+#: apps/examples/views/__init__.py:112 templates/partials/sidebar.html:152
 msgid "Review Workflow"
 msgstr "Review Workflow"
 
-#: apps/examples/views/__init__.py:115 templates/partials/sidebar.html:151
+#: apps/examples/views/__init__.py:115 templates/partials/sidebar.html:155
 msgid "Charts"
 msgstr "Charts"
 
-#: apps/examples/views/__init__.py:117 templates/partials/sidebar.html:152
+#: apps/examples/views/__init__.py:117 templates/partials/sidebar.html:156
 msgid "Trends"
 msgstr "Trends"
 
-#: apps/examples/views/__init__.py:118 templates/partials/sidebar.html:153
+#: apps/examples/views/__init__.py:118 templates/partials/sidebar.html:157
 msgid "Composition"
 msgstr "Composition"
 
-#: apps/examples/views/__init__.py:119 templates/partials/sidebar.html:154
+#: apps/examples/views/__init__.py:119 templates/partials/sidebar.html:158
 msgid "Distribution"
 msgstr "Distribution"
 
-#: apps/examples/views/__init__.py:120 templates/partials/sidebar.html:155
+#: apps/examples/views/__init__.py:120 templates/partials/sidebar.html:159
 msgid "Chart States"
 msgstr "Chart States"
 
-#: apps/examples/views/__init__.py:121 templates/partials/sidebar.html:156
+#: apps/examples/views/__init__.py:121 templates/partials/sidebar.html:160
 msgid "Realtime Charts"
 msgstr "Realtime Charts"
 
-#: apps/examples/views/__init__.py:125 templates/partials/sidebar.html:159
+#: apps/examples/views/__init__.py:125 templates/partials/sidebar.html:163
 msgid "Navigation"
 msgstr "Navigation"
 
-#: apps/examples/views/__init__.py:127 templates/partials/sidebar.html:160
+#: apps/examples/views/__init__.py:127 templates/partials/sidebar.html:164
 msgid "Page Lifecycle"
 msgstr "Page Lifecycle"
 
-#: apps/examples/views/__init__.py:128 templates/partials/sidebar.html:161
+#: apps/examples/views/__init__.py:128 templates/partials/sidebar.html:165
 msgid "Navigation Actions"
 msgstr "Navigation Actions"
 
-#: apps/examples/views/__init__.py:129 templates/partials/sidebar.html:162
+#: apps/examples/views/__init__.py:129 templates/partials/sidebar.html:166
 msgid "Loading States"
 msgstr "Loading States"
 
 #: apps/examples/views/__init__.py:133 oldman/auth/apps.py:12
-#: templates/partials/sidebar.html:165
+#: templates/partials/sidebar.html:169
 msgid "Authentication"
 msgstr "Authentication"
 
-#: apps/examples/views/__init__.py:135 templates/partials/sidebar.html:166
+#: apps/examples/views/__init__.py:135 templates/partials/sidebar.html:170
 msgid "Login"
 msgstr "Login"
 
-#: apps/examples/views/__init__.py:136 templates/partials/sidebar.html:167
+#: apps/examples/views/__init__.py:136 templates/partials/sidebar.html:171
 msgid "Access Guards"
 msgstr "Access Guards"
 
-#: apps/examples/views/__init__.py:137 templates/partials/sidebar.html:168
+#: apps/examples/views/__init__.py:137 templates/partials/sidebar.html:172
 msgid "Current Identity"
 msgstr "Current Identity"
 
-#: apps/examples/views/__init__.py:138 templates/partials/sidebar.html:169
+#: apps/examples/views/__init__.py:138 templates/partials/sidebar.html:173
 msgid "Access Tokens"
 msgstr "Access Tokens"
 
-#: apps/examples/views/__init__.py:139 templates/partials/sidebar.html:170
+#: apps/examples/views/__init__.py:139 templates/partials/sidebar.html:174
 msgid "Service Callers"
 msgstr "Service Callers"
 
 #: apps/examples/views/__init__.py:143
 #: oldman/web/templates/oldman/auth/partials/account_controls.html:22
-#: templates/partials/sidebar.html:173
+#: templates/partials/sidebar.html:177
 msgid "Session"
 msgstr "Session"
 
-#: apps/examples/views/__init__.py:145 templates/partials/sidebar.html:174
+#: apps/examples/views/__init__.py:145 templates/partials/sidebar.html:178
 msgid "Session Lifecycle"
 msgstr "Session Lifecycle"
 
-#: apps/examples/views/__init__.py:146 templates/partials/sidebar.html:175
+#: apps/examples/views/__init__.py:146 templates/partials/sidebar.html:179
 msgid "Session Revoke"
 msgstr "Session Revoke"
 
-#: apps/examples/views/__init__.py:147 templates/partials/sidebar.html:176
+#: apps/examples/views/__init__.py:147 templates/partials/sidebar.html:180
 msgid "Session Expiry"
 msgstr "Session Expiry"
 
-#: apps/examples/views/__init__.py:151 templates/partials/sidebar.html:179
+#: apps/examples/views/__init__.py:151 templates/partials/sidebar.html:183
 msgid "Internationalization"
 msgstr "Internationalization"
 
-#: apps/examples/views/__init__.py:153 templates/partials/sidebar.html:180
+#: apps/examples/views/__init__.py:153 templates/partials/sidebar.html:184
 msgid "Server Translation"
 msgstr "Server Translation"
 
-#: apps/examples/views/__init__.py:154 templates/partials/sidebar.html:181
+#: apps/examples/views/__init__.py:154 templates/partials/sidebar.html:185
 msgid "Browser Translation"
 msgstr "Browser Translation"
 
-#: apps/examples/views/__init__.py:155 templates/partials/sidebar.html:182
+#: apps/examples/views/__init__.py:155 templates/partials/sidebar.html:186
 msgid "Translation Coverage"
 msgstr "Translation Coverage"
 
-#: apps/examples/views/__init__.py:159 templates/partials/sidebar.html:185
+#: apps/examples/views/__init__.py:159 templates/partials/sidebar.html:189
 msgid "UI Reference"
 msgstr "UI Reference"
 
-#: apps/examples/views/__init__.py:161 templates/partials/sidebar.html:186
+#: apps/examples/views/__init__.py:161 templates/partials/sidebar.html:190
 msgid "Foundations"
 msgstr "Foundations"
 
-#: apps/examples/views/__init__.py:162 templates/partials/sidebar.html:187
+#: apps/examples/views/__init__.py:162 templates/partials/sidebar.html:191
 msgid "Typography"
 msgstr "Typography"
 
 #: apps/examples/views/__init__.py:163 templates/pages/examples/plugins.html:20
-#: templates/partials/sidebar.html:188
+#: templates/partials/sidebar.html:192
 msgid "Buttons"
 msgstr "Buttons"
 
-#: apps/examples/views/__init__.py:164 templates/partials/sidebar.html:189
+#: apps/examples/views/__init__.py:164 templates/partials/sidebar.html:193
 msgid "Badges and Avatars"
 msgstr "Badges and Avatars"
 
-#: apps/examples/views/__init__.py:165 templates/partials/sidebar.html:190
+#: apps/examples/views/__init__.py:165 templates/partials/sidebar.html:194
 msgid "Cards"
 msgstr "Cards"
 
 #: apps/examples/views/__init__.py:166 templates/pages/examples/plugins.html:16
-#: templates/partials/sidebar.html:191
+#: templates/partials/sidebar.html:195
 msgid "Lists"
 msgstr "Lists"
 
-#: apps/examples/views/__init__.py:167 templates/partials/sidebar.html:192
+#: apps/examples/views/__init__.py:167 templates/partials/sidebar.html:196
 msgid "Alerts"
 msgstr "Alerts"
 
-#: apps/examples/views/__init__.py:168 templates/partials/sidebar.html:193
+#: apps/examples/views/__init__.py:168 templates/partials/sidebar.html:197
 msgid "Progress and Loading"
 msgstr "Progress and Loading"
 
-#: apps/examples/views/__init__.py:169 templates/partials/sidebar.html:194
+#: apps/examples/views/__init__.py:169 templates/partials/sidebar.html:198
 msgid "Horizontal Browsing"
 msgstr "Horizontal Browsing"
 
-#: apps/examples/views/__init__.py:170 templates/partials/sidebar.html:195
+#: apps/examples/views/__init__.py:170 templates/partials/sidebar.html:199
 msgid "Timeline"
 msgstr "Timeline"
 
-#: apps/examples/views/__init__.py:171 templates/partials/sidebar.html:196
+#: apps/examples/views/__init__.py:171 templates/partials/sidebar.html:200
 msgid "Navigation Shell"
 msgstr "Navigation Shell"
 
-#: apps/examples/views/__init__.py:172 templates/partials/sidebar.html:197
+#: apps/examples/views/__init__.py:172 templates/partials/sidebar.html:201
 msgid "Tabs and Disclosure"
 msgstr "Tabs and Disclosure"
 
-#: apps/examples/views/__init__.py:173 templates/partials/sidebar.html:198
+#: apps/examples/views/__init__.py:173 templates/partials/sidebar.html:202
 msgid "Dropdowns and Overlays"
 msgstr "Dropdowns and Overlays"
 
-#: apps/examples/views/__init__.py:174 templates/partials/sidebar.html:199
+#: apps/examples/views/__init__.py:174 templates/partials/sidebar.html:203
 msgid "Countdown"
 msgstr "Countdown"
 
-#: apps/examples/views/__init__.py:175 templates/partials/sidebar.html:200
+#: apps/examples/views/__init__.py:175 templates/partials/sidebar.html:204
 msgid "Gallery"
 msgstr "Gallery"
 
-#: apps/examples/views/__init__.py:176 templates/partials/sidebar.html:201
+#: apps/examples/views/__init__.py:176 templates/partials/sidebar.html:205
 msgid "Video"
 msgstr "Video"
 
-#: apps/examples/views/__init__.py:177 templates/partials/sidebar.html:202
+#: apps/examples/views/__init__.py:177 templates/partials/sidebar.html:206
 msgid "System States"
 msgstr "System States"
 
-#: apps/examples/views/__init__.py:178 templates/partials/sidebar.html:203
+#: apps/examples/views/__init__.py:178 templates/partials/sidebar.html:207
 msgid "Images"
 msgstr "Images"
 
-#: apps/examples/views/__init__.py:179 templates/partials/sidebar.html:204
+#: apps/examples/views/__init__.py:179 templates/partials/sidebar.html:208
 msgid "Icons"
 msgstr "Icons"
 
-#: apps/examples/views/__init__.py:183 templates/partials/sidebar.html:207
+#: apps/examples/views/__init__.py:183 templates/partials/sidebar.html:211
 msgid "Plugins"
 msgstr "Plugins"
 
-#: apps/examples/views/__init__.py:184 templates/partials/sidebar.html:208
+#: apps/examples/views/__init__.py:184 templates/partials/sidebar.html:212
 msgid "Plugin Index"
 msgstr "Plugin Index"
 
@@ -2800,7 +2805,7 @@ msgstr "Choose a valid database record."
 msgid "Cancel older example plans before adding more (limit 10)."
 msgstr "Cancel older example plans before adding more (limit 10)."
 
-#: services/web.py:78
+#: services/web.py:85
 msgid "Start the development service with frontend assets from Vite."
 msgstr "Start the development service with frontend assets from Vite."
 
@@ -4190,9 +4195,9 @@ msgstr "Latest 7 days"
 #: frontend/packages/oldman-web/src/core/http/client.ts:215
 #: oldman/apps/admin/site.py:678 oldman/apps/admin/site.py:755
 #: oldman/apps/admin/site.py:819 oldman/web/auth/forms.py:292
-#: oldman/web/auth/permissions.py:88 oldman/web/auth/user_management.py:302
-#: oldman/web/auth/user_management.py:349
-#: oldman/web/auth/user_management.py:378
+#: oldman/web/auth/permissions.py:88 oldman/web/auth/user_management.py:295
+#: oldman/web/auth/user_management.py:342
+#: oldman/web/auth/user_management.py:371
 #: oldman/web/components/charts/views.py:68
 #: oldman/web/components/tables/views.py:375 oldman/web/http.py:75
 #: oldman/web/http.py:120 templates/pages/examples/charts/states.html:22
@@ -5535,6 +5540,7 @@ msgstr "Close Modal Action"
 #: oldman/web/templates/oldman/auth/partials/password_form.html:25
 #: oldman/web/templates/oldman/auth/partials/user_delete_form.html:8
 #: oldman/web/templates/oldman/auth/partials/user_status_form.html:14
+#: oldman/web/templates/oldman/dashboard/account/roles/delete_form.html:11
 #: templates/pages/examples/modals/actions.html:72
 #: templates/pages/examples/ui/cards.html:9
 #: templates/partials/examples/tables/delete_project.html:14
@@ -8528,23 +8534,32 @@ msgstr "Catalog"
 msgid "Ingestion"
 msgstr "Ingestion"
 
-#: templates/partials/sidebar.html:42
+#: templates/partials/sidebar.html:43
 msgid "System"
 msgstr "System"
+
+#: oldman/apps/roles/apps.py:15 oldman/apps/roles/models.py:34
+#: oldman/web/auth/forms.py:403
+#: oldman/web/templates/oldman/dashboard/account/roles/form.html:14
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:9
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:13
+#: templates/partials/sidebar.html:48
+msgid "Roles"
+msgstr "Roles"
 
 #: oldman/apps/admin/templates/admin/user_session.html:3
 #: oldman/web/templates/oldman/auth/user_session_content.html:5
 #: oldman/web/templates/oldman/dashboard/account/user_session.html:8
-#: templates/partials/sidebar.html:46
+#: templates/partials/sidebar.html:50
 msgid "User Session"
 msgstr "User Session"
 
 #: oldman/apps/admin/templates/admin/partials/topbar.html:13
-#: templates/partials/sidebar.html:50
+#: templates/partials/sidebar.html:54
 msgid "Admin"
 msgstr "Admin"
 
-#: templates/partials/sidebar.html:54
+#: templates/partials/sidebar.html:58
 msgid "Examples"
 msgstr "Examples"
 
@@ -8719,26 +8734,21 @@ msgid "Last Login"
 msgstr "Last Login"
 
 #: oldman/apps/admin/model_admin.py:527 oldman/apps/admin/model_admin.py:530
-#: oldman/auth/commands.py:94 oldman/web/auth/user_management.py:223
+#: oldman/auth/commands.py:94 oldman/web/auth/user_management.py:216
 msgid "User created"
 msgstr "User created"
 
 #: oldman/apps/admin/model_admin.py:527 oldman/apps/admin/model_admin.py:530
-#: oldman/web/auth/user_management.py:268
+#: oldman/web/auth/user_management.py:261
 msgid "User saved"
 msgstr "User saved"
 
 #: frontend/packages/oldman-web/src/dashboard/topbar.ts:278
 #: oldman/apps/admin/model_admin.py:535 oldman/apps/admin/site.py:703
 #: oldman/apps/admin/site.py:778 oldman/apps/admin/site.py:843
-#: oldman/web/auth/user_management.py:150
+#: oldman/web/messages/actions.py:44
 msgid "Just now"
 msgstr "Just now"
-
-#: oldman/apps/admin/roles.py:50 oldman/apps/admin/roles.py:64
-#: oldman/web/auth/permissions.py:51
-msgid "The permission store is unavailable"
-msgstr "The permission store is unavailable"
 
 #: oldman/apps/admin/site.py:322 oldman/web/auth/user_session.py:191
 msgid "Unsupported language."
@@ -8753,22 +8763,22 @@ msgstr "%(name)s %(id)s was not found"
 
 #: oldman/apps/admin/site.py:556 oldman/apps/admin/site.py:669
 #: oldman/apps/admin/site.py:749 oldman/apps/admin/site.py:813
-#: oldman/web/auth/user_management.py:252
-#: oldman/web/auth/user_management.py:300
-#: oldman/web/auth/user_management.py:347
-#: oldman/web/auth/user_management.py:376
+#: oldman/web/auth/user_management.py:245
+#: oldman/web/auth/user_management.py:293
+#: oldman/web/auth/user_management.py:340
+#: oldman/web/auth/user_management.py:369
 msgid "User not found"
 msgstr "User not found"
 
 #: oldman/apps/admin/site.py:695 oldman/apps/admin/site.py:698
-#: oldman/web/auth/user_management.py:319
+#: oldman/web/auth/user_management.py:312
 msgid "User deleted"
 msgstr "User deleted"
 
 #: oldman/apps/admin/site.py:720 oldman/apps/admin/site.py:734
 #: oldman/auth/commands.py:105 oldman/web/auth/tables.py:70
-#: oldman/web/auth/user_management.py:286
-#: oldman/web/auth/user_management.py:291 oldman/web/auth/user_session.py:91
+#: oldman/web/auth/user_management.py:279
+#: oldman/web/auth/user_management.py:284 oldman/web/auth/user_session.py:91
 #: oldman/web/templates/oldman/auth/partials/password_form.html:26
 #: oldman/web/templates/oldman/auth/partials/user_modals.html:7
 #: oldman/web/templates/oldman/auth/user_session_content.html:46
@@ -8778,19 +8788,19 @@ msgstr "Change Password"
 
 #: oldman/apps/admin/site.py:721 oldman/auth/commands.py:112
 #: oldman/auth/commands.py:117 oldman/web/auth/modals.py:26
-#: oldman/web/auth/modals.py:43 oldman/web/auth/user_management.py:286
+#: oldman/web/auth/modals.py:43 oldman/web/auth/user_management.py:279
 msgid "User not found."
 msgstr "User not found."
 
 #: oldman/apps/admin/site.py:770 oldman/apps/admin/site.py:773
 #: oldman/auth/commands.py:121 oldman/web/auth/user_management.py:69
-#: oldman/web/auth/user_management.py:316
+#: oldman/web/auth/user_management.py:309
 msgid "Password changed"
 msgstr "Password changed"
 
 #: oldman/apps/admin/site.py:835 oldman/apps/admin/site.py:838
-#: oldman/web/auth/user_management.py:317
-#: oldman/web/auth/user_management.py:318
+#: oldman/web/auth/user_management.py:310
+#: oldman/web/auth/user_management.py:311
 msgid "User status updated"
 msgstr "User status updated"
 
@@ -8876,11 +8886,6 @@ msgstr "Reset your password"
 msgid "Check your email"
 msgstr "Check your email"
 
-#: oldman/apps/roles/apps.py:15 oldman/apps/roles/models.py:34
-#: oldman/web/auth/forms.py:403
-msgid "Roles"
-msgstr "Roles"
-
 #: oldman/apps/roles/forms.py:63
 #: oldman/web/templates/oldman/auth/user_session_content.html:7
 msgid "Permissions"
@@ -8895,6 +8900,59 @@ msgstr "A role with this name already exists"
 msgid "You can only grant permissions you hold: %(permissions)s"
 msgstr "You can only grant permissions you hold: %(permissions)s"
 
+#: oldman/apps/roles/management.py:68 oldman/apps/roles/management.py:81
+#: oldman/web/auth/permissions.py:51
+msgid "The permission store is unavailable"
+msgstr "The permission store is unavailable"
+
+#: oldman/apps/roles/management.py:111
+msgid "No roles found."
+msgstr "No roles found."
+
+#: oldman/apps/roles/management.py:155
+msgid "Role actions"
+msgstr "Role actions"
+
+#: oldman/apps/roles/management.py:234
+msgid "Role created"
+msgstr "Role created"
+
+#: oldman/apps/roles/management.py:234
+msgid "Role saved"
+msgstr "Role saved"
+
+#: oldman/apps/roles/management.py:237
+#, python-format
+msgid "%(name)s was created."
+msgstr "%(name)s was created."
+
+#: oldman/apps/roles/management.py:239
+#, python-format
+msgid "%(name)s was updated."
+msgstr "%(name)s was updated."
+
+#: oldman/apps/roles/management.py:297 oldman/apps/roles/management.py:330
+msgid "Role not found"
+msgstr "Role not found"
+
+#: oldman/apps/roles/management.py:314
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:31
+msgid "Delete Role"
+msgstr "Delete Role"
+
+#: oldman/apps/roles/management.py:316
+msgid "Role not found."
+msgstr "Role not found."
+
+#: oldman/apps/roles/management.py:337
+msgid "Role deleted"
+msgstr "Role deleted"
+
+#: oldman/apps/roles/management.py:338
+#, python-format
+msgid "%(name)s was deleted."
+msgstr "%(name)s was deleted."
+
 #: oldman/apps/roles/models.py:33
 msgid "Role"
 msgstr "Role"
@@ -8906,6 +8964,22 @@ msgstr "User role"
 #: oldman/apps/roles/models.py:50
 msgid "User roles"
 msgstr "User roles"
+
+#: oldman/apps/roles/permissions.py:17
+msgid "View roles"
+msgstr "View roles"
+
+#: oldman/apps/roles/permissions.py:18
+msgid "Add roles"
+msgstr "Add roles"
+
+#: oldman/apps/roles/permissions.py:19
+msgid "Change roles"
+msgstr "Change roles"
+
+#: oldman/apps/roles/permissions.py:20
+msgid "Delete roles"
+msgstr "Delete roles"
 
 #: oldman/auth/commands.py:30
 msgid "--username is required for a non-interactive run."
@@ -10501,6 +10575,7 @@ msgid "Delete user?"
 msgstr "Delete user?"
 
 #: oldman/web/templates/oldman/auth/partials/user_modals.html:20
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:38
 msgid "Select a row action to continue."
 msgstr "Select a row action to continue."
 
@@ -10576,6 +10651,25 @@ msgstr ""
 #: oldman/web/templates/oldman/dashboard/account/login.html:7
 msgid "Sign in with your account to continue."
 msgstr "Sign in with your account to continue."
+
+#: oldman/web/templates/oldman/dashboard/account/roles/delete_form.html:7
+msgid "Delete role?"
+msgstr "Delete role?"
+
+#: oldman/web/templates/oldman/dashboard/account/roles/form.html:8
+#: oldman/web/templates/oldman/dashboard/account/roles/form.html:12
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:14
+msgid "New Role"
+msgstr "New Role"
+
+#: oldman/web/templates/oldman/dashboard/account/roles/form.html:8
+#: oldman/web/templates/oldman/dashboard/account/roles/form.html:12
+msgid "Edit Role"
+msgstr "Edit Role"
+
+#: oldman/web/templates/oldman/dashboard/account/roles/index.html:20
+msgid "Roles List"
+msgstr "Roles List"
 
 #: oldman/web/templates/oldman/dashboard/errors/403.html:3
 #: oldman/web/templates/oldman/dashboard/errors/403.html:7

@@ -748,12 +748,14 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("/channels-epg/1/edit", html)
 
     def test_epg_admin_routes_are_registered(self) -> None:
-        """频道和节目单后台 CRUD 路由应该注册到 Sanic;用户管理是框架的 UserManagementFlow,这里只确认它装上了。"""
+        """频道和节目单后台 CRUD 路由应该注册到 Sanic;用户与角色管理是框架的流程,这里只确认它们装上了。"""
         route_names = set(self.app.router.name_index)
 
         for name in (
             "users",
             "users_table",
+            "roles",
+            "roles_table",
             "catalog_channels",
             "catalog_channels_table",
             "catalog_channels_new",
