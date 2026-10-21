@@ -87,6 +87,11 @@ web:
   #   api_keys:
   #     demo_script:
   #       secret: <另一个随机串>
+  # MCP 端点（apps/examples/mcp.py，给 Claude Code 等 agent 用）默认关闭。先照上面启用 jwt 和/或 api_key，再取消注释；
+  # callers 列出可以调用的 API key 名字。连接方法见 README「MCP 示例」。
+  # mcp:
+  #   enabled: true
+  #   callers: [demo_script]
   messages:
     enabled: true
   sse:

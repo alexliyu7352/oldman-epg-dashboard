@@ -360,6 +360,48 @@ HTTP 200 不等于上游成功。Demo 自身的权限、CSRF 或程序异常仍�
 `templates/pages/examples/http/`；设置类型见 `apps/examples/settings.py`。
 页面使用现有 ExamplesPage、`data-om-action` 和 `replace_html_response`，没有新增 TS 或后台服务。
 
+### MCP 示例
+
+`apps/examples/mcp.py` 把示例项目通过 MCP 提供给 Claude Code 等 agent：
+
+- `find_example_projects`、`count_example_projects_by_status`、resource `example-project://<slug>`：
+  要 `examples.view_projects`，与项目页面相同；
+- `example_caller`：所有放行的调用方都能用，说明这次请求是怎么认证的，用来检查连接；
+- prompt `review_example_project`：让模型读一个项目并给出简短评审。
+
+端点 `/mcp` 默认关闭。在自己的 `data/web_settings.yaml` 里打开：
+
+1. 照 `data/web_settings.example.yaml` 里 `auth:` 的注释，启用 `jwt` 和 `api_key` 并各填一个 secret。
+2. 在 `web:` 下加：
+
+   ```yaml
+   mcp:
+     enabled: true
+     callers: [demo_script]
+   ```
+
+3. 重启 Web 服务。日志里出现 `MCP endpoint at /mcp offers 3 tool(s)` 就打开了。
+
+用户连接（看得到项目）：先用 `/api/token` 换一个访问令牌，再交给 Claude Code。
+
+```bash
+curl -s http://127.0.0.1:17997/api/token -H 'Content-Type: application/json' \
+  -d '{"username": "admin", "password": "<密码>"}'
+claude mcp add --transport http epg http://127.0.0.1:17997/mcp --header "Authorization: Bearer <data.access_token>"
+```
+
+访问令牌默认 15 分钟过期（`web.auth.jwt.access_token_ttl`），过期后重新换一个，并更新 Claude Code 里的 header；
+本地演示可以把这个值调大。框架的 MCP 端点不支持 OAuth，所以客户端不会自己续期。
+
+程序连接只看得到 `example_caller`：API key 认出的是调用方，不是用户，没有权限。
+
+```bash
+claude mcp add --transport http epg-script http://127.0.0.1:17997/mcp --header "X-API-Key: <demo_script 的 secret>"
+```
+
+每个调用方每 60 秒最多调用 60 次工具（`web.mcp.rate_limit`，计数在 `SESSION` 那个 Redis）。
+其余设置与限制见框架文档 `docs/public/zh/developers/mcp.md`。
+
 ### 验证入口
 
 ```bash

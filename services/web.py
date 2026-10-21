@@ -11,6 +11,7 @@ from oldman.apps.admin import install_admin
 from oldman.apps.roles.permissions import VIEW_ROLES
 from oldman.auth.user_permissions import VIEW_USERS
 from oldman.i18n import gettext, gettext_noop
+from oldman.mcp import install_mcp
 from oldman.runtime.web import WebApplication
 from oldman.web.auth import has_perm
 from oldman.web.i18n import ensure_frontend_catalogs
@@ -103,7 +104,7 @@ class WebService(WebApplication):
         }
 
     def init(self) -> None:
-        """骨架的顺序:CSRF、通知、模板与前端包、账户页面;再装本项目的令牌接口与内置 Admin。"""
+        """骨架的顺序:CSRF、通知、模板与前端包、账户页面;再装本项目的令牌接口、内置 Admin 与 MCP 端点。"""
         super().init()
         app = self.runtime_app
         if app is None:
@@ -115,6 +116,8 @@ class WebService(WebApplication):
         install_token_routes(app)
         # 内置管理后台挂在 app_settings.admin.prefix(默认 /admin),与这里共用登录状态,导航里的入口整页打开。
         install_admin(app)
+        # apps/examples/mcp.py 的工具;web.mcp.enabled 默认关闭,关闭时这一行什么都不做(README「MCP 示例」)。
+        install_mcp(app)
 
     async def before_server_start(self, app: WebApp) -> None:
         """Initialize the example HTTP adapter without connecting to its upstream."""
